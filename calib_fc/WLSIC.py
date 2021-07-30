@@ -172,7 +172,7 @@ class WLS_Kov():
                         which are respectively the binned intensity, the associated epicentral distance,
                         the associated depth, the associated epicentral intensity,
                         the associated standard deviation and the associated
-                        inverse square root of the weights used in the inverseion.
+                        inverse square root of the weights used in the inversion.
         :param Beta: the geometric attenuation coefficient of the Koveslighety equation
         :param Gamma: the intresic attenuation coefficient of the Koveslighety equation
         :type ObsBin_plus: pandas.DataFrame

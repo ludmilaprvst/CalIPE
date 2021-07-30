@@ -21,6 +21,32 @@ import matplotlib as mpl
 
 def critere_stop(suivi_beta, suivi_depth, suivi_I0, NminIter,
                  stop_beta=0.001, stop_depth=0.05, stop_I0=0.01):
+    """
+    Function that check if the stop criteria of the iterative inversion are reached.
+    The inversion stop if the three last inverted parameters is stable: the mean
+    difference of the three last values should be under a given value.
+    
+    :param suivi_beta: Contains the inverted geometric attenuation coefficient beta from the
+                       first iteration to the current iteration
+                       
+    :param suivi_depth: Contains for each earthquake the inverted depth values from the
+                       first iteration to the current iteration
+    :param suivi_I0: Contains for each earthquake the inverted epicentral intensity
+                     values from the first iteration to the current iteration
+    :param NminIter: minimal number of iterations before stop
+    :param stop_beta: stop value for the geometric attenuation coefficient beta
+    :param stop_depth: stop value for the depth. The mean difference of the three
+                       last values is meaned over the earthquakes
+    :param stop_I0: stop value for the epicentral intensity. The mean difference
+                    of the three last values is meaned over the earthquakes
+    :type suivi_beta: list
+    :type suivi_depth: dict
+    :type suivi_I0: dict
+    :type NminIter: int
+    :type stop_beta: float
+    :type stop_depth: float
+    :type stop_I0: float
+    """
     # pas testee
     ConvrateBeta = sum(abs(np.diff(suivi_beta[-3:])))/NminIter
     ConvrateDepth = 0
@@ -36,6 +62,19 @@ def critere_stop(suivi_beta, suivi_depth, suivi_I0, NminIter,
     return condition
 
 def define_ls_color_byevt(count, cmap='tab20b', len_cmap=20):
+    """
+    Function that attribute a different color and line style to a number.
+    The number should be lower than 99.
+    
+    :param count: the number for which a color and a line style is needed.
+    :param cmap: colormap choosed to attribute the colors (see matplotlib colormaps)
+    :param len_cmap: number of color considered
+    :type count: int
+    :type cmap: str
+    :type len_cmap: int
+    
+    :return: a line style and a color
+    """
     cmap = cm.get_cmap(cmap, len_cmap)
     ls_list = ['-', ':', '-+', '-s', '-o']
     if count < 20:
@@ -59,6 +98,22 @@ def define_ls_color_byevt(count, cmap='tab20b', len_cmap=20):
     return ls, color
 
 def define_ls_color_bydepth(depth, cmap='viridis_r', vmin=2, vmax=20):
+    """
+    Function that associates a color to a number.
+    
+    :param depth: the number for which a color is needed.
+    :param cmap: colormap choosed to attribute the colors (see matplotlib colormaps)
+    :param vmin: minimum value to define the color map
+    :param vmax: maximal value to define the color map
+    :type depth: int
+    :type cmap: str
+    :type vmin: float
+    :type vmax: float
+    
+    :return: a line style, the color associated to the input number, the chosen
+             colormap object, the norm object associated to the colormap and
+             defined by vmin and vmax.
+    """
     norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
     cmap = cm.get_cmap(cmap)
     color = cmap(norm(depth))
@@ -69,6 +124,46 @@ def define_ls_color_bydepth(depth, cmap='viridis_r', vmin=2, vmax=20):
 def calib_attBeta_Kov(liste_evt, ObsBin_plus, beta_ini, 
                       NminIter=3, NmaxIter=50, suivi_inversion=False,
                       dossier_suivi=''):
+    """
+    Function that inverse iteratively and sequentially depth, epicentral intensity
+    and the geometric attenuation coefficient beta for a given earthquake list and 
+    binned intensity.
+    
+    :param liste_evt: Contains the ID of the earthquakes used for the inversion
+    :param ObsBin_plus: dataframe with the binned intensity data for all calibration earthquakes.
+                        This dataframe should at least have have the following
+                        columns : 
+                            'I' the binned intensity value,
+                            'StdI' the binned intensity standard deviation,
+                            'Depi' the associated epicentral distance,
+                            'Depth' the initial depth before inversion,
+                            'Hmin' the lower depth limit for inversion,
+                            'Hmax' the upper depth limit for inversion,
+                            'Io' the initial epicentral intensity before inversion,
+                            'Io_ini' the initial epicentral intensity before inversion,
+                            'Io_std' the epicentral intensity standard deviation,
+                            'eqStd' the inverse of the root square of the weights
+                                    used in the geometric attenuation coefficient,
+                            
+    :param NminIter: minimum number of iteration
+    :param NmaxIter: maximal number of iteration
+    :param suivi_inversion: option to visualize the WRMS of depth, epicentral
+                            intensity and geometric attenuation coefficient beta
+                            at different iterations. Time consuming option.
+    :param dossier_suivi: folder in which the figures with the WRMS will be stored.
+    :type liste_evt: list
+    :type ObsBin_plus: pandas.DataFrame
+    :type NminIter: int
+    :type NmaxIter: int
+    :type suivi_inversion: bool
+    :type dossier_suivi: str
+        
+    :return: the ObsBin_plus dataframe with depth and epicentral intensity after inversion
+             the output eometric attenuation coefficient beta, the covariance
+             of the geometric attenuation coefficient, a list with the beta values
+             for each iteration.
+    """
+    
     # Yellow: stade inverse
     # White: stade ini
     
@@ -190,7 +285,35 @@ def calib_attBeta_Kov(liste_evt, ObsBin_plus, beta_ini,
         
 
 def calib_attBeta_Kov_unit(liste_evt, ObsBin_plus, beta):
-    # Ajout dans ObsBin_plus de Hmin/Hmax, Io_inv, Io_std
+    """
+    Function that inverse sequentially depth, epicentral intensity and the
+    geometric attenuation coefficient beta for a given earthquake list and 
+    binned intensity and one iteration.
+    
+    :param liste_evt: Contains the ID of the earthquakes used for the inversion
+    :param ObsBin_plus: dataframe with the binned intensity data for all calibration earthquakes.
+                        This dataframe should at least have have the following
+                        columns : 
+                            'I' the binned intensity value,
+                            'StdI' the binned intensity standard deviation,
+                            'Depi' the associated epicentral distance,
+                            'Depth' the initial depth before inversion,
+                            'Hmin' the lower depth limit for inversion,
+                            'Hmax' the upper depth limit for inversion,
+                            'Io' the initial epicentral intensity before inversion,
+                            'Io_ini' the initial epicentral intensity before inversion,
+                            'Io_std' the epicentral intensity standard deviation,
+                            'eqStd' the inverse of the root square of the weights
+                                    used in the geometric attenuation coefficient,
+                            
+    :param beta: initial value of the geometric attenuation coefficient beta
+    :type liste_evt: list
+    :type ObsBin_plus: pandas.DataFrame
+    :type beta: float
+        
+    :return: the ObsBin_plus dataframe with depth and epicentral intensity after inversion
+             and the inverted geometric attenuation coefficient beta
+    """
     for evid in liste_evt:
         obsbin = ObsBin_plus[ObsBin_plus.EVID==evid]
         depth = obsbin.Depth.values[0]
