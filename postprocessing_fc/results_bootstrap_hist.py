@@ -16,23 +16,23 @@ def get_hist_bootstrap(output_folder):
     liste_beta = []
     for fichier in liste_fichiers:
         if 'betaFinal' in fichier:
-            if 'FRinstru' in fichier:
+            if 'FR' in fichier:
                 beta_baseDB = readBetaFile(output_folder+'/'+fichier)[0]
             else:
                 
                 beta = readBetaFile(output_folder+'/'+fichier)[0]
                 liste_beta.append(beta)
-                print(fichier, beta)
+                #print(fichier, beta)
     return liste_beta, beta_baseDB
 
 def plot_hist_bootstrap(ax, liste, beta_base,
-                        xlim=[-4, -2], ylim=[0, 15]):
-    ax.hist(liste, label='bootstrap beta results')
-    ax.axvline(x=beta_base, color='k', label='beta value from the base database')
+                        xlim=[-4, -2], ylim=[0, 15], bbins=np.arange(-4, -2, 0.1)):
+    ax.hist(liste, bins=bbins, density=False, alpha=1, label='subsets beta results')
+    ax.axvline(x=beta_base, color='k', lw=1,ls='--', label='beta value from the base database')
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
     ax.set_xlabel('Beta values')
-    ax.legend(loc=2)
+    #ax.legend(loc=2)
     ax.grid(which='both')
 """    
 output_folder = '../Outputs/FR_instru_01/Boostrap_FRinstru'
@@ -67,10 +67,45 @@ ax_ARMOR.set_title("ARMOR")
 plt.tight_layout()
 fig.savefig('../bootstrap_result.png', dpi=150)
 """
-output_folder = '../Outputs/FR_instru_01/Subsets_01'
+
+"""
+output_folder = '../../Outputs/FR_extended_01/Subsets_01'
+liste_beta, beta_baseDB = get_hist_bootstrap(output_folder)
+output_folder2 = '../../Outputs/FR_instru_01/Subsets_01'
+liste_beta2, beta_baseDB2 = get_hist_bootstrap(output_folder2)
+liste_beta = np.array(liste_beta)
+fig = plt.figure(figsize=(6, 6))
+ax_FR = fig.add_subplot(111)
+plot_hist_bootstrap(ax_FR, liste_beta, beta_baseDB, xlim=[-4, -2],
+                    ylim=[0, 1200], bbins=np.arange(-3.7, -2.5, 0.05))
+
+plot_hist_bootstrap(ax_FR, liste_beta2, beta_baseDB2, xlim=[-4, -2],
+                    ylim=[0, 1200], bbins=np.arange(-3.7, -2.5, 0.05))
+ax_FR.set_title("FR extended")
+ax_FR.grid(which='both')
+fig.savefig('../../FR_extendedetinstru_01_beta_distribution.png', dpi=150)
+"""
+"""
+output_folder = '../../Outputs/FR_extended_01/Subsets_01'
 liste_beta, beta_baseDB = get_hist_bootstrap(output_folder)
 liste_beta = np.array(liste_beta)
 fig = plt.figure(figsize=(6, 6))
 ax_FR = fig.add_subplot(111)
-plot_hist_bootstrap(ax_FR, liste_beta, beta_baseDB, xlim=[-4, -2])
-ax_FR.set_title("FR")
+plot_hist_bootstrap(ax_FR, liste_beta, beta_baseDB, xlim=[-4, -2],
+                    ylim=[0, 1200], bbins=np.arange(-3.7, -2.5, 0.05))
+ax_FR.set_title("FR extended")
+fig.savefig('../../FR_extended_01_beta_distribution.png', dpi=150)
+"""
+
+"""
+output_folder = '../../Outputs/FR_instru_01/bootstrap_1evt_FRinstru/Beta'
+liste_beta, beta_baseDB = get_hist_bootstrap(output_folder)
+liste_beta = np.array(liste_beta)
+fig = plt.figure(figsize=(6, 6))
+ax_FR = fig.add_subplot(111)
+plot_hist_bootstrap(ax_FR, liste_beta, beta_baseDB, xlim=[-4, -2],
+                    ylim=[0, 20], bbins=np.arange(-3.7, -2.5, 0.02))
+ax_FR.set_title("FR instru")
+ax_FR.legend()
+fig.savefig('../../FR_instru_01_boostrap_beta_distribution.png', dpi=150)
+"""

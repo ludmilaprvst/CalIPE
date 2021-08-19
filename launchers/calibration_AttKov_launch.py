@@ -4,39 +4,71 @@ Created on Wed Jul 21 11:50:57 2021
 
 @author: PROVOST-LUD
 """
-from prepa_data import prepare_input4calibration
-from combinaison_calib import calib_attBeta_Kov
-from attKov_onedataset import Kovbeta_onedataset
+import sys
+sys.path.append('../calib_fc')
+sys.path.append('../postprocessing_fc')
+
+#from prepa_data import prepare_input4calibration
+#from combinaison_calib import calib_attBeta_Kov
+from attKov_onedataset import Kovbeta_onedataset, Kovbetagamma_onedataset
 from create_subsets import same_values_2array
 import numpy as np
 import pandas as pd
-import sys
+
 import os
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
-obsdata_name = '../Data/ObsCalibration_Fr_Instru02_filtoutsiders.txt'
+# FR_instu
+obsdata_name = '../../Data/ObsData/ObsCalibration_Fr_Instru02_filtoutsiders.txt'
 evtdata_name = 'input_evt_calib_FRinstru_sansAlsace2018.txt'
-subset_folder = '../Data/FR_instru_01/subsets_01'
+subset_folder = '../../Data/FR_instru_01/subsets_01'
+#subset_folder = '../../Data/FR_instru_01/bootstrap_1evt_FRinstru'
+evtcalib_folder = '../../Data/FR_instru_01/'
+outputfolder = '../../Outputs/FR_instru_01/Subsets_01/Beta'
 
-obsdata_name = '../Data/ObsCalibration_BS2006_PROV.txt'
-evtdata_name = 'BS2006_PROV.txt'
-data_folder = '../Data/BS2006/'
-subset_folder = ''
+"""
+# FR_extended
+obsdata_name = '../../Data/ObsData/ObsCalibration_Frextended.txt'
+evtcalib_folder = '../../Data/FR_extended_01/'
+evtdata_name = 'FR_extended_01.txt'
+#subset_folder = '../../Data/FR_extended_01/Subsets_01'
+subset_folder =''
+outputfolder = '../../Outputs/FR_extended_01/BetaGamma/basicdb'
+"""
+"""
+# FR_extended run by regions
+obsdata_name = '../../Data/ObsData/ObsCalibration_Frextended.txt'
+evtcalib_folder = '../../Data/FR_extended_01/'
+evtdata_name = 'FR_extended_01.txt'
+subset_folder = '../../Data/FR_extended_01/Regions_01'
+outputfolder = '../../Outputs/FR_extended_01/Regions_01'
 
-#evtdata_name = '../Data/input_evt_calib_FRinstru_sansAlsace2018_noHlim.txt'
-#obsdata_name = '../Data/Obs2016b.NoScaleConversion.txt'
-#evtdata_name = '../Data/DB_France_1800_25_50_3.txt'
+# FR_extended bootstrap
+obsdata_name = '../../Data/ObsData/ObsCalibration_Frextended.txt'
+evtcalib_folder = '../../Data/FR_extended_01/'
+evtdata_name = 'FR_extended_01.txt'
+subset_folder = '../../Data/FR_extended_01/bootstrap_1evt'
+outputfolder = '../../Outputs/FR_extended_01/bootstrap_1evt'
+"""
 
-regiondata_name = '../Data/region2_FRinstru.txt'
+#obsdata_name = '../Data/ObsCalibration_BS2006_PROV.txt'
+#evtdata_name = 'BS2006_PROV.txt'
+#data_folder = '../Data/BS2006/'
+#subset_folder = ''
+
+
+regiondata_name = '../../Data/Regions/region2_FRinstru.txt'
 binning_type = 'RAVG'
 #♠ponderation = 'Ponderation evt-reg'
-ponderation_list = ['Ponderation evt-uniforme']
-#ponderation_list = ['Ponderation evt-reg']
+ponderation_list = ['Ponderation evt-uniforme', 'Ponderation evt-reg']
+#ponderation_list = ['Ponderation evt-uniforme']
 
-option_gamma = 'Zero'
+option_gamma = False
 
 liste_beta_ini = [-2.0, -2.5, -3.0, -3.5, -4.0, -4.5, -5.0]
-#liste_beta_ini = [-2.5]
+#liste_gamma_ini = [0, -0.01, -0.001]
+#liste_beta_ini = [-3.0, -3.5, -4.0]
+#liste_beta_ini = [-3.5]
 
 if not subset_folder == '':
     liste_subset = pd.read_excel(subset_folder +'/dataset_list.xlsx')
@@ -44,45 +76,54 @@ if not subset_folder == '':
     liste_subset = np.insert(liste_subset, 0, evtdata_name)
     for subset in liste_subset:
         if subset == evtdata_name:
-            complete_subset = data_folder + subset
+            complete_subset = evtcalib_folder + subset
         else:
-            complete_subset = subset_folder + '/'+subset + '.csv'
+            complete_subset = evtcalib_folder + subset_folder + '/'+subset + '.csv'
         print(complete_subset)
         print(os.path.isfile(complete_subset))
         if not os.path.isfile(complete_subset):
             print('No ' + complete_subset + ' exists')
         else:
-            basedataset = pd.read_csv(data_folder + evtdata_name, sep=';')
+            basedataset = pd.read_csv(evtcalib_folder + evtdata_name, sep=';')
             subsetdataset = pd.read_csv(complete_subset, sep=';')
             same = same_values_2array(basedataset.EVID.values, subsetdataset.EVID.values)
             
-            if same and complete_subset!=data_folder + evtdata_name:
+            if same and complete_subset!= evtcalib_folder + evtdata_name:
                 print(subset + ' has the same events as the base database')
                 continue
             print(subset)
             for ponderation in ponderation_list:
                 print(ponderation)
                 #completeobsdataname = data_folder + obsdata_name
-                Kovbeta_onedataset(complete_subset, obsdata_name,
-                                   outputfolder='../Outputs/FR_instru_01/Subsets_01',
-                                   liste_beta_ini=liste_beta_ini,
-                                   ponderation=ponderation,
-                                   binning_type=binning_type,
-                                   regiondata_name=regiondata_name,
-                                   NminIter=3, NmaxIter=50)
+                if option_gamma:
+                    pass
+                else:
+                    Kovbeta_onedataset(complete_subset, obsdata_name,
+                                       outputfolder=outputfolder,
+                                       liste_beta_ini=liste_beta_ini,
+                                       ponderation=ponderation,
+                                       binning_type=binning_type,
+                                       regiondata_name=regiondata_name,
+                                       NminIter=3, NmaxIter=50)
 else:
-    complete_subset = data_folder + evtdata_name
+    complete_subset = evtcalib_folder + evtdata_name
     for ponderation in ponderation_list:
         print(ponderation)
         print(complete_subset)
         #completeobsdataname = data_folder + obsdata_name
-        Kovbeta_onedataset(complete_subset, obsdata_name,
-                           outputfolder='../Outputs/BS2006',
-                           liste_beta_ini=liste_beta_ini,
-                           ponderation=ponderation,
-                           binning_type=binning_type,
-                           regiondata_name=regiondata_name,
-                           NminIter=3, NmaxIter=50)
+        if option_gamma:
+            Kovbetagamma_onedataset(complete_subset, obsdata_name, outputfolder,
+                                    liste_beta_ini, liste_gamma_ini, ponderation,
+                                    binning_type, regiondata_name,
+                                    NminIter=3, NmaxIter=50)
+        else:
+            Kovbeta_onedataset(complete_subset, obsdata_name,
+                               outputfolder=outputfolder,
+                               liste_beta_ini=liste_beta_ini,
+                               ponderation=ponderation,
+                               binning_type=binning_type,
+                               regiondata_name=regiondata_name,
+                               NminIter=3, NmaxIter=50)
 
 
 

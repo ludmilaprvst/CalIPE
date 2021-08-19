@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
-
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 def calcul_wrms_evt(obsbin, Beta, I0, depth):
     # pas testee
@@ -31,6 +31,18 @@ def calcul_wrms_beta(obsdata, Beta):
     obsdata.loc[:, 'Wd'] = obsdata.loc[:, 'Wd']/np.sum(obsdata.loc[:, 'Wd'])
     WRMS = np.sum((obsdata.loc[:, 'dI']**2)*obsdata.loc[:, 'Wd'])/np.sum(obsdata.loc[:, 'Wd'])
     return WRMS, obsdata
+
+def apply_IPE(Hypo, Mw, C1, C2, beta, gamma):
+    return C1 + C2*Mw + beta*np.log10(Hypo)+gamma*Hypo
+
+def calcul_wrms_C1C2betagamma(obsdata, C1, C2, Beta, Gamma):
+    obsdata.loc[:, 'Hypo'] = np.sqrt(obsdata.loc[:, 'Depi']**2 + obsdata.loc[:, 'Depth']**2)
+    obsdata.loc[:, 'Ipred'] = obsdata.apply(lambda row: apply_IPE(row['Hypo'], row['Mag'], C1, C2, Beta, Gamma), axis=1)
+    obsdata.loc[:, 'dI'] = np.abs(obsdata.loc[:, 'I'] - obsdata.loc[:, 'Ipred'])
+    obsdata.loc[:, 'Wd'] = 1/obsdata['StdI'].values**2
+    obsdata.loc[:, 'Wd'] = obsdata.loc[:, 'Wd']/np.sum(obsdata.loc[:, 'Wd'])
+    WRMS = np.sum((obsdata.loc[:, 'dI']**2)*obsdata.loc[:, 'Wd'])/np.sum(obsdata.loc[:, 'Wd'])
+    return WRMS
 
 def get_HI0_wrms_space(obsdata, evid, Beta, minH=1, maxH=25, pasH=0.25,
                        minI0=2, maxI0=10,  pasI0=0.1):
@@ -73,7 +85,7 @@ def getI0line_in_HI0wrms_space(obsdata, evid, Beta, minH=1, maxH=25, pasH=0.25,
         line_wrms_ioinv = np.append(line_wrms_ioinv, wrms_i)
     return line_wrms_ioinv
 
-def plot_HI0_wrms_space(ax, hh_plot, io_plot, wrms, minH, maxH, minI0, maxI0,
+def plot_HI0_wrms_space(ax, ax_cb, fig_wrms, hh_plot, io_plot, wrms, minH, maxH, minI0, maxI0,
                         vmin=0, vmax=-99):
     if vmax==-99:
         vmax = np.max(wrms)
@@ -84,21 +96,27 @@ def plot_HI0_wrms_space(ax, hh_plot, io_plot, wrms, minH, maxH, minI0, maxI0,
     points_hhio = np.array(points_hhio)
     zi = griddata(points_hhio, wrms, (xi, yi), method='linear')
     
-    ax.imshow(zi.T, origin='lower', vmin=0, vmax=vmax,
+#    divider = make_axes_locatable(ax)
+#    cax = divider.append_axes('left', size='5%', pad=1)
+    
+    im = ax.imshow(zi.T, origin='lower', vmin=0, vmax=vmax,
               extent=[minH, maxH, minI0, maxI0], aspect='auto',
               interpolation='nearest', cmap=plt.cm.get_cmap('terrain'))
+    fig_wrms.colorbar(im, cax=ax_cb, orientation='horizontal', label='WRMS')
 
 
 def classic_config_wmrsevt(fig_wrms, minI0, maxI0, minH, maxH):
     
-    gs0 = gridspec.GridSpec(2, 2, width_ratios=(7, 2), height_ratios=(2, 7))
+    gs0 = gridspec.GridSpec(3, 2, width_ratios=(7, 2), height_ratios=(2, 7, 0.25),
+                            hspace=0.4)
     
     ax_iohh = fig_wrms.add_subplot(gs0[1, 0])
     ax_iohh.set_ylim([minI0, maxI0])
     ax_iohh.set_xlim([minH, maxH])
     ax_io = fig_wrms.add_subplot(gs0[1, 1], sharey=ax_iohh)
     ax_hh = fig_wrms.add_subplot(gs0[0, 0], sharex=ax_iohh)
-    return ax_iohh, ax_hh, ax_io
+    ax_cb = fig_wrms.add_subplot(gs0[2, :])
+    return ax_iohh, ax_hh, ax_io, ax_cb
 
 def plot_wrms_withHI0lines(fig_wrms,
                            obsdata, evid, Beta,
@@ -119,10 +137,11 @@ def plot_wrms_withHI0lines(fig_wrms,
     I0 = obsbin.Io.values[0]
     depth = obsbin.Depth.values[0]
     
+    #cax = fig_wrms.add_axes([0.27, 0.2, 0.5, 0.05])
+    ax_iohh, ax_hh, ax_io, ax_cb = classic_config_wmrsevt(fig_wrms, minI0, maxI0, minH, maxH)
     
-    ax_iohh, ax_hh, ax_io = classic_config_wmrsevt(fig_wrms, minI0, maxI0, minH, maxH)
-    
-    plot_HI0_wrms_space(ax_iohh, hh_plot, io_plot, wrms, minH, maxH, minI0, maxI0,
+    plot_HI0_wrms_space(ax_iohh, ax_cb, fig_wrms,
+                        hh_plot, io_plot, wrms, minH, maxH, minI0, maxI0,
                         vmin=0, vmax=vmax)
     ax_iohh.axvline(x=depth, color='w')
     ax_iohh.axhline(y=I0, color='w')
@@ -139,6 +158,7 @@ def plot_wrms_withHI0lines(fig_wrms,
     ax_iohh.set_ylabel('Io')
     ax_hh.set_ylabel('WRMS')
     ax_io.set_xlabel('WRMS')
+    
     return ax_iohh, ax_hh, ax_io
 
 def plot_wrms_beta_1evt(ax, obsdata, evid,
@@ -150,7 +170,7 @@ def plot_wrms_beta_1evt(ax, obsdata, evid,
         wrms_i, obsdata = calcul_wrms_beta(obsdata, beta)
         wrms = np.append(wrms, wrms_i)
 
-    ax.plot(np.arange(-2, -5.1, -0.1), wrms, ls=ls, color=color,
+    ax.plot(beta_range, wrms, ls=ls, color=color,
             label=str(evid))
     ax.set_xlabel('BETA')
     ax.set_ylabel('WRMS')

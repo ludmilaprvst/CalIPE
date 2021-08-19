@@ -9,9 +9,9 @@ import pandas as pd
 from create_subsets import create_bootstrap_notrandom
 from create_subsets import create_subsets
 
-basic_db_name = '../Data/FR_instru_01_PYREST/FRinstru_PYREST_sansAlsace2018.txt'
-obsdata_name = '../Data/ObsCalibration_Fr_Instru02_filtoutsiders.txt'
-subset_folder = '../Data/FR_instru_01_PYREST'
+basic_db_name = '../../Data/FR_extended_01/FR_extended_01.txt'
+obsdata_name = '../../Data/DataObs/ObsCalibration_Frextended.txt'
+subset_folder = '../../Data/FR_extended_01'
 #criteria = create_basicdb_criteria(basic_db_name, obsdata_name,
 #                            binning_type='RAVG',
 #                            outputfolder='',

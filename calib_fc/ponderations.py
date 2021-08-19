@@ -41,6 +41,99 @@ def evt_weights(obsbin_plus, option_ponderation):
         print(option_ponderation)
     return obsbin_plus
 
+
+def evt_weights_C1C2(obsbin_plus, option_ponderation):
+    """
+    Function that attribute a weight to the intensity data
+    :param obsbin_plus:dataframe with the binned intensity data for all calibration earthquakes.
+                        This dataframe should at least have have the following
+                        columns : 'Mag', 'StdM' and 'EVID' 
+                        which are respectively the binned intensity, the associated standard deviation,
+                        the earthquake ID and the region ID in which the earthquake
+                        is located.
+    :param option_ponderation: type of weighting whished. Possible values:
+                                'Ponderation evt-uniforme',
+                               'Ponderation evt-stdM', 'Ponderation mag-class'
+    :type obsbin_plus: pandas.DataFrame
+    :type option_ponderation: str
+    
+    :return: a completed obsbin_plus DataFrame, with a eqStdM column that contains
+             the associated inverse square root of the weights
+    """
+    if option_ponderation == 'Ponderation evt-uniforme':
+        obsbin_plus = C1C2_ponderation_evt_uniforme(obsbin_plus)
+    elif option_ponderation == 'Ponderation evt-stdM':
+        obsbin_plus = C1C2_ponderation_evt_sdtM(obsbin_plus)
+    elif option_ponderation == 'Ponderation mag_class':
+        obsbin_plus = C1C2_ponderation_mag_class(obsbin_plus)
+    else:
+        print('No such ponderation option:')
+        print(option_ponderation)
+    return obsbin_plus
+
+def C1C2_ponderation_evt_uniforme(obsbin_plus):
+    """
+    eqStdM column will be meaned by EVID before being used for C1/C2 inversion
+    """
+    liste_evt = np.unique(obsbin_plus.EVID.values)
+    poids = 1/len(liste_evt)
+    eqStdM = np.sqrt(1/poids)
+    obsbin_plus.loc[:, 'eqStdM'] = eqStdM
+    return obsbin_plus
+
+def C1C2_ponderation_evt_sdtM(obsbin_plus):
+    """
+    eqStdM column will be meaned by EVID before being used for C1/C2 inversion:
+        only one data per earthquake is used for C1/C2 inversion
+    """
+    liste_evt = np.unique(obsbin_plus.EVID.values)
+    liste_poidsM = []
+    for evid in liste_evt:
+        poids = 1/(obsbin_plus[obsbin_plus.EVID==evid]['StdM'].values[0]**2)
+        min_poids = 1/0.1
+        poids = np.max([min_poids, poids])
+        #eqStdM = np.sqrt(1/poids)
+        #print(evid, poids,eqStdM )
+        obsbin_plus.loc[obsbin_plus.EVID==evid, 'poids'] = poids
+        liste_poidsM.append(poids)
+        
+    obsbin_plus.loc[:, 'poids'] = obsbin_plus.loc[:, 'poids']/np.sum(liste_poidsM)
+    obsbin_plus.loc[:, 'eqStdM'] = np.sqrt(1/obsbin_plus.loc[:, 'poids'])
+    return obsbin_plus
+
+def C1C2_ponderation_mag_class(obsbin_plus):
+    """
+    eqStdM column will be meaned by EVID before being used for C1/C2 inversion:
+        only one data per earthquake is used for C1/C2 inversion
+    Bin of 0.5 magnitude unit width
+    """
+    liste_evt = np.unique(obsbin_plus.EVID.values)
+    for evid in liste_evt:
+        poids = 1/(obsbin_plus[obsbin_plus.EVID==evid]['StdM'].values[0]**2)
+        min_poids = 1/0.1
+        poids = np.max([min_poids, poids])
+        
+        obsbin_plus.loc[obsbin_plus.EVID==evid, 'poids_indiv'] = poids
+    minMag = obsbin_plus.Mag.min()
+    maxMag = obsbin_plus.Mag.max()
+    mag_bins = np.arange(minMag, maxMag+0.5, 0.5)
+    obsbin_plus.loc[:,'range1'] = pd.cut(obsbin_plus.Mag, mag_bins, include_lowest=True)
+    mag_bins_df = np.unique( obsbin_plus.range1.values)
+    # Normalisation des StdM par bin de magnitude
+    liste_poids_class = []
+    for bins in mag_bins_df:
+        ind = obsbin_plus.range1==bins
+        obsbin_gp_tmp = obsbin_plus.loc[ind, :].groupby('EVID').mean()
+        obsbin_plus.loc[ind, 'poids_class'] = obsbin_plus.loc[ind, 'poids_indiv']/obsbin_gp_tmp.poids_indiv.sum()
+        obsbin_gp_tmp = obsbin_plus.loc[ind, :].groupby('EVID').mean()
+        #poids_class = obsbin_plus[ind]['poids_class'].values[0]
+        liste_poids_class.append(obsbin_gp_tmp['poids_class'].sum())
+        
+    obsbin_plus.loc[:, 'poids'] = obsbin_plus.loc[:, 'poids_class']/np.sum(liste_poids_class)
+    obsbin_plus.loc[:, 'eqStdM'] = np.sqrt(1/obsbin_plus.poids.values)
+    obsbin_plus.drop(['poids_indiv', 'poids_class', 'poids', 'range1'], axis=1, inplace=True)  
+    return obsbin_plus
+    
 def savename_weights(option_ponderation):
     """
     Function that gives the savename id of the chosen wieghting scheme

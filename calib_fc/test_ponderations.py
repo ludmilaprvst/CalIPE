@@ -11,6 +11,28 @@ import numpy as np
 from ponderations import normaliser_poids_par_evt, Kovatt_ponderation_evt_uniforme
 from ponderations import Kovatt_ponderation_dI, Kovatt_ponderation_evt_reg
 from ponderations import attribute_region, normaliser_par_region
+from ponderations import C1C2_ponderation_evt_uniforme, C1C2_ponderation_evt_sdtM
+from ponderations import C1C2_ponderation_mag_class
+
+def test_C1C2_ponderation_evt_uniforme():
+    test_data = pd.read_excel('../Testpy_dataset/test_poids_C1C2.xlsx')
+    poids = 1/len(test_data)
+    stdeqM = np.sqrt(1/poids)
+    test_data_out = C1C2_ponderation_evt_uniforme(test_data)
+    assert test_data_out.loc[0, 'eqStdM'] == pytest.approx(stdeqM, 0.001)
+    assert test_data_out.loc[1, 'eqStdM'] == pytest.approx(stdeqM, 0.001)
+
+def test_C1C2_ponderation_evt_sdtM():
+    test_data = pd.read_excel('../Testpy_dataset/test_poids_C1C2.xlsx')
+    test_data_out = C1C2_ponderation_evt_sdtM(test_data)
+    for ind, row in test_data.iterrows():
+        assert test_data_out.loc[ind, 'eqStdM'] == pytest.approx(row['evt_eqStdM'], 0.001)
+        
+def test_C1C2_ponderation_mag_class():
+    test_data = pd.read_excel('../Testpy_dataset/test_poids_C1C2.xlsx')
+    test_data_out = C1C2_ponderation_mag_class(test_data)
+    for ind, row in test_data.iterrows():
+        assert test_data_out.loc[ind, 'eqStdM'] == pytest.approx(row['mag_class_stdM'], 0.001)
 
 def test_normaliser_poids_par_evt():
     obsdata = pd.read_csv('../Testpy_dataset/pytest_dataset03_obs.txt')

@@ -1,269 +1,309 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri May 10 15:06:09 2019
+Created on Fri Jul  9 16:23:37 2021
 
-@author: Baize-Funck Amelie
-
-Binning function by intensity level
+@author: PROVOST-LUD
 """
 
+import pandas as pd
 import numpy as np
-import time
-from math import *
-from numba import jit
+import library_bin as libr
 
 
-#@jit
-def RAVG_c(IObs: np.ndarray, Hypo: np.ndarray, QIobs: np.ndarray, I0: np.float,
-           QI0: np.float, depth: np.float, evid: np.int, Ic: np.float, Nbin: np.int):
+Stdobs = {'A':0.5,'B':0.577,'C':0.710,'D':1.0,'I':1.5,'K':2.0}
+ 
+
+
+def ROBS(obsdata, depth, Ic, I0, QI0):
     """
-    Binning function by intensity level
+    Function that bins intensiy data points in intensity class for one earthquake.
+    For each intensity class, the epicentral distance of the intensity data points
+    are meaned (geometric mean).
+    Width of the intensity class : 0.
+    Standard deviation associated to the intensity class is equal to the log. standard
+    deviation of the meaned epicentral distances multiplied by the absolute value
+    of a geometric attenuation coefficient equal to -3.5.
     
-    The function groups intensity data by intensity levels by the geometrical mean
-    of the intensity data points (IDP) of the intensity level. The mean is weighted. 
-    A standard deviation of intensity is computed for each intensity bin, based
-    on the weighted standard deviation of the hypocentral distance mean.
+    :param obsdata: dataframe with the following columns : Iobs, value of the
+                    intensity data point, Depi the associated epicentral intensity,
+                    QIobs the associated quality (A, B or C) and EVID the earthquake ID.
+    :param depth: hypocentral depth of the considered earthquake
+    :param Ic: intensity of completeness of the macroseismic field
+    :param I0: epicentral intensity of the earthquake
+    :param QI0: epicentral intensity quality translated in standard deviation
+    :type obsdata: pandas.DataFrame
+    :type depth: float
+    :type I0: float
+    :type QI0: float
     
-    :param IObs: the intensities values of the IDP
-    :param Hypo: the hypocentral distances of the IDP
-    :param QIobs: quality factors converted into standard deviation associated to the IDP
-    :param I0: epicentral intensity values
-    :param QI0: standard deviation based on quality factor of the epicentral intensity value
-    :param depth: depth of the hypocenter
-    :param evid: id of the earthquake
-    :param Ic: intensity f completeness
-    :return: a table with the intensity bins. First column: id of the earthquake,
-    second column: hypocentral distance of the bin, third column: intensity of the bin,
-    fourth column: epicentral intensity, fifth column: standard deviation of the epicentral intensity,
-    sixth column: intensity standard deviation of the bin, seventh column: hypocentral distance
-    standard deviation of the bin, eighth column: number of data in the bin
+    :return: a pandas.DataFrame with the binned intensity. The columns are:
+             'EVID'  the earthquake ID, 'I' the value of the binned intensity,
+             'Depi' the associated epicentral distance, 'Hypo' the associated
+             hypocentral distance, 'StdLogR' the log standard deviation of the
+             epicentral geometric mean, 'StdI' the standard deviation associated
+             to the binned intensity value, 'Io' the epicentral intensity,
+             'Io_std' the epicentral intensity standard deviation and 'Ndata' the
+             number of intensity data point used compute the intensity bin.
     """
+    #print(obsdata.EVID.values[0])
+    #print(obsdata.EVID.values[0])
+    #print(Ic)
+    obsdata = obsdata[obsdata.Iobs>=Ic]
+    obsdata['Depi'].replace(0, 0.5, inplace=True)
+    #print(obsdata.EVID.values[0])
+    obsdata.loc[:, 'poids'] = obsdata.apply(lambda row: 1/Stdobs[row['QIobs']]**2, axis=1)
+    obsdata.loc[:, 'LogDepi'] = obsdata.apply(lambda row: np.log10(row['Depi']), axis=1)
     
-    ClassWidth = 0.5
-    MinDataPerClass = 1.0
-    dI = 0.5
-    compt = 0
-    IntenObsMin = min_ndarray_jit(IObs)
-    IntenObsMax = max_ndarray_jit(IObs)
+    grouped_byIbin = obsdata.groupby('Iobs')
+    wm = lambda x: np.average(x, weights=obsdata.loc[x.index, "poids"])
+    varwm = lambda x: np.sum(obsdata.loc[x.index, "poids"]*(np.average(x, weights=obsdata.loc[x.index, "poids"]) - x)**2)/np.sum(obsdata.loc[x.index, "poids"])
+    obsbin = grouped_byIbin.agg({'LogDepi':[("RAVG", wm), ("VarLogR", varwm)],
+                                'EVID': [('Ndata', 'count')]})
+    obsbin.columns = obsbin.columns.get_level_values(1)
+    obsbin.reset_index(inplace=True)
+    obsbin.loc[:, 'EVID'] = obsdata.EVID.values[0]
+    obsbin.loc[:, 'I0'] = I0
+    obsbin.loc[:, 'QI0'] = QI0
+    obsbin.loc[:, 'Depi'] = obsbin.apply(lambda row: 10**row['RAVG'], axis=1)
+    obsbin.loc[:, 'Hypo'] = obsbin.apply(lambda row: np.sqrt(row['Depi']**2+depth**2), axis=1)
+    obsbin.loc[:, 'StdLogR'] = obsbin.apply(lambda row: np.sqrt(row['VarLogR']), axis=1)
+    obsbin.loc[:, 'StdI_data'] = obsbin.apply(lambda row: np.abs(-3.5)*row['StdLogR'], axis=1)
+    obsbin.loc[:, 'StdI_min'] = obsbin.apply(lambda row: Stdobs['C']/np.sqrt(row['Ndata']), axis=1)
+    obsbin.loc[:, 'StdI'] = obsbin.apply(lambda row: np.max([row['StdI_data'], row['StdI_min']]), axis=1)
     
-    if Ic < 12:
-        IbinMin = max([IntenObsMin, Ic])
-    else:
-        IbinMin = max([IntenObsMin, 1])
-    IbinMax =  max([IntenObsMax, I0])
-    Intensity_range = np.arange(IbinMax, IbinMin-dI, -dI)  
-    Sortie = np.zeros((Intensity_range.shape[0], 8))
-
-    for ii in range(Intensity_range.shape[0]):
-        Intensity = Intensity_range[ii]
-        IMin = Intensity - ClassWidth/2.
-        IMax = Intensity + ClassWidth/2.
-        index_temp = where_ndarray_jit(IObs, IMin, IMax)
-        if len(index_temp) >= MinDataPerClass:
-            QIobstemp = 1./QIobs[index_temp]
-            Hypotemp = Hypo[index_temp]
-            Hypotemp[Hypotemp ==0] = 0.1
-            Iobstemp = IObs[index_temp]
-            poids = QIobstemp**2
-            LogR = np.log10(Hypotemp)
-            Iavg = average_ndarray_jit(Iobstemp, poids)            
-            Ravg = average_ndarray_jit(LogR, poids)
-            StdlogR = sum(poids*((LogR-Ravg)**2))
-            StdlogR = np.sqrt((StdlogR/sum(poids)))
-            Ravg = 10**Ravg
-            MinStdI = 0.710/np.sqrt(len(index_temp))
-            StdI = abs(-3.5)*StdlogR
-            StdI = np.max([StdI,MinStdI])
-            if StdI == 0:
-                StdI = 0.0001
-            if compt ==0:
-                Sortie[compt] = [evid, Ravg, Iavg, I0, QI0, StdI, StdlogR, len(index_temp)]
-            elif (compt > 0):
-                if (abs(np.log10(Sortie[compt-1][1]/Ravg)) >= 0.02) or (abs(Sortie[compt-1][2] - Iavg) >= 0.1):
-                    Sortie[compt] = [evid, Ravg, Iavg, I0, QI0, StdI, StdlogR, len(index_temp)]
-            compt += 1
-    return Sortie
+    obsbin = obsbin[['EVID', 'Iobs', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'I0', 'QI0', 'Ndata']]
+    obsbin.columns = ['EVID', 'I', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'Io', 'Io_std', 'Ndata']
+    return obsbin.astype(np.float64)
 
 
-@jit
-def RAVG_c_without(IObs: np.ndarray, Hypo: np.ndarray, QIobs: np.ndarray, I0: np.float, QI0: np.float, depth: np.float, evid: np.int, Ic: np.float, Nbin: np.int):
+def RAVG(obsdata, depth, Ic, I0, QI0):
+    """
+    Function that bins intensiy data points in intensity class for one earthquake.
+    For each intensity class, the epicentral distance of the intensity data points
+    are meaned (geometric mean).
+    Width of the intensity class : 1.
+    Standard deviation associated to the intensity class is equal to the log. standard
+    deviation of the meaned epicentral distances multiplied by the absolute value
+    of a geometric attenuation coefficient equal to -3.5.
     
-    ClassWidth = 0.5
-    MinDataPerClass = 1.0
-    dI = 0.5
-    compt = 0
-    IntenObsMin = np.min(IObs)
-    IntenObsMax = np.max(IObs)
-    if Ic < 12:
-        iStart = np.max([round(Ic/dI)+1,round(IntenObsMin/dI)+1])
-    else:
-        iStart = np.max([1,round(IntenObsMin/dI)+1])
-    iEnd = np.max([round(IntenObsMax/dI)+1, round(I0/dI)+1])
+    :param obsdata: dataframe with the following columns : Iobs, value of the
+                    intensity data point, Depi the associated epicentral intensity,
+                    QIobs the associated quality (A, B or C) and EVID the earthquake ID.
+    :param depth: hypocentral depth of the considered earthquake
+    :param Ic: intensity of completeness of the macroseismic field
+    :param I0: epicentral intensity of the earthquake
+    :param QI0: epicentral intensity quality translated in standard deviation
+    :type obsdata: pandas.DataFrame
+    :type depth: float
+    :type I0: float
+    :type QI0: float
     
-    Sortie = np.zeros((len(np.arange(iStart,iEnd+1,1)),8))
-    for ii in np.arange(iStart,iEnd+1,1) [::-1]:
-        Intensity = (ii-1)*dI
-        IMin = Intensity - ClassWidth/2.
-        IMax = Intensity + ClassWidth/2.
-        index_temp = np.where((IObs>=IMin) & (IObs<=IMax))
-        if len(index_temp[0]) >= MinDataPerClass:
-            QIobstemp = 1./QIobs[index_temp[0]]
-            Hypotemp = Hypo[index_temp[0]]
-            Hypotemp[Hypotemp ==0] = 0.1
-            Iobstemp = IObs[index_temp[0]]
-            poids = QIobstemp**2
-            LogR = np.log10(Hypotemp)
-            Iavg = np.average(Iobstemp,weights=poids)
-            Ravg = np.average(LogR,weights=poids)
-            StdlogR = sum(poids*((LogR-Ravg)**2))
+    :return: a pandas.DataFrame with the binned intensity. The columns are:
+             'EVID'  the earthquake ID, 'I' the value of the binned intensity,
+             'Depi' the associated epicentral distance, 'Hypo' the associated
+             hypocentral distance, 'StdLogR' the log standard deviation of the
+             epicentral geometric mean, 'StdI' the standard deviation associated
+             to the binned intensity value, 'Io' the epicentral intensity,
+             'Io_std' the epicentral intensity standard deviation and 'Ndata' the
+             number of intensity data point used compute the intensity bin.
+    """
+    obsdata = obsdata[obsdata.Iobs>=Ic]
+    obsdata['Depi'].replace(0, 0.5, inplace=True)
+    colonnes_bin = ['EVID', 'I', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'Io', 'Io_std', 'Ndata']
+    obsdata.loc[:, 'poids'] = obsdata.apply(lambda row: 1/Stdobs[row['QIobs']]**2, axis=1)
+    Iclass = np.unique(obsdata.Iobs.values)
+    #Iclass = Iclass[Iclass>=Ic]
+    class_width = 1
+    obsbin = pd.DataFrame(columns=colonnes_bin)
+    EVID = obsdata.EVID.values[0]
+    for compt, Ibin in enumerate(Iclass):
+        if compt == 0:
+            condition = np.logical_and(obsdata.Iobs>=Ibin, obsdata.Iobs<=Ibin+class_width/2)
+        else:
+            condition = np.logical_and(obsdata.Iobs>=Ibin-class_width/2, obsdata.Iobs<=Ibin+class_width/2)
+        tmp = obsdata[condition]
+        Ndata = len(tmp)
+        tmp.loc[:, 'LogDepi'] = tmp.apply(lambda row: np.log10(row['Depi']), axis=1)
+        IAVG =  np.average(tmp.Iobs.values, weights=tmp.poids.values)
+        RAVG = np.average(tmp.LogDepi.values, weights=tmp.poids.values)
+        VarLogR = np.average((tmp.LogDepi.values-RAVG)**2, weights=tmp.poids.values)
+        StdLogR = np.sqrt(VarLogR)
+        StdI_data = np.abs(-3.5)*StdLogR
+        StdI_min = Stdobs['C']/np.sqrt(Ndata)
+        StdI = max([StdI_data, StdI_min])
+        Depi = 10**RAVG
+        Hypo = np.sqrt(Depi**2+depth**2)
+        obsbin.loc[compt, :] = [EVID, IAVG, Depi, Hypo, StdLogR, StdI, I0, QI0, Ndata]
+    return obsbin.astype(np.float64)
 
-            StdlogR = np.sqrt((StdlogR/sum(poids)))
-            Ravg = 10**Ravg
-            MinStdI = 0.710/np.sqrt(len(index_temp[0]))
-            StdI = abs(-3.5)*StdlogR
-            StdI = np.max([StdI,MinStdI])
-            if StdI == 0:
-                StdI = 0.0001
-            if (abs(np.log10(Sortie[compt-1][1]/Ravg)) >= 0.02) or (abs(Sortie[compt-1][2] - Iavg) >= 0.1):
-                Sortie[compt] = [evid, Ravg, Iavg, I0, QI0, StdI, StdlogR, len(index_temp[0])]
-            compt += 1
-    return Sortie
+def weighted_percentile(data, percents, weights=None):
+    ''' percents in units of 1%
+        weights specifies the frequency (count) of data.
+    '''
+    if weights is None:
+        return np.percentile(data, percents)
+    ind = np.argsort(data)
+    d=data[ind]
+    w=weights[ind]
+    p=1.*w.cumsum()/w.sum()*100
+    y=np.interp(percents, p, d)
+    return y
 
-
-
-
-@jit
-def aproxi(number):
-    return round(number)
-
-@jit
-def somme_jit(narray: np.ndarray):
-    return sum(narray)
-
-@jit
-def floaty(a):
-    return float(a)
-
-@jit
-def taille(narray):
-    return len(narray)
-
-@jit
-def absolute(p):
-    return abs(p)
-
-@jit 
-def maxJ(narray: np.ndarray):
-    return np.max(narray)
-
-@jit
-def Distance_c(depth: int, Depi: np.ndarray):
-    Hypo = []
-    i = 0
-    while i < Depi.size:
-        Hypo.append(np.sqrt(Depi[i]**2 + depth**2))
-        i += 1
-    return np.array(Hypo)
-
-@jit
-def min_int_jit(a: int, b: int):
-    if a < b:
-        return a
-    return b
+def RP50(obsdata, depth, Ic, I0, QI0):
     
-@jit
-def max_int_jit(a: int, b: int):
-    if a > b:
-        return a
-    return b
-
-@jit
-def min_ndarray_jit(narray: np.ndarray):
-    if narray.size == 0:
-        return np.NaN
-    i = 0
-    imax = narray[0]
-    while i < narray.size:
-        element = narray[i]
-        if imax > element:
-            imax = element
-        i+=1
-    return imax
-
-@jit
-def max_ndarray_jit(narray: np.ndarray):
-    if narray.size == 0:
-        return np.NaN
-    i = 0
-    imax = narray[0]
-    while i < narray.size:
-        element = narray[i]
-        if imax < element:
-            imax = element
-        i+=1
-    return imax
-
-@jit
-def where_ndarray_jit(narray: np.ndarray, IMin, IMax):
-    new_array = []
-    i = 0
-    while i < narray.size:
-        IObs = narray[i]
-        if ((IObs>=IMin) & (IObs<=IMax)):
-            new_array.append(i)
-        i += 1
-    new = np.array(new_array)
-    return new
-
-@jit
-def average_ndarray_jit(narray: np.ndarray, weight: np.ndarray):
-    summe=0
-    scoef=0
-    i=0
-    if not narray.size == weight.size:
-        return np.NaN
-    while i < narray.size:
-        summe += narray[i] * weight[i]
-        scoef += weight[i]
-        i += 1
-    return summe / scoef
-
-
-class Timer(object):
-    def start(self):
-        if hasattr(self, 'interval'):
-            del self.interval
-        self.start_time = time.time()
-        
-    def stop(self):
-        if hasattr(self, 'start_time'):
-            self.interval = time.time() - self.start_time
-            del self.start_time
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    obsdata = obsdata[obsdata.Iobs>=Ic]
+    obsdata['Depi'].replace(0, 0.5, inplace=True)
+    #print(obsdata.EVID.values[0])
+    obsdata.loc[:, 'poids'] = obsdata.apply(lambda row: 1/Stdobs[row['QIobs']]**2, axis=1)
+    obsdata.loc[:, 'LogDepi'] = obsdata.apply(lambda row: np.log10(row['Depi']), axis=1)
     
+    grouped_byIbin = obsdata.groupby('Iobs')
+    w50 = lambda x: weighted_percentile(x.values, 50, weights=obsdata.loc[x.index, "poids"].values)
+    w16 = lambda x: weighted_percentile(x.values, 16, weights=obsdata.loc[x.index, "poids"].values)
+    w84 = lambda x: weighted_percentile(x.values, 84, weights=obsdata.loc[x.index, "poids"].values)
+    obsbin = grouped_byIbin.agg({'LogDepi':[("RAVG", w50), ("w16", w16), ("w84", w84)],
+                                'EVID': [('Ndata', 'count')]})
+    obsbin.columns = obsbin.columns.get_level_values(1)
+    obsbin.reset_index(inplace=True)
+    obsbin.loc[:, 'StdLogR'] = (obsbin.loc[:, 'w84'] - obsbin.loc[:, 'w16'])/2
+    obsbin.loc[:, 'EVID'] = obsdata.EVID.values[0]
+    obsbin.loc[:, 'I0'] = I0
+    obsbin.loc[:, 'QI0'] = QI0
+    obsbin.loc[:, 'Depi'] = obsbin.apply(lambda row: 10**row['RAVG'], axis=1)
+    obsbin.loc[:, 'Hypo'] = obsbin.apply(lambda row: np.sqrt(row['Depi']**2+depth**2), axis=1)
+    obsbin.loc[:, 'StdI_data'] = obsbin.apply(lambda row: np.abs(-3.5)*row['StdLogR'], axis=1)
+    obsbin.loc[:, 'StdI_min'] = obsbin.apply(lambda row: Stdobs['C']/np.sqrt(row['Ndata']), axis=1)
+    obsbin.loc[:, 'StdI'] = obsbin.apply(lambda row: np.max([row['StdI_data'], row['StdI_min']]), axis=1)
     
+    obsbin = obsbin[['EVID', 'Iobs', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'I0', 'QI0', 'Ndata']]
+    obsbin.columns = ['EVID', 'I', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'Io', 'Io_std', 'Ndata']
+    return obsbin.astype(np.float64)
+
+
+def RP84(obsdata, depth, Ic, I0, QI0):
     
+    obsdata = obsdata[obsdata.Iobs>=Ic]
+    obsdata['Depi'].replace(0, 0.5, inplace=True)
+    #print(obsdata.EVID.values[0])
+    obsdata.loc[:, 'poids'] = obsdata.apply(lambda row: 1/Stdobs[row['QIobs']]**2, axis=1)
+    obsdata.loc[:, 'LogDepi'] = obsdata.apply(lambda row: np.log10(row['Depi']), axis=1)
     
+    grouped_byIbin = obsdata.groupby('Iobs')
+    w84 = lambda x: weighted_percentile(x.values, 84, weights=obsdata.loc[x.index, "poids"].values)
+    w50 = lambda x: weighted_percentile(x.values, 50, weights=obsdata.loc[x.index, "poids"].values)
+    w98 = lambda x: weighted_percentile(x.values, 98, weights=obsdata.loc[x.index, "poids"].values)
+    obsbin = grouped_byIbin.agg({'LogDepi':[("RAVG", w84), ("w50", w50), ("w98", w98)],
+                                'EVID': [('Ndata', 'count')]})
+    obsbin.columns = obsbin.columns.get_level_values(1)
+    obsbin.reset_index(inplace=True)
+    obsbin.loc[:, 'StdLogR'] = (obsbin.loc[:, 'w98'] - obsbin.loc[:, 'w50'])/2
+    obsbin.loc[:, 'EVID'] = obsdata.EVID.values[0]
+    obsbin.loc[:, 'I0'] = I0
+    obsbin.loc[:, 'QI0'] = QI0
+    obsbin.loc[:, 'Depi'] = obsbin.apply(lambda row: 10**row['RAVG'], axis=1)
+    obsbin.loc[:, 'Hypo'] = obsbin.apply(lambda row: np.sqrt(row['Depi']**2+depth**2), axis=1)
+    obsbin.loc[:, 'StdI_data'] = obsbin.apply(lambda row: np.abs(-3.5)*row['StdLogR'], axis=1)
+    obsbin.loc[:, 'StdI_min'] = obsbin.apply(lambda row: Stdobs['C']/np.sqrt(row['Ndata']), axis=1)
+    obsbin.loc[:, 'StdI'] = obsbin.apply(lambda row: np.max([row['StdI_data'], row['StdI_min']]), axis=1)
     
+    obsbin = obsbin[['EVID', 'Iobs', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'I0', 'QI0', 'Ndata']]
+    obsbin.columns = ['EVID', 'I', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'Io', 'Io_std', 'Ndata']
+    return obsbin.astype(np.float64)
+
+def RF50(obsdata, depth, Ic, I0, QI0):
+    obsdata = obsdata[obsdata.Iobs>=Ic]
+    obsdata['Depi'].replace(0, 0.5, inplace=True)
+    #print(obsdata.EVID.values[0])
+    obsdata.loc[:, 'poids'] = obsdata.apply(lambda row: 1/Stdobs[row['QIobs']]**2, axis=1)
+    obsdata.loc[:, 'poids2'] = obsdata.apply(lambda row: row['poids']**2, axis=1)
+    obsdata.loc[:, 'LogDepi'] = obsdata.apply(lambda row: np.log10(row['Depi']), axis=1)
+    grouped_byIbin = obsdata.groupby('Iobs')
+    w50 = lambda x: weighted_percentile(x.values, 50, weights=obsdata.loc[x.index, "poids"].values)
+    w16 = lambda x: weighted_percentile(x.values, 16, weights=obsdata.loc[x.index, "poids"].values)
+    w84 = lambda x: weighted_percentile(x.values, 84, weights=obsdata.loc[x.index, "poids"].values)
+    obsbin = grouped_byIbin.agg({'LogDepi':[("RAVG", w50), ("w16", w16), ("w84", w84)],
+                                'EVID': [('Ndata', 'count')], 'poids2':[('w2', 'sum')]})
+    obsbin.columns = obsbin.columns.get_level_values(1)
+    obsbin.reset_index(inplace=True)
+    obsbin.loc[:, 'StdLogR'] = (obsbin.loc[:, 'w84'] - obsbin.loc[:, 'w16'])/2
+    obsbin.loc[:, 'EVID'] = obsdata.EVID.values[0]
+    obsbin.loc[:, 'I0'] = I0
+    obsbin.loc[:, 'QI0'] = QI0
+    obsbin.loc[:, 'Depi'] = obsbin.apply(lambda row: 10**row['RAVG'], axis=1)
+    obsbin.loc[:, 'Hypo'] = obsbin.apply(lambda row: np.sqrt(row['Depi']**2+depth**2), axis=1)
+    obsbin.loc[:, 'StdI_data'] = obsbin.apply(lambda row: np.abs(-3.5)*row['StdLogR'], axis=1)
+    obsbin.loc[:, 'StdI_min'] = obsbin.apply(lambda row: Stdobs['C']/np.sqrt(row['Ndata']), axis=1)
+    obsbin.loc[:, 'StdI'] = obsbin.apply(lambda row: np.max([row['StdI_data'], row['StdI_min']]), axis=1)
+    obsbin.loc[:, 'W'] = np.sqrt(obsbin.loc[:, 'Ndata'])*obsbin.loc[:, 'w2']*obsbin.loc[:, 'RAVG']
+    obsbin = obsbin[obsbin.W==obsbin.W.max()]
+    obsbin = obsbin[['EVID', 'Iobs', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'I0', 'QI0', 'Ndata']]
+    obsbin.columns = ['EVID', 'I', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'Io', 'Io_std', 'Ndata']
+    obsbin.loc[0, :] = [obsdata.EVID.values[0], I0, 0, depth, -1, QI0, I0, QI0, 0]
+    return obsbin.astype(np.float64)
+
+def RF84(obsdata, depth, Ic, I0, QI0):
+    obsdata = obsdata[obsdata.Iobs>=Ic]
+    obsdata['Depi'].replace(0, 0.5, inplace=True)
+    #print(obsdata.EVID.values[0])
+    obsdata.loc[:, 'poids'] = obsdata.apply(lambda row: 1/Stdobs[row['QIobs']]**2, axis=1)
+    obsdata.loc[:, 'poids2'] = obsdata.apply(lambda row: row['poids']**2, axis=1)
+    obsdata.loc[:, 'LogDepi'] = obsdata.apply(lambda row: np.log10(row['Depi']), axis=1)
+    grouped_byIbin = obsdata.groupby('Iobs')
+    w84 = lambda x: weighted_percentile(x.values, 84, weights=obsdata.loc[x.index, "poids"].values)
+    w50 = lambda x: weighted_percentile(x.values, 50, weights=obsdata.loc[x.index, "poids"].values)
+    w98 = lambda x: weighted_percentile(x.values, 98, weights=obsdata.loc[x.index, "poids"].values)
+    obsbin = grouped_byIbin.agg({'LogDepi':[("RAVG", w84), ("w50", w50), ("w98", w98)],
+                                'EVID': [('Ndata', 'count')], 'poids2':[('w2', 'sum')]})
+    obsbin.columns = obsbin.columns.get_level_values(1)
+    obsbin.reset_index(inplace=True)
+    obsbin.loc[:, 'StdLogR'] = (obsbin.loc[:, 'w98'] - obsbin.loc[:, 'w50'])/2
+    obsbin.loc[:, 'EVID'] = obsdata.EVID.values[0]
+    obsbin.loc[:, 'I0'] = I0
+    obsbin.loc[:, 'QI0'] = QI0
+    obsbin.loc[:, 'Depi'] = obsbin.apply(lambda row: 10**row['RAVG'], axis=1)
+    obsbin.loc[:, 'Hypo'] = obsbin.apply(lambda row: np.sqrt(row['Depi']**2+depth**2), axis=1)
+    obsbin.loc[:, 'StdI_data'] = obsbin.apply(lambda row: np.abs(-3.5)*row['StdLogR'], axis=1)
+    obsbin.loc[:, 'StdI_min'] = obsbin.apply(lambda row: Stdobs['C']/np.sqrt(row['Ndata']), axis=1)
+    obsbin.loc[:, 'StdI'] = obsbin.apply(lambda row: np.max([row['StdI_data'], row['StdI_min']]), axis=1)
+    obsbin.loc[:, 'W'] = np.sqrt(obsbin.loc[:, 'Ndata'])*obsbin.loc[:, 'w2']*obsbin.loc[:, 'RAVG']
+    obsbin = obsbin[obsbin.W==obsbin.W.max()]
+    obsbin = obsbin[['EVID', 'Iobs', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'I0', 'QI0', 'Ndata']]
+    obsbin.columns = ['EVID', 'I', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'Io', 'Io_std', 'Ndata']
+    obsbin.loc[0, :] = [obsdata.EVID.values[0], I0, 0, depth, -1, QI0, I0, QI0, 0]
+    return obsbin.astype(np.float64)
     
-    
-    
-    
-    
-    
-    
-    
+#def Binning_Obs(obsdata, depth, Ic, I0, QI0, evid):
+#    # Old version for binning RAVG
+#        Stdobs = {'A':0.5,'B':0.577,'C':0.710,'D':1.0,'I':1.5,'K':2.0}
+#        colonnes_binn = ['EVID','Hypo','I','Io','QIo','StdI','StdLogR','Ndata']
+#        Depi = []
+#        for epi in obsdata['Depi'].values:
+#            Depi.append(epi)
+#        Depi = np.array(Depi)
+#        
+#        Hypo = libr.Distance_c(depth, Depi)
+#        IOBS = []
+#        for iob in obsdata['Iobs'].values:
+#            IOBS.append(iob)
+#        Iobs = np.array(IOBS)
+#
+#        QIOBS = []
+#        for qiob in obsdata['QIobs'].values:
+#            QIOBS.append(Stdobs[qiob])
+#        QIobs=np.array(QIOBS)
+#
+#        depth = float(depth)
+#        evid = int(evid)
+#        Ic = float(Ic)
+#        SortieBinn = libr.RAVG_c(Iobs,Hypo,QIobs,I0,QI0,depth,evid, Ic,30)
+#        ObsBinn = pd.DataFrame(data=SortieBinn, columns=colonnes_binn)
+#        ObsBinn = ObsBinn[ObsBinn['EVID'] != 0]
+#        return ObsBinn
+
+#obsdata = pd.read_csv('../Testpy_dataset/obs_test.txt', sep='\t')
+#I0 = 8
+#QI0 = 0.5
+#Ic = 6
+#depth = 0
+
+# test vitesse RAVG : 0.026 s Binning_Obs : 0.012 s

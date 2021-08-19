@@ -6,7 +6,7 @@ Created on Tue Jun 22 16:41:31 2021
 """
 import numpy as np
 import pandas as pd
-import library_bin_new as libr
+import library_bin as libr
 from tkinter import messagebox as tkm
 from mpl_toolkits.basemap import pyproj
 
@@ -22,6 +22,7 @@ class Evt():
     def build(self, evid):
         # Standard deviation of epicentral intensity based on quality factors
         Std ={'A':0.5,'B':0.5,'C':0.5,'E':0.750, 'K':0.5}
+        #Std ={'A':0.25,'B':0.375,'C':0.5,'E':0.750, 'K':0.5}
         
         self.evid = evid
         try:
@@ -68,6 +69,7 @@ class Evt():
         #print("QPos")
         #print(self.QPos)
         self.Io_ini = EvtFile[EvtFile['EVID']==self.evid]['I0'].values[0]
+        self.I0 = self.Io_ini
         if self.Io_ini < 0 or self.Io_ini > 12:
             tkm.showerror("Error","invalid I0")
             return;
@@ -127,10 +129,20 @@ class Evt():
         
         self.Obsevid = ObsFile[ObsFile['EVID']==self.evid]
     
-    def Binning_Obs(self, depth, Ic, method_bin='RAVG'):
+    def Binning_Obs(self, depth, Ic, method_bin='ROBS'):
         #print(self.Obsevid.head())
         if method_bin == 'RAVG':
             self.ObsBinn = libr.RAVG(self.Obsevid, depth, Ic, self.I0, self.QI0)
+        elif method_bin == 'ROBS':
+            self.ObsBinn = libr.ROBS(self.Obsevid, depth, Ic, self.I0, self.QI0)
+        elif method_bin == 'RP50':
+            self.ObsBinn = libr.RP50(self.Obsevid, depth, Ic, self.I0, self.QI0)
+        elif method_bin == 'RP84':
+            self.ObsBinn = libr.RP84(self.Obsevid, depth, Ic, self.I0, self.QI0)
+        elif method_bin == 'RF50':
+            self.ObsBinn = libr.RF50(self.Obsevid, depth, Ic, self.I0, self.QI0)
+        elif method_bin == 'RF84':
+            self.ObsBinn = libr.RF84(self.Obsevid, depth, Ic, self.I0, self.QI0)
         
     def Binning_Obs_old(self, depth, Ic):
         Stdobs = {'A':0.5,'B':0.577,'C':0.710,'D':1.0,'I':1.5,'K':2.0}
