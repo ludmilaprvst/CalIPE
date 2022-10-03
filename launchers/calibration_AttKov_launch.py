@@ -14,17 +14,27 @@ from attKov_onedataset import Kovbeta_onedataset, Kovbetagamma_onedataset
 from create_subsets import same_values_2array
 import numpy as np
 import pandas as pd
+try:
+    from mpl_toolkits.basemap import pyproj
+except KeyError:
+    import os
+    import conda
+    conda_file_dir = conda.__file__
+    conda_dir = conda_file_dir.split('lib')[0]
+    proj_lib = os.path.join(os.path.join(conda_dir, 'Library\include'), 'proj')
+    os.environ["PROJ_LIB"] = proj_lib
 
 import os
 #import matplotlib.pyplot as plt
 
 # FR_instu
-obsdata_name = '../../Data/ObsData/ObsCalibration_Fr_Instru02_filtoutsiders.txt'
-evtdata_name = 'input_evt_calib_FRinstru_sansAlsace2018.txt'
-subset_folder = '../../Data/FR_instru_01/subsets_01'
+obsdata_name = '../../Data/ObsData/ObsCalibration_Frextended.txt'
+evtdata_name = 'FR_extended_01.txt'
+#subset_folder = '../../Data/FR_instru_01/subsets_01'
+subset_folder = ''
 #subset_folder = '../../Data/FR_instru_01/bootstrap_1evt_FRinstru'
-evtcalib_folder = '../../Data/FR_instru_01/'
-outputfolder = '../../Outputs/FR_instru_01/Subsets_01/Beta'
+evtcalib_folder = '../../Data/FR_extended_01/'
+outputfolder = '../../Outputs/FR_extended_01/Subsets_01/BetaGamma'
 
 """
 # FR_extended
@@ -57,16 +67,17 @@ outputfolder = '../../Outputs/FR_extended_01/bootstrap_1evt'
 #subset_folder = ''
 
 
-regiondata_name = '../../Data/Regions/region2_FRinstru.txt'
-binning_type = 'RAVG'
+#regiondata_name = '../../Data/Regions/region2_FRinstru.txt'
+regiondata_name = ''
+binning_type = 'ROBS'
 #♠ponderation = 'Ponderation evt-reg'
 ponderation_list = ['Ponderation evt-uniforme', 'Ponderation evt-reg']
-#ponderation_list = ['Ponderation evt-uniforme']
+ponderation_list = ['Ponderation evt-uniforme']
 
-option_gamma = False
+option_gamma = True
 
 liste_beta_ini = [-2.0, -2.5, -3.0, -3.5, -4.0, -4.5, -5.0]
-#liste_gamma_ini = [0, -0.01, -0.001]
+liste_gamma_ini = [0, -0.01, -0.001]
 #liste_beta_ini = [-3.0, -3.5, -4.0]
 #liste_beta_ini = [-3.5]
 
@@ -104,7 +115,7 @@ if not subset_folder == '':
                                        ponderation=ponderation,
                                        binning_type=binning_type,
                                        regiondata_name=regiondata_name,
-                                       NminIter=3, NmaxIter=50)
+                                       NminIter=3, NmaxIter=100)
 else:
     complete_subset = evtcalib_folder + evtdata_name
     for ponderation in ponderation_list:
@@ -115,7 +126,7 @@ else:
             Kovbetagamma_onedataset(complete_subset, obsdata_name, outputfolder,
                                     liste_beta_ini, liste_gamma_ini, ponderation,
                                     binning_type, regiondata_name,
-                                    NminIter=3, NmaxIter=50)
+                                    NminIter=3, NmaxIter=100)
         else:
             Kovbeta_onedataset(complete_subset, obsdata_name,
                                outputfolder=outputfolder,
@@ -123,7 +134,7 @@ else:
                                ponderation=ponderation,
                                binning_type=binning_type,
                                regiondata_name=regiondata_name,
-                               NminIter=3, NmaxIter=50)
+                               NminIter=3, NmaxIter=100)
 
 
 

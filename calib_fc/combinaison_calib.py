@@ -10,9 +10,11 @@ import numpy as np
 import WLSIC
 import WLSIC_2
 import statsmodels.formula.api as sm
-from wrms import plot_wrms_withHI0lines, plot_wrms_beta, plot_wrms_beta_1evt
-from wrms import getHline_in_HI0wrms_space, getI0line_in_HI0wrms_space
-from wrms import calcul_wrms_C1C2betagamma
+#import sys
+#sys.path.append('../postprocessing_fc')
+#from wrms import plot_wrms_withHI0lines, plot_wrms_beta, plot_wrms_beta_1evt
+#from wrms import getHline_in_HI0wrms_space, getI0line_in_HI0wrms_space
+#from wrms import calcul_wrms_C1C2betagamma
 from prepa_data import update_XCaCb, add_I0as_datapoint
 import copy
 import matplotlib.pyplot as plt
@@ -93,16 +95,16 @@ def critere_stop2(suivi_beta, suivi_gamma, suivi_depth, suivi_I0,
     :type stop_I0: float
     """
     # pas testee
-    NminIter = 3
-    ConvrateBeta = sum(abs(np.diff(suivi_beta[-3:])))/NminIter
-    ConvrateGamma = sum(abs(np.diff(suivi_gamma[-3:])))/NminIter
+    #NminIter = 3
+    ConvrateBeta = sum(abs(np.diff(suivi_beta[-3:])))/2
+    ConvrateGamma = sum(abs(np.diff(suivi_gamma[-3:])))/2
     ConvrateDepth = 0
     ConvrateI0 = 0
     for evid in suivi_depth.keys():
         last3_depth = suivi_depth[evid][-3:]
         last3_I0 = suivi_I0[evid][-3:]
-        ConvrateDepth = ConvrateDepth + sum(abs(np.diff(last3_depth)))/NminIter
-        ConvrateI0 = ConvrateI0 + sum(abs(np.diff(last3_I0)))/NminIter
+        ConvrateDepth = ConvrateDepth + sum(abs(np.diff(last3_depth)))/2
+        ConvrateI0 = ConvrateI0 + sum(abs(np.diff(last3_I0)))/2
     ConvrateDepth = ConvrateDepth/len(suivi_depth.keys())
     ConvrateI0 = ConvrateI0/len(suivi_depth.keys())
     condition = (ConvrateBeta<=stop_beta) and (ConvrateGamma<=stop_gamma) and (ConvrateDepth<=stop_depth)and(ConvrateI0<=stop_I0)
@@ -169,7 +171,9 @@ def define_ls_color_bydepth(depth, cmap='viridis_r', vmin=2, vmax=20):
     
 
 def calib_attBeta_Kov(liste_evt, ObsBin_plus, beta_ini, 
-                      NminIter=3, NmaxIter=50, suivi_inversion=False,
+                      NminIter=3, NmaxIter=50, stop_beta=0.001, stop_depth=0.05,
+                      stop_I0=0.01,
+                      suivi_inversion=False,
                       dossier_suivi=''):
     """
     Function that inverse iteratively and sequentially depth, epicentral intensity
@@ -231,98 +235,98 @@ def calib_attBeta_Kov(liste_evt, ObsBin_plus, beta_ini,
     ObsBin_plus.loc[:, 'Hmax_ini'] =  ObsBin_plus.loc[:, 'Hmax']
     
     while iteration < NmaxIter:
-        nomfig_base = 'Iteration' + "{:02d}".format(iteration) + '_'
-        if suivi_inversion and iteration in [1, 3, 10]:
-            fig_beta0 = plt.figure(figsize=(6, 6))
+        #◙nomfig_base = 'Iteration' + "{:02d}".format(iteration) + '_'
+        # if suivi_inversion and iteration in [1, 3, 10]:
+        #     fig_beta0 = plt.figure(figsize=(6, 6))
             
-            ax_beta0 = fig_beta0.add_subplot(111)
-            ax_beta0.set_facecolor("Gray")
-            plot_wrms_beta(ax_beta0, ObsBin_plus, liste_evt,
-                           -2, -5, -0.1, color='w')
-            ax_beta0.axvline(x=beta, color='w', ls='--',
-                             label='Initial state')
+        #     ax_beta0 = fig_beta0.add_subplot(111)
+        #     ax_beta0.set_facecolor("Gray")
+        #     plot_wrms_beta(ax_beta0, ObsBin_plus, liste_evt,
+        #                    -2, -5, -0.1, color='w')
+        #     ax_beta0.axvline(x=beta, color='w', ls='--',
+        #                      label='Initial state')
             
         ObsBin_plus, beta = calib_attBeta_Kov_unit(liste_evt, ObsBin_plus, beta)
         #print(beta)
         suivi_beta = np.append(suivi_beta, beta)
-        if suivi_inversion and iteration in [1, 3, 10]:
-            nomfig_base = 'Iteration' + "{:02d}".format(iteration) + '_'
-            plot_wrms_beta(ax_beta0, ObsBin_plus, liste_evt,
-                           -2, -5, -0.1, color='Yellow')
-            ax_beta0.axvline(x=beta, color='Yellow', ls='--',
-                             label='Post inversion state')
-            ax_beta0.legend()
+        # if suivi_inversion and iteration in [1, 3, 10]:
+        #     nomfig_base = 'Iteration' + "{:02d}".format(iteration) + '_'
+        #     plot_wrms_beta(ax_beta0, ObsBin_plus, liste_evt,
+        #                    -2, -5, -0.1, color='Yellow')
+        #     ax_beta0.axvline(x=beta, color='Yellow', ls='--',
+        #                      label='Post inversion state')
+        #     ax_beta0.legend()
             
-            fig_beta_byevt = plt.figure(figsize=(6, 6))
-            ax_betabyevt = fig_beta_byevt.add_subplot(111)
-            #cax = fig_beta_byevt.add_axes([0.27, 0.8, 0.5, 0.05])
-            ax_betabyevt.set_facecolor("Gray")
-            plot_wrms_beta(ax_betabyevt, ObsBin_plus, liste_evt,
-                           -2, -5, -0.1, color='r')
-            for count, evid in enumerate(liste_evt):
-                ls, color = define_ls_color_byevt(count)
-                depth = ObsBin_plus[ObsBin_plus.EVID==evid]['Depth'].values[0]
-                #ls, color, cmap, norm = define_ls_color_bydepth(depth)
+        #     fig_beta_byevt = plt.figure(figsize=(6, 6))
+        #     ax_betabyevt = fig_beta_byevt.add_subplot(111)
+        #     #cax = fig_beta_byevt.add_axes([0.27, 0.8, 0.5, 0.05])
+        #     ax_betabyevt.set_facecolor("Gray")
+        #     plot_wrms_beta(ax_betabyevt, ObsBin_plus, liste_evt,
+        #                    -2, -5, -0.1, color='r')
+        #     for count, evid in enumerate(liste_evt):
+        #         ls, color = define_ls_color_byevt(count)
+        #         depth = ObsBin_plus[ObsBin_plus.EVID==evid]['Depth'].values[0]
+        #         #ls, color, cmap, norm = define_ls_color_bydepth(depth)
                 
-                plot_wrms_beta_1evt(ax_betabyevt, ObsBin_plus, evid,
-                           -2, -5, -0.1, color=color, ls=ls)
+        #         plot_wrms_beta_1evt(ax_betabyevt, ObsBin_plus, evid,
+        #                    -2, -5, -0.1, color=color, ls=ls)
 #            cb1 = mpl.colorbar.ColorbarBase(cax, cmap=cmap,
 #                                norm=norm,
 #                                orientation='horizontal')
 #            cb1.set_label('Depth [km]')
-            ax_betabyevt.axvline(x=beta, color='r', ls='--',
-                             label='Post inversion state')
-            ax_betabyevt.legend(bbox_to_anchor=(1.05, 1), loc='upper left',
-                                borderaxespad=0., facecolor='Gray')
-            fig_beta_byevt.savefig(dossier_suivi + '/' + nomfig_base + 'beta_byevt.png',
-                               bbox_inches='tight')
+            # ax_betabyevt.axvline(x=beta, color='r', ls='--',
+            #                  label='Post inversion state')
+            # ax_betabyevt.legend(bbox_to_anchor=(1.05, 1), loc='upper left',
+            #                     borderaxespad=0., facecolor='Gray')
+            # fig_beta_byevt.savefig(dossier_suivi + '/' + nomfig_base + 'beta_byevt.png',
+            #                    bbox_inches='tight')
             
-            fig_beta0.savefig(dossier_suivi + '/' + nomfig_base + 'beta.png')
-            plt.close(fig_beta_byevt)
-            plt.close(fig_beta0)
+            # fig_beta0.savefig(dossier_suivi + '/' + nomfig_base + 'beta.png')
+            # plt.close(fig_beta_byevt)
+            # plt.close(fig_beta0)
         
-        minH = 1
-        maxH = 25
-        pasH = 0.25
-        minI0 = 2
-        maxI0 = 10
-        pasI0 = 0.1
+        # minH = 1
+        # maxH = 25
+        # pasH = 0.25
+        # minI0 = 2
+        # maxI0 = 10
+        # pasI0 = 0.1
         for evid in liste_evt:
             obsbin = ObsBin_plus[ObsBin_plus.EVID==evid]
             depth = obsbin.Depth.values[0]
             I0 = obsbin.Io.values[0]
             suivi_depth[evid] = np.append(suivi_depth[evid], depth)
             suivi_I0[evid] = np.append(suivi_I0[evid], I0)
-            if (evid in [6, 13, 17, 30]) and suivi_inversion and iteration in [1, 3, 10]:
-                obsdata_tmp = ObsBin_plus[ObsBin_plus.EVID==evid]
-                obsdata_tmpavt = copy.deepcopy(obsdata_tmp)
-                obsdata_tmpavt.loc[:, 'Depth'] = suivi_depth[evid][-2]
-                obsdata_tmpavt.loc[:, 'Io'] = suivi_I0[evid][-2]
-                line_wrms_hinv = getHline_in_HI0wrms_space(ObsBin_plus, evid, suivi_beta[-2],
-                                                           minH, maxH, pasH,
-                                                           minI0, maxI0, pasI0)
-                line_wrms_ioinv = getI0line_in_HI0wrms_space(ObsBin_plus, evid, suivi_beta[-2],
-                                                             minH, maxH, pasH,
-                                                             minI0, maxI0, pasI0)
-                fig_wrms = plt.figure(figsize=(6, 6))
-                ax_iohh, ax_hh, ax_io = plot_wrms_withHI0lines(fig_wrms,
-                                                               obsdata_tmpavt, evid,
-                                                               beta, vmax=2)
-                ax_iohh.axvline(x=suivi_depth[evid][-1], color='Yellow')
-                ax_iohh.axhline(y=suivi_I0[evid][-1], color='Yellow')
-                ax_io.plot(line_wrms_hinv,
-                           np.arange(minI0, maxI0+pasI0, pasI0), color='Yellow')
-                ax_hh.plot(np.arange(minH, maxH+pasH, pasH),
-                           line_wrms_ioinv, color='Yellow')
-                nomfig_base = 'Iteration' + "{:02d}".format(iteration) + '_evt' + "{:02d}".format(evid)
-                fig_wrms.savefig(dossier_suivi + '/' + nomfig_base + 'HI0_sat2wrms.png')
-                #fig_wrms.clf()
-                plt.close(fig_wrms)
+            # if (evid in [6, 13, 17, 30]) and suivi_inversion and iteration in [1, 3, 10]:
+            #     obsdata_tmp = ObsBin_plus[ObsBin_plus.EVID==evid]
+            #     obsdata_tmpavt = copy.deepcopy(obsdata_tmp)
+            #     obsdata_tmpavt.loc[:, 'Depth'] = suivi_depth[evid][-2]
+            #     obsdata_tmpavt.loc[:, 'Io'] = suivi_I0[evid][-2]
+            #     line_wrms_hinv = getHline_in_HI0wrms_space(ObsBin_plus, evid, suivi_beta[-2],
+            #                                                minH, maxH, pasH,
+            #                                                minI0, maxI0, pasI0)
+            #     line_wrms_ioinv = getI0line_in_HI0wrms_space(ObsBin_plus, evid, suivi_beta[-2],
+            #                                                  minH, maxH, pasH,
+            #                                                  minI0, maxI0, pasI0)
+            #     fig_wrms = plt.figure(figsize=(6, 6))
+            #     ax_iohh, ax_hh, ax_io = plot_wrms_withHI0lines(fig_wrms,
+            #                                                    obsdata_tmpavt, evid,
+            #                                                    beta, vmax=2)
+            #     ax_iohh.axvline(x=suivi_depth[evid][-1], color='Yellow')
+            #     ax_iohh.axhline(y=suivi_I0[evid][-1], color='Yellow')
+            #     ax_io.plot(line_wrms_hinv,
+            #                np.arange(minI0, maxI0+pasI0, pasI0), color='Yellow')
+            #     ax_hh.plot(np.arange(minH, maxH+pasH, pasH),
+            #                line_wrms_ioinv, color='Yellow')
+            #     nomfig_base = 'Iteration' + "{:02d}".format(iteration) + '_evt' + "{:02d}".format(evid)
+            #     fig_wrms.savefig(dossier_suivi + '/' + nomfig_base + 'HI0_sat2wrms.png')
+            #     #fig_wrms.clf()
+            #     plt.close(fig_wrms)
             
         iteration += 1
         if iteration > NminIter:
             if critere_stop(suivi_beta, suivi_depth, suivi_I0, 
-                            stop_beta=0.001, stop_depth=0.05, stop_I0=0.01):
+                            stop_beta, stop_depth, stop_I0):
                 resBetaStd = WLSIC.WLS_Kov(ObsBin_plus, beta, 0).do_wls_beta_std()
                 cov_beta = resBetaStd[1]
                 break
@@ -332,7 +336,8 @@ def calib_attBeta_Kov(liste_evt, ObsBin_plus, beta_ini,
     return ObsBin_plus, beta, cov_beta, suivi_beta
         
 
-def calib_attBeta_Kov_unit(liste_evt, ObsBin_plus, beta):
+def calib_attBeta_Kov_unit(liste_evt, ObsBin_plus, beta,
+                           ):
     """
     Function that inverse sequentially depth, epicentral intensity and the
     geometric attenuation coefficient beta for a given earthquake list and 
@@ -389,7 +394,9 @@ def calib_attBeta_Kov_unit(liste_evt, ObsBin_plus, beta):
     return ObsBin_plus, beta
 
 def calib_attBetaGamma_Kov(liste_evt, ObsBin_plus, beta_ini, gamma_ini,
-                           NminIter=3, NmaxIter=50):
+                           NminIter=3, NmaxIter=50,
+                           stop_beta=0.001, stop_gamma=0.00001, stop_depth=0.05,
+                           stop_I0=0.01):
     """
     Function that inverse iteratively and sequentially depth, epicentral intensity
     and the attenuation coefficients beta and gamma for a given earthquake list and 
@@ -461,7 +468,8 @@ def calib_attBetaGamma_Kov(liste_evt, ObsBin_plus, beta_ini, gamma_ini,
         iteration += 1
         if iteration > NminIter:
             if critere_stop2(suivi_beta, suivi_gamma, suivi_depth, suivi_I0,
-                            stop_beta=0.001, stop_gamma=0.00001, stop_depth=0.05, stop_I0=0.01):
+                            stop_beta=stop_beta, stop_gamma=stop_gamma,
+                            stop_depth=stop_depth, stop_I0=stop_I0):
 
                 break
 
@@ -569,11 +577,11 @@ def initialize_HI0(ObsBin_plus, liste_evt, beta, gamma, NmaxIter=50):
     suivi_depth = {}
     suivi_I0 = {}
     for evid in liste_evt:
-        obsbin = ObsBin_plus[ObsBin_plus.EVID==evid]
+        obsbin = ObsBin_plus[ObsBin_plus.EVID==evid].copy()
         depth = obsbin.Depth.values[0]
         Hmin = obsbin.Hmin.values[0]
         Hmax = obsbin.Hmax.values[0]
-        obsbin.loc[:, 'Hypo'] = np.sqrt(obsbin['Depi'].values**2 + depth**2)
+        obsbin.loc[:, 'Hypo'] = np.sqrt(obsbin['Depi'].values.astype(float)**2 + depth**2)
         I0 = obsbin.Io.values[0]
         I0_min = obsbin.Io_ini.values[0] - 2*obsbin.Io_std.values[0]
         I0_max = obsbin.Io_ini.values[0] + 2*obsbin.Io_std.values[0]
@@ -787,7 +795,7 @@ def calib_C1C2beta_unit(liste_evt, ObsBin_plus, C1, C2, beta,
         beta=-1
     return ObsBin_plus, C1, C2, beta
 
-def calib_C1C2beta1(liste_evt, ObsBin_plus, C1, C2, beta,
+def calib_C1C2beta(liste_evt, ObsBin_plus, C1, C2, beta,
                    NmaxIter=50, add_I0=True,
                    inverse_depth=False, inverse_I0=False):
     ObsBin_plus.loc[:, 'Hmin_ini'] =  ObsBin_plus.loc[:, 'Hmin']
@@ -849,9 +857,9 @@ def calib_C1C2beta2(liste_evt, ObsBin_plus, C1, C2, beta,
     return ObsBin_plus, stock_wrms, C1, C2, beta
 
 
-def update_depth(ObsBin_plus, result, liste_evt):
+def update_depth(ObsBin_plus, depths, liste_evt):
     for compt, evid in enumerate(liste_evt):
-        depth = result[compt]
+        depth = depths[compt]
         ObsBin_plus.loc[ObsBin_plus.EVID==evid, 'Depth'] = depth
     return ObsBin_plus
 
@@ -866,16 +874,16 @@ def calib_C1C2betaH(liste_evt, ObsBin_plus, C1, C2, beta,
         ObsBin_plus = add_I0as_datapoint(ObsBin_plus, liste_evt)
         ObsBin_plus.sort_values(by=['EVID', 'I'], inplace=True)
     #eta_values_tested = np.arange(0, 1.01, 0.01)
-    eta_values_tested = [0.1]
+    eta_values_tested = [0]
 #    stock_wrms = []
 #    stock_C1 = []
 #    stock_C2 = []
 #    stock_beta = []
     for eta in eta_values_tested:
-        sigma = WLSIC.WLS(ObsBin_plus, C1, C2, beta, 0).compute_2Dsigma(eta, col='StdI')
-        C1C2BetaH = WLSIC.WLS(ObsBin_plus, C1, C2, beta, 0).do_wls_C1C2BetaH(sigma=sigma)
+#        sigma = WLSIC.WLS(ObsBin_plus, C1, C2, beta, 0).compute_2Dsigma(eta, col='StdI')
+#        C1C2BetaH = WLSIC.WLS(ObsBin_plus, C1, C2, beta, 0).do_wls_C1C2BetaH(sigma=sigma)
         sigma = WLSIC.WLS(ObsBin_plus, C1, C2, beta, 0).compute_2Dsigma(eta)
-        C1C2BetaH2 = WLSIC.WLS(ObsBin_plus, C1, C2, beta, 0).do_wls_C1C2BetaH(sigma=sigma)
+        C1C2BetaH = WLSIC.WLS(ObsBin_plus, C1, C2, beta, 0).do_wls_C1C2BetaH(sigma=sigma)
         #sigma = self.Obsbin_plus['StdI'].values
 #        C1_inv = C1C2BetaH[0][0]
 #        C2_inv = C1C2BetaH[0][1]
@@ -888,8 +896,10 @@ def calib_C1C2betaH(liste_evt, ObsBin_plus, C1, C2, beta,
 #    C1 = C1_inv
 #    C2 = C2_inv
 #    beta = beta_inv
-    ObsBin_plus = update_depth(ObsBin_plus, C1C2BetaH, liste_evt)
-    return ObsBin_plus, C1C2BetaH[0][:3], C1C2BetaH[1], C1C2BetaH2
+#    print(C1C2BetaH[0])
+#    print(C1C2BetaH[0][3:])
+    ObsBin_plus = update_depth(ObsBin_plus, C1C2BetaH[0][3:], liste_evt)
+    return ObsBin_plus, C1C2BetaH
 
 
 def calib_C1C2betaHb(liste_evt, ObsBin_plus, C1, C2, beta,

@@ -31,7 +31,8 @@ def prepare_input4calibration(obsdata_name, evtdata_name, ponderation,
     obsbin_plus = pd.DataFrame(columns=columns_obsbinplus)
     for evid in evtdata.EVID.values:
         # Attribuer un Depi aux Iobs
-        data.build(int(evid))
+        #data.build(int(evid))
+        data.build(evid)
         data.I0 = data.Io_ini
         #print(evid)
         #print(data.I0)
@@ -52,7 +53,8 @@ def prepare_input4calibration(obsdata_name, evtdata_name, ponderation,
         evt_obsbin.loc[:, 'X'] = np.average(X_tmp, weights=1/evt_obsbin.StdI.values**2)
 #        evt_obsbin.loc[:, 'Io'] = data.I0
         evt_obsbin = evt_obsbin[columns_obsbinplus]
-        obsbin_plus = obsbin_plus.append(evt_obsbin)
+        #obsbin_plus = obsbin_plus.append(evt_obsbin)
+        obsbin_plus = pd.concat([obsbin_plus, evt_obsbin])
     if regiondata_name != '':
         obsbin_plus = attribute_region(evtdata, obsbin_plus, regiondata_name)
     else:
@@ -106,6 +108,43 @@ def add_I0as_datapoint(obsbin_plus, liste_evt):
         StdI_eq = np.sqrt(StdIo_inv/(0.1*Std['A']))
         Depi = 0
         Ndata = 0
+        """
+        pd.DataFrame.from_dict({'EVID' : evid,
+                                          'Depi' : Depi,
+                                          'Hypo': depth,
+                                          'I': I0,
+                                          'StdI': StdI_eq,
+                                          'Io': I0,
+                                          'Io_std': Io_Std,
+                                          'eqStdM': eqStdM,
+                                          'Ndata': Ndata,
+                                          'Depth': depth,
+                                          'Hmin': Hmin,
+                                          'Hmax': Hmax,
+                                          'Hmin_ini': Hmin_ini,
+                                          'Hmax_ini': Hmax_ini,
+                                          'Mag': Mag,
+                                          'StdM': StdM,
+                                          'StdIo_inv': StdIo_inv})
+        obsbin_plus2 = pd.concat([obsbin_plus, pd.DataFrame.from_dict({'EVID' : evid,
+                                          'Depi' : Depi,
+                                          'Hypo': depth,
+                                          'I': I0,
+                                          'StdI': StdI_eq,
+                                          'Io': I0,
+                                          'Io_std': Io_Std,
+                                          'eqStdM': eqStdM,
+                                          'Ndata': Ndata,
+                                          'Depth': depth,
+                                          'Hmin': Hmin,
+                                          'Hmax': Hmax,
+                                          'Hmin_ini': Hmin_ini,
+                                          'Hmax_ini': Hmax_ini,
+                                          'Mag': Mag,
+                                          'StdM': StdM,
+                                          'StdIo_inv': StdIo_inv})])
+        print(obsbin_plus2)
+        """
         obsbin_plus = obsbin_plus.append({'EVID' : evid,
                                           'Depi' : Depi,
                                           'Hypo': depth,

@@ -48,7 +48,7 @@ def ROBS(obsdata, depth, Ic, I0, QI0):
     #print(obsdata.EVID.values[0])
     #print(obsdata.EVID.values[0])
     #print(Ic)
-    obsdata = obsdata[obsdata.Iobs>=Ic]
+    obsdata = obsdata[obsdata.Iobs>=Ic].copy()
     obsdata['Depi'].replace(0, 0.5, inplace=True)
     #print(obsdata.EVID.values[0])
     obsdata.loc[:, 'poids'] = obsdata.apply(lambda row: 1/Stdobs[row['QIobs']]**2, axis=1)
@@ -121,7 +121,7 @@ def RAVG(obsdata, depth, Ic, I0, QI0):
             condition = np.logical_and(obsdata.Iobs>=Ibin, obsdata.Iobs<=Ibin+class_width/2)
         else:
             condition = np.logical_and(obsdata.Iobs>=Ibin-class_width/2, obsdata.Iobs<=Ibin+class_width/2)
-        tmp = obsdata[condition]
+        tmp = obsdata[condition].copy()
         Ndata = len(tmp)
         tmp.loc[:, 'LogDepi'] = tmp.apply(lambda row: np.log10(row['Depi']), axis=1)
         IAVG =  np.average(tmp.Iobs.values, weights=tmp.poids.values)
@@ -151,7 +151,7 @@ def weighted_percentile(data, percents, weights=None):
 
 def RP50(obsdata, depth, Ic, I0, QI0):
     
-    obsdata = obsdata[obsdata.Iobs>=Ic]
+    obsdata = obsdata[obsdata.Iobs>=Ic].copy()
     obsdata['Depi'].replace(0, 0.5, inplace=True)
     #print(obsdata.EVID.values[0])
     obsdata.loc[:, 'poids'] = obsdata.apply(lambda row: 1/Stdobs[row['QIobs']]**2, axis=1)
@@ -182,7 +182,7 @@ def RP50(obsdata, depth, Ic, I0, QI0):
 
 def RP84(obsdata, depth, Ic, I0, QI0):
     
-    obsdata = obsdata[obsdata.Iobs>=Ic]
+    obsdata = obsdata[obsdata.Iobs>=Ic].copy()
     obsdata['Depi'].replace(0, 0.5, inplace=True)
     #print(obsdata.EVID.values[0])
     obsdata.loc[:, 'poids'] = obsdata.apply(lambda row: 1/Stdobs[row['QIobs']]**2, axis=1)
@@ -242,7 +242,7 @@ def RF50(obsdata, depth, Ic, I0, QI0):
     return obsbin.astype(np.float64)
 
 def RF84(obsdata, depth, Ic, I0, QI0):
-    obsdata = obsdata[obsdata.Iobs>=Ic]
+    obsdata = obsdata[obsdata.Iobs>=Ic].copy()
     obsdata['Depi'].replace(0, 0.5, inplace=True)
     #print(obsdata.EVID.values[0])
     obsdata.loc[:, 'poids'] = obsdata.apply(lambda row: 1/Stdobs[row['QIobs']]**2, axis=1)

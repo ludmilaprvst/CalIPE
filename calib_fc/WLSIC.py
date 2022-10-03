@@ -68,7 +68,7 @@ class WLSIC_Kov_oneEvt():
         :type depth: float
         """
         I = self.I0 + self.beta*np.log10(np.sqrt(Depi**2+H**2)/H) + self.gamma*(np.sqrt(Depi**2+H**2)-H)
-        return I
+        return np.array(I, dtype=float)
 
     def EMIPE_JACdH(self, Depi, H):
         """
@@ -121,11 +121,12 @@ class WLSIC_Kov_oneEvt():
                 To compute one standard deviation errors on the parameters use
                 perr = np.sqrt(np.diag(pcov)). 
         """
-        Ibin = self.Obsbin['I'].values
-        Depi = self.Obsbin['Depi'].values
+        Ibin = self.Obsbin['I'].values.astype(float)
+        Depi = self.Obsbin['Depi'].values.astype(float)
+        StdI = self.Obsbin['StdI'].values.astype(float)
         resH = curve_fit(self.EMIPE_H, Depi, Ibin, p0=self.depth,
                                  jac= self.EMIPE_JACdH, bounds=(depth_inf, depth_sup),
-                                 sigma=self.Obsbin['StdI'].values, absolute_sigma=True,
+                                 sigma=StdI, absolute_sigma=True,
                                  ftol=5e-2)
         return resH
     
@@ -143,11 +144,12 @@ class WLSIC_Kov_oneEvt():
                 To compute one standard deviation errors on the parameters use
                 perr = np.sqrt(np.diag(pcov)).
         """
-        Ibin = self.Obsbin['I'].values
-        Depi = self.Obsbin['Depi'].values
+        Ibin = self.Obsbin['I'].values.astype(float)
+        Depi = self.Obsbin['Depi'].values.astype(float)
+        StdI = self.Obsbin['StdI'].values.astype(float)
         resI0 = curve_fit(self.EMIPE_I0, Depi, Ibin, p0=self.I0,
                                   jac= self.EMIPE_JACdI0, bounds=(I0_inf, I0_sup),
-                                  sigma=self.Obsbin['StdI'].values, absolute_sigma=True,
+                                  sigma=StdI, absolute_sigma=True,
                                   xtol=1e-2, loss='soft_l1')
         return resI0
     
@@ -840,8 +842,27 @@ class WLS():
         :type C1: float
         :type C2: float
         """
-        mags, depi = X[:2]
-        ah = X[2:][0]
+        mags, depi, id_evid = X
+        liste_evid = np.unique(id_evid)
+        #ah --> (n, len(Depi)) array avec n le nombre de EQ. Chaque ligne contient
+        #des 1 et des 0 et correspond a un EQ. 1 est attribue aux indices de
+        # obsbin_plus.EVID ==evid concerne.
+        aH = np.array([])
+        for compt, evid in enumerate(liste_evid):
+            ind = (id_evid == evid)
+            zeros = np.zeros(len(mags))
+            zeros[ind] = 1
+            try:
+                aH = np.vstack((aH, zeros))
+            except ValueError:
+                 aH = np.concatenate((aH, zeros))
+        if len(liste_evid)<31:
+            len_noevt = 31 - len(liste_evid)
+            for compt in range(len_noevt):
+                zeros = np.zeros(len(self.Obsbin_plus.EVID))
+                aH = np.vstack((aH, zeros))
+        #ah = X[2:][0]
+        #H --> (n, len(Depi)) array avec n le nombre de EQ, chaque ligne contient obsbin_plus.Depth
         H = np.vstack(([H1]*len(depi), [H2]*len(depi), [H3]*len(depi), [H4]*len(depi),
                        [H5]*len(depi), [H6]*len(depi), [H7]*len(depi), [H8]*len(depi),
                        [H9]*len(depi), [H10]*len(depi), [H11]*len(depi), [H12]*len(depi),
@@ -854,15 +875,14 @@ class WLS():
 #        print(H.shape)
 #        print(ah.shape)
         #print((H*ah).sum(axis=0))
-        #ah --> (n, len(Depi)) array avec n le nombre de EQ. Chaque ligne contient
-        #des 1 et des 0 et correspond a un EQ. 1 est attribue aux indices de
-        # obsbin_plus.EVID ==evid concerne.
-        #H --> (n, len(Depi)) array avec n le nombre de EQ, chaque ligne contient obsbin_plus.Depth
-        hypos = np.sqrt(depi**2 + (H*ah).sum(axis=0)**2)
+        
+        
+        hypos = np.sqrt(depi**2 + (H*aH).sum(axis=0)**2)
         I = C1 + C2*mags + Beta*np.log10(hypos)
         return I
 
-    def do_wls_C1C2BetaH(self, sigma='none'):
+    def do_wls_C1C2BetaH(self, sigma='none',
+                         ftol=5e-3, xtol=1e-8, max_nfev=200):
         """
         Function used to launch the inversion of all coefficients, except the intrinsic
         attenuation coefficient gamma.
@@ -878,11 +898,11 @@ class WLS():
                 accurate pcov
         """
         #print(self.Obsbin_plus.columns)
-        aH = np.array([])
         liste_evid = np.unique(self.Obsbin_plus.EVID.values)
         depths = np.zeros(31)
         Hmin = np.zeros(31)
         Hmax = np.zeros(31)
+        id_evid = np.zeros(len(self.Obsbin_plus.EVID))
         for compt, evid in enumerate(liste_evid):
             ind = (self.Obsbin_plus.EVID == evid)
             depth = self.Obsbin_plus[ind]['Depth'].values[0]
@@ -891,19 +911,19 @@ class WLS():
             depths[compt] = depth
             Hmin[compt] = hmin
             Hmax[compt] = hmax
-            zeros = np.zeros(len(self.Obsbin_plus.EVID))
-            zeros[ind] = 1
-            try:
-                aH = np.vstack((aH, zeros))
-            except ValueError:
-                 aH = np.concatenate((aH, zeros))
-    
-        X = [self.Obsbin_plus.Mag.values,
-             self.Obsbin_plus.Depi.values,
-             aH]
-        Ibin = self.Obsbin_plus['I'].values
+            id_evid[ind] = compt
+        Hmax[Hmax==0] = 0.01
+
+        X = [self.Obsbin_plus.Mag.values.astype(float),
+             self.Obsbin_plus.Depi.values.astype(float),
+             id_evid]
+        
+        Ibin = self.Obsbin_plus['I'].values.astype(float)
+        print(Ibin.dtype)
         if sigma == 'none':
-            sigma = self.Obsbin_plus['eqStdM'].values
+            sigma = self.Obsbin_plus['eqStdM'].values.astype(float)
+        # if sigma.dtype is not np.dtype(np.float64):
+        #     raise TypeError("sigma.dtype is not float")
         p0 = np.append(np.array([self.C1, self.C2, self.beta]),
                        depths)
         bounds_inf = np.append(np.array([-np.inf, -np.inf, -np.inf]),
@@ -915,7 +935,9 @@ class WLS():
                              bounds=(bounds_inf, bounds_sup),
                              sigma=sigma,
                              absolute_sigma=True,
-                             xtol=1e-3)
+                             ftol=ftol,
+                             xtol=xtol,
+                             max_nfev=max_nfev)
         return C1C2BetaH
 
     def do_wls_C1C2BetaH_std(self, sigma):

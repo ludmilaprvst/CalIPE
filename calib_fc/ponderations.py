@@ -8,6 +8,7 @@ Created on Thu Jul 15 10:25:33 2021
 import pandas as pd
 import numpy as np
 import matplotlib.path as mpltPath
+import os.path
 
 
 def evt_weights(obsbin_plus, option_ponderation):
@@ -258,12 +259,15 @@ def lecture_fichierregions(fichier_regions):
     :return: a dictionnary in which each key represent a region and the associated
              object in a matplotlib polygon object (matplotlib.path.Path())
     """
+#    if os.path.isflile(fichier_regions):
     data_regions = pd.read_csv(fichier_regions, sep=';')
     regions = np.unique(data_regions.ID_region.values)
     dict_regions = {}
     for regid in regions:
         coord = data_regions[data_regions.ID_region==regid][['Lon', 'Lat']]
         dict_regions[regid] = mpltPath.Path(coord.to_numpy())
+#    else:
+#        raise FileNotFoundError('File does not exist: ' + fichier_regions)
     return dict_regions
     
     

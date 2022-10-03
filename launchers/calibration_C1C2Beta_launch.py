@@ -9,7 +9,7 @@ import pandas as pd
 import sys
 sys.path.append('../calib_fc')
 sys.path.append('../postprocessing_fc')
-from combinaison_calib import calib_C1C2beta0, calib_C1C2beta1, calib_C1C2beta2
+#from combinaison_calib import calib_C1C2beta0, calib_C1C2beta1, calib_C1C2beta2
 from combinaison_calib import calib_C1C2betaH, calib_C1C2betaHb
 from prepa_data import prepare_input4calibration, add_Mweigths
 
@@ -39,9 +39,9 @@ obsbin_plus = prepare_input4calibration(obsdata_name, nom_evt_complet,
                                         regiondata_name, binning_type)
 liste_evt = np.unique(obsbin_plus.EVID.values)
 
-beta_liste = [-2.5, -3, -3.5]
-beta_liste = [-3.5]
-C1_liste = [1]
+beta_liste = [-3]
+#beta_liste = [-3.5]
+C1_liste = [1]#, 2, 3]
 C2_liste = [1]
 
 
@@ -57,19 +57,20 @@ for beta in beta_liste:
                 if gamma_option:
                     pass
                 else:
-#                    ObsBin_plus, result, sigma, C1C2BetaH2 = calib_C1C2betaH(liste_evt, obsbin_plus,
-#                                                               C1, C2, beta,
-#                                                               inverse_depth=False,
-#                                                               inverse_I0=False,
-#                                                               NmaxIter=50)
-                    
-                    result, ObsBin_plus_end = calib_C1C2betaHb(liste_evt, obsbin_plus,
+                    ObsBin_plus, result = calib_C1C2betaH(liste_evt, obsbin_plus,
                                                                C1, C2, beta,
                                                                inverse_depth=False,
                                                                inverse_I0=False,
                                                                NmaxIter=50)
                     
-                    print(result)
+#                    resultb, ObsBin_plus_endb = calib_C1C2betaHb(liste_evt, obsbin_plus,
+#                                                               C1, C2, beta,
+#                                                               inverse_depth=False,
+#                                                               inverse_I0=False,
+#                                                               NmaxIter=50)
+                    
+                    print(result[0][:3])
+                    print(result[0][3:])
                     #(C1C2BetaH2[0][:3])
                     
 #                    (ObsBin_plus, C1, C2, beta,

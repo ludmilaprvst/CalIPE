@@ -352,7 +352,7 @@ def test_calib_attBetaGamma_Kov_unit():
         I0_inv = obs_data_inv[obs_data_inv.EVID==evid].Io.values[0]
         assert depth == pytest.approx(depth_inv, 0.5)
         assert I0 == pytest.approx(I0_inv, 0.001)
-        
+"""       
 def test_calib_attBetaGamma_Kov():
     obs_data = pd.read_csv('../Testpy_dataset/pytest_dataset01_obs.txt')
     evt_data = pd.read_csv('../Testpy_dataset/pytest_dataset01_evt.txt')
@@ -407,7 +407,7 @@ def test_calib_attBetaGamma_Kov():
         I0_inv = obs_data_inv[obs_data_inv.EVID==evid].Io.values[0]
         assert depth == pytest.approx(depth_inv, 0.5)
         assert I0 == pytest.approx(I0_inv, 0.001)
-    
+"""    
 def test_calib_attBeta_Kov():
     obs_data = pd.read_csv('../Testpy_dataset/pytest_dataset03_obs.txt')
     evt_data = pd.read_csv('../Testpy_dataset/pytest_dataset03_evt.txt')
