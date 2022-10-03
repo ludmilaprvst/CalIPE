@@ -939,6 +939,120 @@ class WLS():
                              xtol=xtol,
                              max_nfev=max_nfev)
         return C1C2BetaH
+    
+    def EMIPE_C1C2BetaGammaH(self, X, C1, C2, Beta, Gamma, H1, H2, H3, H4, H5, H6, H7, H8,
+                        H9, H10, H11, H12, H13, H14, H15, H16, H17, H18, H19, H20,
+                        H21, H22, H23, H24, H25, H26, H27, H28, H29, H30, H31):
+        """
+        Function used to inverse the magnitude coefficients and the attenuation
+        coefficients
+        :param X: matrix that contains magnitude, epicentral distance and depth
+                  intensity associated to the binned intensity
+        :param C1: first magnitude coefficient
+        :param C2: second magnitude coefficient
+        :param Beta: geometric attenuation coefficient
+        :param Gamma: intresic attenuation coefficient
+        :type X: numpy.array
+        :type Beta: float
+        :type C1: float
+        :type C2: float
+        """
+        mags, depi, id_evid = X
+        liste_evid = np.unique(id_evid)
+        #ah --> (n, len(Depi)) array avec n le nombre de EQ. Chaque ligne contient
+        #des 1 et des 0 et correspond a un EQ. 1 est attribue aux indices de
+        # obsbin_plus.EVID ==evid concerne.
+        aH = np.array([])
+        for compt, evid in enumerate(liste_evid):
+            ind = (id_evid == evid)
+            zeros = np.zeros(len(mags))
+            zeros[ind] = 1
+            try:
+                aH = np.vstack((aH, zeros))
+            except ValueError:
+                 aH = np.concatenate((aH, zeros))
+        if len(liste_evid)<31:
+            len_noevt = 31 - len(liste_evid)
+            for compt in range(len_noevt):
+                zeros = np.zeros(len(self.Obsbin_plus.EVID))
+                aH = np.vstack((aH, zeros))
+        #ah = X[2:][0]
+        #H --> (n, len(Depi)) array avec n le nombre de EQ, chaque ligne contient obsbin_plus.Depth
+        H = np.vstack(([H1]*len(depi), [H2]*len(depi), [H3]*len(depi), [H4]*len(depi),
+                       [H5]*len(depi), [H6]*len(depi), [H7]*len(depi), [H8]*len(depi),
+                       [H9]*len(depi), [H10]*len(depi), [H11]*len(depi), [H12]*len(depi),
+                       [H13]*len(depi), [H14]*len(depi), [H15]*len(depi), [H16]*len(depi),
+                       [H17]*len(depi), [H18]*len(depi), [H19]*len(depi), [H20]*len(depi),
+                       [H21]*len(depi), [H22]*len(depi), [H23]*len(depi), [H24]*len(depi),
+                       [H25]*len(depi), [H26]*len(depi), [H27]*len(depi), [H28]*len(depi),
+                       [H29]*len(depi), [H30]*len(depi), [H31]*len(depi)
+                       ))
+#        print(H.shape)
+#        print(ah.shape)
+        #print((H*ah).sum(axis=0))
+        
+        
+        hypos = np.sqrt(depi**2 + (H*aH).sum(axis=0)**2)
+        I = C1 + C2*mags + Beta*np.log10(hypos) + Gamma*hypos
+        return I
+    
+    def do_wls_C1C2BetaGammaH(self, sigma='none',
+                         ftol=5e-3, xtol=1e-8, max_nfev=200):
+        """
+        Function used to launch the inversion of all coefficients
+        
+         return: [popt, pcov] list with popt a (3, 1) shape array containing
+                the inverted coefficient with popt[0] the C1 coefficient,
+                popt[1] the C2 coefficient and popt[2] the beta coefficient. pcov is a 2-D array and 
+                the estimated covariance of popt. The diagonals provide the
+                variance of the parameter estimate. 
+                To compute one standard deviation errors on the parameters use
+                perr = np.sqrt(np.diag(pcov)). pcov values are not accurate with
+                the eqStdM as sigma. A function has to be developped to compute
+                accurate pcov
+        """
+        #print(self.Obsbin_plus.columns)
+        liste_evid = np.unique(self.Obsbin_plus.EVID.values)
+        depths = np.zeros(31)
+        Hmin = np.zeros(31)
+        Hmax = np.zeros(31)
+        id_evid = np.zeros(len(self.Obsbin_plus.EVID))
+        for compt, evid in enumerate(liste_evid):
+            ind = (self.Obsbin_plus.EVID == evid)
+            depth = self.Obsbin_plus[ind]['Depth'].values[0]
+            hmin = self.Obsbin_plus[ind]['Hmin'].values[0]
+            hmax = self.Obsbin_plus[ind]['Hmax'].values[0]
+            depths[compt] = depth
+            Hmin[compt] = hmin
+            Hmax[compt] = hmax
+            id_evid[ind] = compt
+        Hmax[Hmax==0] = 0.01
+
+        X = [self.Obsbin_plus.Mag.values.astype(float),
+             self.Obsbin_plus.Depi.values.astype(float),
+             id_evid]
+        
+        Ibin = self.Obsbin_plus['I'].values.astype(float)
+        print(Ibin.dtype)
+        if sigma == 'none':
+            sigma = self.Obsbin_plus['eqStdM'].values.astype(float)
+        # if sigma.dtype is not np.dtype(np.float64):
+        #     raise TypeError("sigma.dtype is not float")
+        p0 = np.append(np.array([self.C1, self.C2, self.beta, self.gamma]),
+                       depths)
+        bounds_inf = np.append(np.array([-np.inf, -np.inf, -np.inf, -np.inf]),
+                       Hmin)
+        bounds_sup = np.append(np.array([np.inf, np.inf, np.inf, 0]),
+                       Hmax)
+        C1C2BetaGammaH = curve_fit(self.EMIPE_C1C2BetaGammaH, X, Ibin, 
+                             p0=p0,
+                             bounds=(bounds_inf, bounds_sup),
+                             sigma=sigma,
+                             absolute_sigma=True,
+                             ftol=ftol,
+                             xtol=xtol,
+                             max_nfev=max_nfev)
+        return C1C2BetaGammaH
 
     def do_wls_C1C2BetaH_std(self, sigma):
         aH = np.array([])

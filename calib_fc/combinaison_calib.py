@@ -901,6 +901,44 @@ def calib_C1C2betaH(liste_evt, ObsBin_plus, C1, C2, beta,
     ObsBin_plus = update_depth(ObsBin_plus, C1C2BetaH[0][3:], liste_evt)
     return ObsBin_plus, C1C2BetaH
 
+def calib_C1C2betagammaH(liste_evt, ObsBin_plus, C1, C2, beta, gamma,
+                       NmaxIter=50, add_I0=True,
+                       inverse_depth=False, inverse_I0=False):
+    ObsBin_plus = initialize_HI0(ObsBin_plus, liste_evt, beta, 0)
+    ObsBin_plus.loc[:, 'Hmin_ini'] =  ObsBin_plus.loc[:, 'Hmin']
+    ObsBin_plus.loc[:, 'Hmax_ini'] =  ObsBin_plus.loc[:, 'Hmax']
+
+    if add_I0:
+        ObsBin_plus = add_I0as_datapoint(ObsBin_plus, liste_evt)
+        ObsBin_plus.sort_values(by=['EVID', 'I'], inplace=True)
+    #eta_values_tested = np.arange(0, 1.01, 0.01)
+    eta_values_tested = [0]
+#    stock_wrms = []
+#    stock_C1 = []
+#    stock_C2 = []
+#    stock_beta = []
+    for eta in eta_values_tested:
+#        sigma = WLSIC.WLS(ObsBin_plus, C1, C2, beta, 0).compute_2Dsigma(eta, col='StdI')
+#        C1C2BetaH = WLSIC.WLS(ObsBin_plus, C1, C2, beta, 0).do_wls_C1C2BetaH(sigma=sigma)
+        sigma = WLSIC.WLS(ObsBin_plus, C1, C2, beta, gamma).compute_2Dsigma(eta)
+        C1C2BetaH = WLSIC.WLS(ObsBin_plus, C1, C2, beta, gamma).do_wls_C1C2BetaGammaH(sigma=sigma)
+        #sigma = self.Obsbin_plus['StdI'].values
+#        C1_inv = C1C2BetaH[0][0]
+#        C2_inv = C1C2BetaH[0][1]
+#        beta_inv = C1C2BetaH[0][2]
+#        wrms = calcul_wrms_C1C2betagamma(ObsBin_plus, C1_inv, C2_inv, beta_inv, 0)
+#        stock_wrms.append(wrms)
+#        stock_C1.append(C1_inv)
+#        stock_C2.append(C2_inv)
+#        stock_beta.append(beta_inv)
+#    C1 = C1_inv
+#    C2 = C2_inv
+#    beta = beta_inv
+#    print(C1C2BetaH[0])
+#    print(C1C2BetaH[0][3:])
+    ObsBin_plus = update_depth(ObsBin_plus, C1C2BetaH[0][3:], liste_evt)
+    return ObsBin_plus, C1C2BetaH
+
 
 def calib_C1C2betaHb(liste_evt, ObsBin_plus, C1, C2, beta,
                    NmaxIter=50, add_I0=True,
