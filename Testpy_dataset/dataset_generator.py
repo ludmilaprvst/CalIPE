@@ -8,7 +8,10 @@ Created on Mon Apr 26 10:40:28 2021
 import numpy as np
 import pandas as pd
 
-C1 = 2.2
+C1a = 2.2
+C1b = 4.1
+C1c = 1.5
+C1d = 3.2
 C2 = 1.6
 Beta = -3.5
 Gamma = 0
@@ -19,7 +22,7 @@ depth_list = [2, 5, 10, 15, 20]
 mag_list = [3, 3.5, 4, 4.5, 5, 5.5, 6]
 
 dataset_obs = pd.DataFrame(columns=['EVID', 'Depi', 'Hypo', 'I', 'Io', 'QIo',
-                                    'StdI', 'StdlogR', 'Ndata'])
+                                    'StdI', 'StdlogR', 'Ndata', 'RegID'])
 dataset_evt = pd.DataFrame(columns=['EVID', 'Mag', 'StdM', 'H', 'Hinf', 'Hsup'])
 
 
@@ -28,7 +31,7 @@ for mag in mag_list:
     for depth in depth_list:
         depi_range = np.logspace(0, 2.7, 100)
         hypo = np.sqrt(depi_range**2 + depth**2)
-        Ipred = C1 + C2*mag + Beta*np.log10(hypo) + Gamma*hypo
+        Ipred = C1a + C2*mag + Beta*np.log10(hypo) + Gamma*hypo
 #        if count_evt == 27:
 #            print(Ipred)
 #            print(Ipred[Ipred>=1])
@@ -36,16 +39,17 @@ for mag in mag_list:
             depi_range = depi_range[Ipred>=1]
             Hypo  = hypo[Ipred>=1]
             Ipred = Ipred[Ipred>=1]
-            Io = C1 + C2*mag + Beta*np.log10(depth) + Gamma*depth
+            Io = C1a + C2*mag + Beta*np.log10(depth) + Gamma*depth
             Io = Io * np.ones(len(Ipred))
             QIo = 0.5 * np.ones(len(Ipred))
             StdI = 0.25 * np.ones(len(Ipred))
             StdlogR = 1.2 * np.ones(len(Ipred))
             Ndata = 10 * np.ones(len(Ipred))
+            RegID = 101 * np.ones(len(Ipred))
             EVID = count_evt * np.ones(len(Ipred))
             temp = pd.DataFrame({'EVID' : EVID, 'Depi': depi_range, 'Hypo': Hypo,
                                  'I': Ipred, 'Io': Io, 'QIo': QIo, 'StdI' : StdI,
-                                 'StdlogR': StdlogR, 'Ndata': Ndata})
+                                 'StdlogR': StdlogR, 'Ndata': Ndata, 'RegID': RegID})
             dataset_obs = pd.concat([dataset_obs, temp])
             dataset_evt.loc[count_evt, :] = [count_evt, mag, 0.1, depth, depth-0.5, depth+0.5]
             
@@ -54,12 +58,107 @@ for mag in mag_list:
 #                print(depi_range)
 #                print(Ipred)
 
-dataset_obs.to_csv('pytest_dataset03_obs.txt')
-dataset_evt.to_csv('pytest_dataset03_evt.txt')
+for mag in mag_list:
+    for depth in depth_list:
+        depi_range = np.logspace(0, 2.7, 100)
+        hypo = np.sqrt(depi_range**2 + depth**2)
+        Ipred = C1b + C2*mag + Beta*np.log10(hypo) + Gamma*hypo
+#        if count_evt == 27:
+#            print(Ipred)
+#            print(Ipred[Ipred>=1])
+        if np.any(Ipred>4):
+            depi_range = depi_range[Ipred>=1]
+            Hypo  = hypo[Ipred>=1]
+            Ipred = Ipred[Ipred>=1]
+            Io = C1b + C2*mag + Beta*np.log10(depth) + Gamma*depth
+            Io = Io * np.ones(len(Ipred))
+            QIo = 0.5 * np.ones(len(Ipred))
+            StdI = 0.25 * np.ones(len(Ipred))
+            StdlogR = 1.2 * np.ones(len(Ipred))
+            Ndata = 10 * np.ones(len(Ipred))
+            RegID = 201 * np.ones(len(Ipred))
+            EVID = count_evt * np.ones(len(Ipred))
+            temp = pd.DataFrame({'EVID' : EVID, 'Depi': depi_range, 'Hypo': Hypo,
+                                 'I': Ipred, 'Io': Io, 'QIo': QIo, 'StdI' : StdI,
+                                 'StdlogR': StdlogR, 'Ndata': Ndata, 'RegID': RegID})
+            dataset_obs = pd.concat([dataset_obs, temp])
+            dataset_evt.loc[count_evt, :] = [count_evt, mag, 0.1, depth, depth-0.5, depth+0.5]
+            
+            count_evt += 1
+#            if count_evt == 28:
+#                print(depi_range)
+#                print(Ipred)
 
-coeff = open('pytest_dataset03_coeff.txt', 'w')
-coeff.write("C1,C2,Beta,Gamma\n")
-coeff.write("{0},{1},{2},{3}".format(C1, C2, Beta, Gamma))
+for mag in mag_list:
+    for depth in depth_list:
+        depi_range = np.logspace(0, 2.7, 100)
+        hypo = np.sqrt(depi_range**2 + depth**2)
+        Ipred = C1c + C2*mag + Beta*np.log10(hypo) + Gamma*hypo
+#        if count_evt == 27:
+#            print(Ipred)
+#            print(Ipred[Ipred>=1])
+        if np.any(Ipred>4):
+            depi_range = depi_range[Ipred>=1]
+            Hypo  = hypo[Ipred>=1]
+            Ipred = Ipred[Ipred>=1]
+            Io = C1c + C2*mag + Beta*np.log10(depth) + Gamma*depth
+            Io = Io * np.ones(len(Ipred))
+            QIo = 0.5 * np.ones(len(Ipred))
+            StdI = 0.25 * np.ones(len(Ipred))
+            StdlogR = 1.2 * np.ones(len(Ipred))
+            Ndata = 10 * np.ones(len(Ipred))
+            RegID = 301 * np.ones(len(Ipred))
+            EVID = count_evt * np.ones(len(Ipred))
+            temp = pd.DataFrame({'EVID' : EVID, 'Depi': depi_range, 'Hypo': Hypo,
+                                 'I': Ipred, 'Io': Io, 'QIo': QIo, 'StdI' : StdI,
+                                 'StdlogR': StdlogR, 'Ndata': Ndata, 'RegID': RegID})
+            dataset_obs = pd.concat([dataset_obs, temp])
+            dataset_evt.loc[count_evt, :] = [count_evt, mag, 0.1, depth, depth-0.5, depth+0.5]
+            
+            count_evt += 1
+#            if count_evt == 28:
+#                print(depi_range)
+#                print(Ipred)
+
+for mag in mag_list:
+    for depth in depth_list:
+        depi_range = np.logspace(0, 2.7, 100)
+        hypo = np.sqrt(depi_range**2 + depth**2)
+        Ipred = C1d + C2*mag + Beta*np.log10(hypo) + Gamma*hypo
+#        if count_evt == 27:
+#            print(Ipred)
+#            print(Ipred[Ipred>=1])
+        if np.any(Ipred>4):
+            depi_range = depi_range[Ipred>=1]
+            Hypo  = hypo[Ipred>=1]
+            Ipred = Ipred[Ipred>=1]
+            Io = C1d + C2*mag + Beta*np.log10(depth) + Gamma*depth
+            Io = Io * np.ones(len(Ipred))
+            QIo = 0.5 * np.ones(len(Ipred))
+            StdI = 0.25 * np.ones(len(Ipred))
+            StdlogR = 1.2 * np.ones(len(Ipred))
+            Ndata = 10 * np.ones(len(Ipred))
+            RegID = 401 * np.ones(len(Ipred))
+            EVID = count_evt * np.ones(len(Ipred))
+            temp = pd.DataFrame({'EVID' : EVID, 'Depi': depi_range, 'Hypo': Hypo,
+                                 'I': Ipred, 'Io': Io, 'QIo': QIo, 'StdI' : StdI,
+                                 'StdlogR': StdlogR, 'Ndata': Ndata, 'RegID': RegID})
+            dataset_obs = pd.concat([dataset_obs, temp])
+            dataset_evt.loc[count_evt, :] = [count_evt, mag, 0.1, depth, depth-0.5, depth+0.5]
+            
+            count_evt += 1
+#            if count_evt == 28:
+#                print(depi_range)
+#                print(Ipred)
+
+
+
+dataset_obs.to_csv('pytest_dataset06_obs.txt')
+dataset_evt.to_csv('pytest_dataset06_evt.txt')
+
+coeff = open('pytest_dataset06_coeff.txt', 'w')
+coeff.write("C1a, C1b, C1c, C1d, C2,Beta,Gamma\n")
+coeff.write("{0},{1},{2},{3},{4},{5},{6}".format(C1a, 0, 0, 0, C2, Beta, Gamma))
 coeff.close()
 
 

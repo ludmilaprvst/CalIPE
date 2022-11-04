@@ -206,33 +206,8 @@ class WLS_Kov():
             
         I = I0s + beta*np.log10(logterm)
         I = np.array(I, dtype=float)
-        #print('in fun')
-        # print(I.dtype)
-        # print(np.atleast_1d(I).dtype)
-        #print(I)
-        #print(np.atleast_1d(I))
         return I
     
-    def EMIPE_gamma(self, X, gamma):
-        """
-        Function used to inverse the intrisic attenuation coefficient
-        :param X: matrix that contains epicentral distance, depth and epicentral
-                  intensity associated to the binned intensity
-        :param gamma: intrisic attenuation coefficient
-        :type X: numpy.array
-        :type gamma: float
-        """
-        Depi, depths, I0s = X
-        try:
-            logterm = np.sqrt(Depi**2+depths**2)/depths
-        except AttributeError:
-            tmp = (Depi**2+depths**2)**0.5/depths
-            logterm = np.array([])
-            for tt in tmp:
-                logterm = np.append(logterm, tt)
-            
-        I = I0s + self.beta*np.log10(logterm) + gamma*(np.sqrt(Depi**2+depths**2)-depths)
-        return I.astype(float)
     
     def EMIPE_beta_gamma(self, X, beta, gamma):
         """
@@ -298,57 +273,6 @@ class WLS_Kov():
         #                           xtol=1e-3)
         return resBeta
     
-    def do_wls_gamma_std(self):
-        """
-        Function used to compute the covariance matrix associated to the 
-        intrinsic attenuation coefficient based on the standard deviations associated
-        to the intensity data.
-        :return: [popt, pcov] list with popt a (1, 1) shape array containing
-                 the inverted gamma. pcov is a 2-D array and 
-                 the estimated covariance of popt. The diagonals provide the
-                 variance of the parameter estimate. 
-                 To compute one standard deviation errors on the parameters use
-                 perr = np.sqrt(np.diag(pcov)).
-        """
-        Ibin = self.ObsBin_plus['I'].values
-        Depi = self.ObsBin_plus['Depi'].values
-        depths = self.ObsBin_plus['Depth'].values
-        I0s = self.ObsBin_plus['Io'].values
-        X = [np.array(Depi), np.array(depths), np.array(I0s)]
-        #
-        resGamma = curve_fit(self.EMIPE_gamma, X, Ibin, p0=self.gamma, bounds=(self.gamma-1e+6, self.gamma+1e-6),
-                                  sigma=self.ObsBin_plus['StdI'].values, absolute_sigma=True,
-                                  xtol=1e-4)
-        if resGamma[0] > 0:
-            resGamma[0] = 0
-        return resGamma
-    
-    def do_wls_gamma(self):
-        """
-        Function used to launch intrisic attenuation coefficient inversion
-        :return: [popt, pcov] list with popt a (1, 1) shape array containing
-                 the inverted gamma. pcov is a 2-D array and 
-                 the estimated covariance of popt. The diagonals provide the
-                 variance of the parameter estimate. 
-                 To compute one standard deviation errors on the parameters use
-                 perr = np.sqrt(np.diag(pcov)).
-                 In the case of a weighting scheme different as 'Ponderation dI',
-                 please use the do_wls_gamma_std() function to retrieve
-                 the covariance matrix based on the intensity data standard
-                 deviation just after inverting beta with the present function.
-        """
-        Ibin = self.ObsBin_plus['I'].values
-        Depi = self.ObsBin_plus['Depi'].values
-        depths = self.ObsBin_plus['Depth'].values
-        I0s = self.ObsBin_plus['Io'].values
-        X = [np.array(Depi), np.array(depths), np.array(I0s)]
-        #
-        resGamma = curve_fit(self.EMIPE_gamma, X, Ibin, p0=self.gamma, bounds=(-np.inf, 1e-6),
-                                  sigma=self.ObsBin_plus['eqStd'].values, absolute_sigma=True,
-                                  xtol=1e-4)
-        if resGamma[0] > 0:
-            resGamma[0] = 0
-        return resGamma
     
     def do_wls_betagamma(self):
         """
@@ -619,222 +543,7 @@ class WLS():
         self.Ca = 1/C2
         self.beta = Beta
         self.gamma = Gamma
-        
-    def EMIPE_CaCb(self, X, Ca, Cb):
-        """
-        Function used to calibrate C1 and C2 with magnitude as exog data
-        through Ca and Cb coefficients.
-        :param Ca: first magnitude equivalent coefficient. Equal to 1/Ca
-        :param Cb: second magnitude equivalent coefficient. Equal to -Cb/Ca
-        :param X: equivalent data, equal to the weighted mean of I - BETA.log10(Hypo) + GAMMA.Hypo
-                  by earthquake. Weights are equal to the inverse of the intensity
-                  standard deviation squared.
-        :type X: numpy.array
-        :type Ca: float
-        :type Cb: float
-        """
-        MAG = Ca*X + Cb
-        return MAG
-    
-    def EMIPE_C1C2BetaGamma(self, X, C1, C2, Beta, Gamma):
-        """
-        Function used to inverse the attenuation and magnitude coefficients
-        :param X: matrix that contains magnitude, epicentral distance and depth
-                  intensity associated to the binned intensity
-        :param C1: first magnitude coefficient
-        :param C2: second magnitude coefficient
-        :param Beta: geometric attenuation coefficient
-        :param Gamma: intrisic attenuation coefficient
-        :type X: numpy.array
-        :type Gamma: float
-        :type Beta: float
-        :type C1: float
-        :type C2: float
-        """
-        mags, depi, depths = X
-        hypos = np.sqrt(depi**2 + depths**2)
-        I = C1 + C2*mags + Beta*np.log10(hypos) + Gamma*hypos
-        return I
-    
-    def EMIPE_C1C2Beta(self, X, C1, C2, Beta):
-        """
-        Function used to inverse the magnitude coefficients and the geometric attenuation
-        coefficient
-        :param X: matrix that contains magnitude, epicentral distance and depth
-                  intensity associated to the binned intensity
-        :param C1: first magnitude coefficient
-        :param C2: second magnitude coefficient
-        :param Beta: geometric attenuation coefficient
-        :type X: numpy.array
-        :type Beta: float
-        :type C1: float
-        :type C2: float
-        """
-        mags, depi, depths = X
-        hypos = np.sqrt(depi**2 + depths**2)
-        I = C1 + C2*mags + Beta*np.log10(hypos)
-        return I
-    
-    
-    
-    def EMIPE_gamma(self, X, Gamma):
-        """
-        Function used to inverse the intrisic attenuation coefficient
-        :param X: matrix that contains magnitude, epicentral distance and depth
-                  intensity associated to the binned intensity
-        :param C1: first magnitude coefficient
-        :param C2: second magnitude coefficient
-        :param Gamma: intrisic attenuation coefficient
-        :type X: numpy.array
-        :type Gamma: float
-        :type C1: float
-        :type C2: float
-        """
-        mags, depi, depths = X
-        hypos = np.sqrt(depi**2 + depths**2)
-        I = self.C1 + self.C2*mags + self.beta*np.log10(hypos) + Gamma*hypos
-        return I
-    
-    def do_wls_C1C2(self):
-        """
-        Function used to launch the inversion of the magnitude coefficient C1 and C2
-        The DataFrame with the intensity data will need a "X" column, equal to
-        the weighted mean of I - BETA.log10(Hypo) + GAMMA.Hypo by earthquake.
-        Weights are equal to the inverse of the intensity standard deviation squared
-        
-        :return: (2, 1) shape list with in position [0] the C1 coefficient and in
-                 position [1] the C2 coefficient
-        """
-        resCaCb = curve_fit(self.EMIPE_CaCb, self.Obsbin_plus.X.values, self.Obsbin_plus.Mag.values, 
-                            p0=[self.Ca, self.Cb], sigma=self.Obsbin_plus['eqStdM'].values, absolute_sigma=True,
-                            xtol=1e-3)
-        C2 = 1/resCaCb[0][0]
-        C1 = -resCaCb[0][1]/resCaCb[0][0]
-        # a verifier pour le calcul matrice de covariance!
-        #StdC2 = resCaCb[1][1]
-        #StdC1 = resCaCb[1][0]/resCaCb[1][1]
-        return [C1, C2]
-    
-    def do_wls_Gamma(self):
-        """
-        Function used to launch the inversion of the intrisic attenuation coefficient Gamma
-        
-        :return: [popt, pcov] list with popt a (1, 1) shape array containing
-                the inverted gamma. pcov is a 2-D array and 
-                the estimated covariance of popt. The diagonals provide the
-                variance of the parameter estimate. 
-                To compute one standard deviation errors on the parameters use
-                perr = np.sqrt(np.diag(pcov)). Values in covariance
-                matrix are not accurate when using a weighting scheme different
-                as 'Ponderation dI'. 
-        """
-        X = [self.Obsbin_plus.Mag.values,
-             self.Obsbin_plus.Depi.values,
-             self.Obsbin_plus.Depth.values]
-        Ibin = self.Obsbin_plus['I'].values
-        Gamma = curve_fit(self.EMIPE_gamma, X, Ibin, 
-                                  p0=[self.gamma],
-                                  sigma=self.Obsbin_plus['eqStd'].values,
-                                  absolute_sigma=True,
-                                  bounds=(-np.inf, 0),
-                                  xtol=1e-4)
-        
-        return Gamma
-    
-    def do_wls_C1C2BetaGamma(self):
-        """
-        Function used to launch the inversion of all coefficients
-        
-        return: [popt, pcov] list with popt a (4, 1) shape array containing
-                the inverted coefficient with popt[0] the C1 coefficient,
-                popt[1] the C2 coefficient, popt[2] the beta coefficient and
-                the popt[3] the gamma coefficient. pcov is a 2-D array and 
-                the estimated covariance of popt. The diagonals provide the
-                variance of the parameter estimate. 
-                To compute one standard deviation errors on the parameters use
-                perr = np.sqrt(np.diag(pcov)). pcov values are not accurate with
-                the eqStdM as sigma. A function has to be developped to compute
-                accurate pcov
-        """
-        X = [self.Obsbin_plus.Mag.values,
-             self.Obsbin_plus.Depi.values,
-             self.Obsbin_plus.Depth.values]
-        Ibin = self.Obsbin_plus['I'].values
-        C1C2BetaGamma = curve_fit(self.EMIPE_C1C2BetaGamma, X, Ibin, 
-                                  p0=[self.C1, self.C2, self.beta, self.gamma],
-                                  bounds=([-np.inf, -np.inf, -np.inf, -np.inf], [np.inf, np.inf, np.inf, 9e-5]),
-                                  sigma=self.Obsbin_plus['eqStdM'].values,
-                                  absolute_sigma=True,
-                                  xtol=1e-3)# 1e-6
-        if C1C2BetaGamma[0][3] > 0:
-            C1C2BetaGamma[0][3] = 0
-        return C1C2BetaGamma
-    
-    def do_wls_C1C2Beta(self, sigma='none'):
-        """
-        Function used to launch the inversion of all coefficients, except the intrinsic
-        attenuation coefficient gamma.
-        
-         return: [popt, pcov] list with popt a (3, 1) shape array containing
-                the inverted coefficient with popt[0] the C1 coefficient,
-                popt[1] the C2 coefficient and popt[2] the beta coefficient. pcov is a 2-D array and 
-                the estimated covariance of popt. The diagonals provide the
-                variance of the parameter estimate. 
-                To compute one standard deviation errors on the parameters use
-                perr = np.sqrt(np.diag(pcov)). pcov values are not accurate with
-                the eqStdM as sigma. A function has to be developped to compute
-                accurate pcov
-        """
-        
-            
-        X = [self.Obsbin_plus.Mag.values,
-             self.Obsbin_plus.Depi.values,
-             self.Obsbin_plus.Depth.values]
-        Ibin = self.Obsbin_plus['I'].values
-        if sigma == 'none':
-            sigma = self.Obsbin_plus['eqStdM'].values
-        C1C2Beta = curve_fit(self.EMIPE_C1C2Beta, X, Ibin, 
-                             p0=[self.C1, self.C2, self.beta],
-                             bounds=([-np.inf, -np.inf, -np.inf], [np.inf, np.inf, np.inf]),
-                             sigma=sigma,
-                             absolute_sigma=True,
-                             xtol=1e-3)
-        return C1C2Beta
 
-    def EMIPE_JACdC1C2BetaH(self, X, C1, C2, beta, H):
-        """
-        Jacobian function used to inverse depth
-        :param Depi: epicentral distances associated to the binned intensity data
-        :param H: hypocenter's depth of the considered earthquake.
-                      Should be greater than 0
-        :type Depi: numpy.array
-        :type H: float
-        """
-        Depi, Mag = X[:2]
-        aH = X[2:][0]
-        Hypo = np.sqrt(Depi**2+(aH*H).sum(axis=0)**2)
-        tmpValue = (aH*H).sum(axis=0)/Hypo
-        gC1 = np.ones(len(Depi))
-        gC2 = Mag
-        gbeta = np.log10(Hypo)
-        #gH = (tmpValue)*((self.beta/(np.log(10)*Hypo))+self.gamma)
-        GH = np.array([])
-        for ahh, hh in zip(aH, H):
-            Hypo = np.sqrt(Depi**2+ahh*hh**2)
-            tmpValue = ahh*hh/Hypo
-            gH = (tmpValue)*((beta/(np.log(10)*Hypo)))
-            gH = np.nan_to_num(gH)
-            #GH = np.tile(gH, (len(Depi),1))
-            try:
-                GH = np.vstack((GH, gH))
-            except ValueError:
-                GH = np.concatenate((GH, gH))
-        #g = np.array([gC1, gC2, gbeta, GH])
-        g = np.vstack((gC1, gC2))
-        g = np.vstack((g, gbeta))
-        g = np.vstack((g, GH))
-        return g.reshape(len(Depi),3+len(Depi))
-    
     def EMIPE_C1C2BetaH(self, X, C1, C2, Beta, H1, H2, H3, H4, H5, H6, H7, H8,
                         H9, H10, H11, H12, H13, H14, H15, H16, H17, H18, H19, H20,
                         H21, H22, H23, H24, H25, H26, H27, H28, H29, H30, H31):
@@ -881,15 +590,44 @@ class WLS():
                        [H25]*len(depi), [H26]*len(depi), [H27]*len(depi), [H28]*len(depi),
                        [H29]*len(depi), [H30]*len(depi), [H31]*len(depi)
                        ))
-#        print(H.shape)
-#        print(ah.shape)
-        #print((H*ah).sum(axis=0))
-        
-        
         hypos = np.sqrt(depi**2 + (H*aH).sum(axis=0)**2)
         I = C1 + C2*mags + Beta*np.log10(hypos)
         return I
 
+    def EMIPE_JACdC1C2BetaH(self, X, C1, C2, beta, H):
+        """
+        Jacobian function used to inverse depth
+        :param Depi: epicentral distances associated to the binned intensity data
+        :param H: hypocenter's depth of the considered earthquake.
+                      Should be greater than 0
+        :type Depi: numpy.array
+        :type H: float
+        """
+        Depi, Mag = X[:2]
+        aH = X[2:][0]
+        Hypo = np.sqrt(Depi**2+(aH*H).sum(axis=0)**2)
+        tmpValue = (aH*H).sum(axis=0)/Hypo
+        gC1 = np.ones(len(Depi))
+        gC2 = Mag
+        gbeta = np.log10(Hypo)
+        #gH = (tmpValue)*((self.beta/(np.log(10)*Hypo))+self.gamma)
+        GH = np.array([])
+        for ahh, hh in zip(aH, H):
+            Hypo = np.sqrt(Depi**2+ahh*hh**2)
+            tmpValue = ahh*hh/Hypo
+            gH = (tmpValue)*((beta/(np.log(10)*Hypo)))
+            gH = np.nan_to_num(gH)
+            #GH = np.tile(gH, (len(Depi),1))
+            try:
+                GH = np.vstack((GH, gH))
+            except ValueError:
+                GH = np.concatenate((GH, gH))
+        #g = np.array([gC1, gC2, gbeta, GH])
+        g = np.vstack((gC1, gC2))
+        g = np.vstack((g, gbeta))
+        g = np.vstack((g, GH))
+        return g.reshape(len(Depi),3+len(Depi))
+    
     def do_wls_C1C2BetaH(self, sigma='none',
                          ftol=5e-3, xtol=1e-8, max_nfev=200):
         """
@@ -996,9 +734,6 @@ class WLS():
                        [H25]*len(depi), [H26]*len(depi), [H27]*len(depi), [H28]*len(depi),
                        [H29]*len(depi), [H30]*len(depi), [H31]*len(depi)
                        ))
-#        print(H.shape)
-#        print(ah.shape)
-        #print((H*ah).sum(axis=0))
         
         
         hypos = np.sqrt(depi**2 + (H*aH).sum(axis=0)**2)
@@ -1108,10 +843,44 @@ class WLS():
         sigma[sigma==0] = eta
         return sigma
     
-    def do_odr_C1C2Beta(self):
-        # Pour prendre en compte l'incertitude su Mw et Depi
-        # Pas d'incertitude sur I????
-        pass
+    def example_function(X, C0a, C0b, C2):
+        mags, dummy = X
+        return C0a + dummy*C0b + mags*C2
     
-    def do_odr_C1C2BetaGamma(self):
-        pass
+    def C1regionC2_EMIPE(self, X, C1a, C1b, C1c, C1d, C2):
+        mags, id_region = X
+        liste_region = np.unique(id_region)
+        if len(liste_region)>4:
+            raise ValueError('Number of region should not exceed 4')
+        aregion = np.array([])
+
+        for compt, region in enumerate(liste_region):
+            ind = (id_region == region)
+            zeros = np.zeros(len(mags))
+            zeros[ind] = 1
+            try:
+                aregion = np.vstack((aregion, zeros))
+            except ValueError:
+                 aregion = np.concatenate((aregion, zeros))
+        if len(liste_region)<4:
+            len_noreg = 4 - len(liste_region)
+            for compt in range(len_noreg):
+                zeros = np.zeros(len(self.Obsbin_plus.EVID))
+                aregion = np.vstack((aregion, zeros))
+
+        C1 = np.vstack(([C1a]*len(mags), [C1b]*len(mags), [C1c]*len(mags), [C1d]*len(mags)
+                       ))
+        IminusAtt = (C1*aregion).sum(axis=0) + C2*mags 
+        return IminusAtt
+    
+    def do_linregressC1regC2(self, sigma='none',
+                         ftol=5e-3, xtol=1e-8, max_nfev=200):
+        hypos = np.sqrt(self.Obsbin_plus['Depi'].values.astype(float)**2 + self.Obsbin_plus['Depth'].values.astype(float)**2)
+        IminusAtt = self.Obsbin_plus['I'].values - self.beta*np.log10(hypos) - self.gamma*hypos
+        X = [self.Obsbin_plus.Mag.values.astype(float),
+             self.Obsbin_plus.RegID.values.astype(float)]
+        C1regC2 = curve_fit(self.C1regionC2_EMIPE, X, IminusAtt, 
+                             sigma=sigma,
+                             absolute_sigma=True,
+                             xtol=xtol, ftol=ftol)
+        return C1regC2
