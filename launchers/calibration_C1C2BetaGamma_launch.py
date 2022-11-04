@@ -43,7 +43,7 @@ beta_liste = [-3]
 #beta_liste = [-3.5]
 C1_liste = [1]#, 2, 3]
 C2_liste = [1]
-gamma = -0.00001
+gamma = -0.001
 
 for beta in beta_liste:
     print(beta)

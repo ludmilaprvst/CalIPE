@@ -239,7 +239,7 @@ def Kovatt_ponderation_evt_uniforme(obsbin_plus):
     poids_evt = 1/len(liste_evt)
     for evid in liste_evt:
         obsbin_plus = normaliser_poids_par_evt(evid, obsbin_plus)
-    obsbin_plus.loc[:, 'Poids'] = obsbin_plus.loc[:, 'Poids_inevt_norm']*poids_evt
+    obsbin_plus.loc[:, 'Poids'] = obsbin_plus.loc[:, 'Poids_inevt_norm'].astype(float)*poids_evt
     obsbin_plus.loc[:, 'eqStd'] = 1/np.sqrt(obsbin_plus.loc[:, 'Poids'])
     
     obsbin_plus.drop(['Poids_inevt_norm', 'Poids'], axis=1, inplace=True)

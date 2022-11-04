@@ -11,6 +11,7 @@ from wrms import calcul_wrms_beta, plot_wrms_beta_1evt, plot_wrms_withHI0lines
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from scipy.stats.stats import pearsonr
+from matplotlib import colors
 
 
 def apply_KovBetaeq(I0, beta, Depi, H):
@@ -64,6 +65,67 @@ def readBetaFile(nomFichier):
     fichier.close()
     
     return beta, stdbeta, beta_ini, nbre_iteration, nbre_iterationMax, nbre_iterationMin, nbreEvt, nbreI, evtfile, obsfile
+
+
+def readBetaGammaFile(nomFichier):
+    fichier = open(nomFichier, 'r')
+    contenuFichier = fichier.read()
+    contenuFichier = contenuFichier.split('\n')
+    
+    
+    ligneBeta = contenuFichier[0]
+    beta = ligneBeta[ligneBeta.index(':')+1:]
+    beta = float(beta)
+    
+    ligneBetaStd = contenuFichier[1]
+    stdbeta = ligneBetaStd.split(':')[-1]
+    stdbeta = float(stdbeta)
+    
+    ligneBetaIni = contenuFichier[2]
+    beta_ini = ligneBetaIni.split(':')[-1]
+    beta_ini = float(beta_ini)
+    
+    ligneGamma = contenuFichier[3]
+    gamma = ligneGamma[ligneGamma.index(':')+1:]
+    gamma = float(gamma)
+    
+    ligneGammaStd = contenuFichier[4]
+    stdgamma = ligneGammaStd.split(':')[-1]
+    stdgamma = float(stdgamma)
+    
+    ligneGammaIni = contenuFichier[5]
+    gamma_ini = ligneGammaIni.split(':')[-1]
+    gamma_ini = float(gamma_ini)
+    
+    ligneNbreIteration = contenuFichier[6]
+    nbre_iteration = ligneNbreIteration.split(':')[-1]
+    nbre_iteration = float(nbre_iteration)
+    
+    ligneNbreIterationMax = contenuFichier[7]
+    nbre_iterationMax = ligneNbreIterationMax.split(':')[-1]
+    nbre_iterationMax = float(nbre_iterationMax)
+    
+    ligneNbreIterationMin = contenuFichier[8]
+    nbre_iterationMin = ligneNbreIterationMin.split(':')[-1]
+    nbre_iterationMin = float(nbre_iterationMin)
+    
+    ligneNbreEvt = contenuFichier[9]
+    nbreEvt = ligneNbreEvt.split(':')[-1]
+    nbreEvt = float(nbreEvt)
+    
+    ligneNbreI = contenuFichier[10]
+    nbreI = ligneNbreI.split(':')[-1]
+    nbreI = float(nbreI)
+    
+    ligneEvtfile = contenuFichier[11]
+    evtfile = ligneEvtfile.split(':')[-1]
+    
+    ligneObsfile = contenuFichier[12]
+    obsfile = ligneObsfile.split(':')[-1]
+
+    fichier.close()
+    
+    return beta, stdbeta, beta_ini, gamma, stdgamma, gamma_ini, nbre_iteration, nbre_iterationMax, nbre_iterationMin, nbreEvt, nbreI, evtfile, obsfile
 
 def create_postprocessing_savedir(run_name, path):
     directory = path + '/' + run_name
@@ -161,7 +223,7 @@ def plot_dIMag(run_name, path, ax):
     ax.axhline(y=obsbin_gp.dI.mean(), color='k', label='Mean event residual')
     ax.set_xlabel('I0 (from database)')
     ax.set_ylabel('dI = Iobs - Ipred')
-    outsiders = obsbin_gp[np.abs(obsbin_gp.dI)>0.1]
+    outsiders = obsbin_gp[np.abs(obsbin_gp.dI)>0.5]
     return outsiders
 
 def compute_withinbetweenevt_sigma(obsbin, beta):
@@ -449,7 +511,11 @@ def plot_Hlim(run_name, path, ax):
     
 def plot_endH_oneDataset(run_name, path, basicdatabase,
                          ax, beta_min=-4, beta_max=-2,
-                         colorbar=True):
+                         beta_center=-3,
+                         colorbar=True, cmap='viridis'):
+    divnorm = colors.TwoSlopeNorm(vmin=beta_min,
+                                  vcenter=beta_center,
+                                  vmax=beta_max)
     beta_file = 'betaFinal_' + run_name + '.txt'
     obsbinfile = 'obsbinEnd_' + run_name + '.csv'
     beta = readBetaFile(path + '/' + beta_file)[0]
@@ -460,13 +526,14 @@ def plot_endH_oneDataset(run_name, path, basicdatabase,
     list_evt = grouped_data.EVID.values
     xdata = basicdatabase[basicdatabase.EVID.isin(list_evt)].index.values
     sc = ax.scatter(xdata, grouped_data.Depth.values,
-               c=grouped_data.Beta.values, vmin=beta_min, vmax=beta_max,
-               zorder=10)
+               c=grouped_data.Beta.values, 
+               zorder=10, cmap=cmap,norm=divnorm)
     if colorbar:
         plt.colorbar(sc, label="Beta value")
     
 def plot_endH_diffSubsets(output_folder, basicdatabasename,
-                          ax, beta_min=-4, beta_max=-2):
+                          ax, beta_min=-4, beta_max=-2,
+                          beta_center=-3,colorbar=True, cmap='viridis'):
     basicdatabase = pd.read_csv(basicdatabasename, sep=';')
     grouped_basicdb = basicdatabase.groupby('EVID').mean()
     grouped_basicdb.reset_index(inplace=True)
@@ -480,11 +547,14 @@ def plot_endH_diffSubsets(output_folder, basicdatabasename,
             run_name = fichier[10:-4]
             if compt == 1:
                 plot_endH_oneDataset(run_name, output_folder, grouped_basicdb, ax,
-                                     beta_min=beta_min, beta_max=beta_max)
+                                     beta_min=beta_min, beta_max=beta_max,
+                                     beta_center=beta_center, cmap=cmap)
+                                     
             else:
                 plot_endH_oneDataset(run_name, output_folder, grouped_basicdb, ax,
                                      beta_min=beta_min, beta_max=beta_max,
-                                     colorbar=False)
+                                     colorbar=False, cmap=cmap,
+                                     beta_center=beta_center)
                 
 def plot_Iolim(run_name, path, ax):
     obsbinfile = 'obsbinEnd_' + run_name + '.csv'

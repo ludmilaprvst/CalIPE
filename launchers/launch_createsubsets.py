@@ -5,22 +5,31 @@ Created on Wed Jul 28 11:43:48 2021
 @author: PROVOST-LUD
 """
 import sys
-sys.path.append('../../calib_fc')
+sys.path.append('../calib_fc')
 import pandas as pd
 from create_subsets import create_liste_subset, filter_by_nevt, check_duplicate, create_basicdb_criteria
 from create_subsets import create_subsets
 
-basic_db_name = '../../Data/FR_extended_01/FR_extended_01.txt'
-obsdata_name = '../../Data/ObsData/ObsCalibration_Frextended.txt'
-subset_folder = '../../Data'
-criteria = create_basicdb_criteria(basic_db_name, obsdata_name,
-                            binning_type='RAVG',
-                            outputfolder='../../Data',
-                            regiondata_name='',
-                            ponderation='Ponderation evt-uniforme',
-                            )
 
-#%%
+
+"""
+Create a table with the metadata used to create the subsets. Excel file can be created/modified manually:
+"""
+# basic_db_name = '../../Data/FR_extended_01/FR_extended_01.txt'
+# obsdata_name = '../../Data/ObsData/ObsCalibration_Frextended.txt'
+# subset_folder = '../../Data'
+# criteria = create_basicdb_criteria(basic_db_name, obsdata_name,
+#                             binning_type='RAVG',
+#                             outputfolder='../../Data',
+#                             regiondata_name='',
+#                             ponderation='Ponderation evt-uniforme',
+#                             )
+
+#%% FRextended
+basic_db_name = '../../Data/FR_extended_01/FR_extended_01.txt'
+obsdata_name = '../../Data/ObsData/ObsCalibration_Frextended_filtered.txt'
+subset_folder = '../../Data/FR_extended_01/Subset_02'
+
 criteria = pd.read_excel('../../Data/subset_criteria_FR_extended_01.xlsx')
 global_liste, criteres = create_liste_subset(criteria,
                                              year_inf=[1850, 1950],

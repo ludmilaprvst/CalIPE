@@ -205,6 +205,12 @@ class WLS_Kov():
                 logterm = np.append(logterm, tt)
             
         I = I0s + beta*np.log10(logterm)
+        I = np.array(I, dtype=float)
+        #print('in fun')
+        # print(I.dtype)
+        # print(np.atleast_1d(I).dtype)
+        #print(I)
+        #print(np.atleast_1d(I))
         return I
     
     def EMIPE_gamma(self, X, gamma):
@@ -226,7 +232,7 @@ class WLS_Kov():
                 logterm = np.append(logterm, tt)
             
         I = I0s + self.beta*np.log10(logterm) + gamma*(np.sqrt(Depi**2+depths**2)-depths)
-        return I
+        return I.astype(float)
     
     def EMIPE_beta_gamma(self, X, beta, gamma):
         """
@@ -241,7 +247,7 @@ class WLS_Kov():
         """
         Depi, depths, I0s = X
         I = I0s + beta*np.log10(np.sqrt(Depi**2+depths**2)/depths) + gamma*(np.sqrt(Depi**2+depths**2)-depths)
-        return I
+        return I.astype(float)
         
     def do_wls_beta(self):
         """
@@ -257,13 +263,13 @@ class WLS_Kov():
                  the covariance matrix based on the intensity data standard
                  deviation just after inverting beta with the present function.
         """
-        Ibin = self.ObsBin_plus['I'].values
-        Depi = self.ObsBin_plus['Depi'].values
-        depths = self.ObsBin_plus['Depth'].values
-        I0s = self.ObsBin_plus['Io'].values
+        Ibin = self.ObsBin_plus['I'].values.astype(float)
+        Depi = self.ObsBin_plus['Depi'].values.astype(float)
+        depths = self.ObsBin_plus['Depth'].values.astype(float)
+        I0s = self.ObsBin_plus['Io'].values.astype(float)
         X = [np.array(Depi), np.array(depths), np.array(I0s)]
         resBeta = curve_fit(self.EMIPE_beta, X, Ibin, p0=self.beta,
-                                  sigma=self.ObsBin_plus['eqStd'].values, absolute_sigma=True,
+                                  sigma=self.ObsBin_plus['eqStd'].values.astype(float), absolute_sigma=True,
                                   xtol=1e-3)
         return resBeta
     
@@ -279,14 +285,17 @@ class WLS_Kov():
                  To compute one standard deviation errors on the parameters use
                  perr = np.sqrt(np.diag(pcov)).
         """
-        Ibin = self.ObsBin_plus['I'].values
-        Depi = self.ObsBin_plus['Depi'].values
-        depths = self.ObsBin_plus['Depth'].values
-        I0s = self.ObsBin_plus['Io'].values
-        X = [np.array(Depi), np.array(depths), np.array(I0s)]
+        Ibin = self.ObsBin_plus['I'].values.astype(float)
+        Depi = self.ObsBin_plus['Depi'].values.astype(float)
+        depths = self.ObsBin_plus['Depth'].values.astype(float)
+        I0s = self.ObsBin_plus['Io'].values.astype(float)
+        X = [np.array(Depi, dtype=float), np.array(depths, dtype=float), np.array(I0s, dtype=float)]
         resBeta = curve_fit(self.EMIPE_beta, X, Ibin, p0=self.beta, bounds=(self.beta-0.0001, self.beta+0.0001),
-                                  sigma=self.ObsBin_plus['StdI'].values, absolute_sigma=True,
+                                  sigma=self.ObsBin_plus['StdI'].values.astype(float), absolute_sigma=True,
                                   xtol=1e-3)
+        # resBeta = curve_fit(self.EMIPE_beta, X, Ibin, p0=self.beta, 
+        #                           sigma=self.ObsBin_plus['StdI'].values, absolute_sigma=True,
+        #                           xtol=1e-3)
         return resBeta
     
     def do_wls_gamma_std(self):
@@ -356,14 +365,14 @@ class WLS_Kov():
                  the covariance matrix based on the intensity data standard
                  deviation just after inverting beta with the present function.
         """
-        Ibin = self.ObsBin_plus['I'].values
-        Depi = self.ObsBin_plus['Depi'].values
-        depths = self.ObsBin_plus['Depth'].values
-        I0s = self.ObsBin_plus['Io'].values
+        Ibin = self.ObsBin_plus['I'].values.astype(float)
+        Depi = self.ObsBin_plus['Depi'].values.astype(float)
+        depths = self.ObsBin_plus['Depth'].values.astype(float)
+        I0s = self.ObsBin_plus['Io'].values.astype(float)
         X = [Depi, depths, I0s]
         resBetaGamma = curve_fit(self.EMIPE_beta_gamma, X, Ibin, p0=[self.beta, self.gamma],
                                   bounds=([-np.inf, -np.inf], [np.inf, 0]),
-                                  sigma=self.ObsBin_plus['eqStd'].values, absolute_sigma=True,
+                                  sigma=self.ObsBin_plus['eqStd'].values.astype(float), absolute_sigma=True,
                                   xtol=1e-3)
         return resBetaGamma
     
@@ -380,14 +389,14 @@ class WLS_Kov():
                  perr = np.sqrt(np.diag(pcov)).
         """
         
-        Ibin = self.ObsBin_plus['I'].values
-        Depi = self.ObsBin_plus['Depi'].values
-        depths = self.ObsBin_plus['Depth'].values
-        I0s = self.ObsBin_plus['Io'].values
+        Ibin = self.ObsBin_plus['I'].values.astype(float)
+        Depi = self.ObsBin_plus['Depi'].values.astype(float)
+        depths = self.ObsBin_plus['Depth'].values.astype(float)
+        I0s = self.ObsBin_plus['Io'].values.astype(float)
         X = [Depi, depths, I0s]
         resBetaGamma = curve_fit(self.EMIPE_beta_gamma, X, Ibin, p0=[self.beta, self.gamma],
                                   bounds=([self.beta-0.0001, self.gamma-1e-6], [self.beta+0.0001, self.gamma+1e-6]),
-                                  sigma=self.ObsBin_plus['StdI'].values, absolute_sigma=True,
+                                  sigma=self.ObsBin_plus['StdI'].values.astype(float), absolute_sigma=True,
                                   xtol=1e-3)
         return resBetaGamma
 

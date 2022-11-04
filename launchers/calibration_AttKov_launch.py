@@ -28,13 +28,13 @@ import os
 #import matplotlib.pyplot as plt
 
 # FR_instu
-obsdata_name = '../../Data/ObsData/ObsCalibration_Frextended.txt'
+obsdata_name = '../../Data/ObsData/ObsCalibration_Frextended_filtered.txt'
 evtdata_name = 'FR_extended_01.txt'
-#subset_folder = '../../Data/FR_instru_01/subsets_01'
-subset_folder = ''
+subset_folder = '../../Data/FR_extended_01/Subsets_02'
+#subset_folder = ''
 #subset_folder = '../../Data/FR_instru_01/bootstrap_1evt_FRinstru'
 evtcalib_folder = '../../Data/FR_extended_01/'
-outputfolder = '../../Outputs/FR_extended_01/Subsets_01/BetaGamma'
+outputfolder = '../../Outputs/FR_extended_01/Subsets_02/BetaGamma'
 
 """
 # FR_extended
@@ -76,7 +76,7 @@ ponderation_list = ['Ponderation evt-uniforme']
 
 option_gamma = True
 
-liste_beta_ini = [-2.0, -2.5, -3.0, -3.5, -4.0, -4.5, -5.0]
+liste_beta_ini = [-2.0, -2.5, -3.0, -3.5, -4.0, -4.5, -5.0]#[-2.0, -2.5, -3.0, -3.5, -4.0, -4.5, -5.0]
 liste_gamma_ini = [0, -0.01, -0.001]
 #liste_beta_ini = [-3.0, -3.5, -4.0]
 #liste_beta_ini = [-3.5]
@@ -85,7 +85,7 @@ if not subset_folder == '':
     liste_subset = pd.read_excel(subset_folder +'/dataset_list.xlsx')
     liste_subset = liste_subset.Datasubsetname.values
     liste_subset = np.insert(liste_subset, 0, evtdata_name)
-    for subset in liste_subset:
+    for subset in liste_subset[185:]:
         if subset == evtdata_name:
             complete_subset = evtcalib_folder + subset
         else:
@@ -107,7 +107,14 @@ if not subset_folder == '':
                 print(ponderation)
                 #completeobsdataname = data_folder + obsdata_name
                 if option_gamma:
-                    pass
+                    Kovbetagamma_onedataset(complete_subset, obsdata_name, 
+                                            outputfolder=outputfolder,
+                                            liste_beta_ini=liste_beta_ini,
+                                            liste_gamma_ini=liste_gamma_ini,
+                                            ponderation=ponderation,
+                                            binning_type=binning_type,
+                                            regiondata_name=regiondata_name,
+                                            NminIter=3, NmaxIter=100)
                 else:
                     Kovbeta_onedataset(complete_subset, obsdata_name,
                                        outputfolder=outputfolder,

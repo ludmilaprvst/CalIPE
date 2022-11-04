@@ -27,7 +27,7 @@ def write_betaresults(name, outputfolder, beta, suivi_beta, beta_ini,
     output_file.write('Beta Std:' +str(np.sqrt(np.diag(cov_beta))[0])+'\n')
     output_file.write('Beta ini:' +str(beta_ini)+'\n')
     output_file.write('Nbre iteration:' +str(len(suivi_beta)) + ' \n')
-    output_file.write('Nbre iteration max:' +str(50) + ' \n')
+    output_file.write('Nbre iteration max:' +str(NmaxIter) + ' \n')
     output_file.write('Nbre iteration min:' +str(NminIter) + ' \n')
     output_file.write('Nbre evt:' +str(int(nbre_evt))+'\n')
     output_file.write('Nbre data:' +str(len(obsBin_plus_end))+'\n')
@@ -61,7 +61,7 @@ def write_betagammaresults(name, outputfolder,
     output_file.write('Gamma Std:' +str(np.sqrt(np.diag(cov_betagamma))[1])+'\n')
     output_file.write('Gamma ini:' +str(gamma_ini)+'\n')
     output_file.write('Nbre iteration:' +str(len(suivi_beta)) + ' \n')
-    output_file.write('Nbre iteration max:' +str(50) + ' \n')
+    output_file.write('Nbre iteration max:' +str(NmaxIter) + ' \n')
     output_file.write('Nbre iteration min:' +str(NminIter) + ' \n')
     output_file.write('Nbre evt:' +str(int(nbre_evt))+'\n')
     output_file.write('Nbre data:' +str(len(obsBin_plus_end))+'\n')
@@ -74,7 +74,7 @@ def write_betagammaresults(name, outputfolder,
     output02 = pd.DataFrame(data=d)
     output02.to_csv(fullname02, sep=';')
     obsBin_plus_end.to_csv(fullname03, index=False, sep=';')
-    pass
+   
 
 def Kovbeta_onedataset(evtdata_name, obsdata_name, outputfolder,
                        liste_beta_ini, ponderation,

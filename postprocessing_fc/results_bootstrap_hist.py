@@ -8,7 +8,8 @@ Created on Wed Jul 28 17:55:30 2021
 import os
 from postprocessing_Kovbeta import readBetaFile
 import numpy as np
-import matplotlib.pyplot as plt
+import pandas as pd
+import ntpath
 
 
 def get_hist_bootstrap(output_folder):
@@ -34,6 +35,35 @@ def plot_hist_bootstrap(ax, liste, beta_base,
     ax.set_xlabel('Beta values')
     #ax.legend(loc=2)
     ax.grid(which='both')
+    
+def get_table_inoutputbeta(output_folder):
+    liste_fichiers = os.listdir(output_folder)
+    liste_beta = []
+    liste_evtfile = []
+    liste_betaini = []
+    for fichier in liste_fichiers:
+        if 'betaFinal' in fichier:
+            if 'FR' in fichier:
+                beta_baseDB = readBetaFile(output_folder+'/'+fichier)[0]
+                liste_beta.append(beta_baseDB)
+                evtfile = ntpath.basename(readBetaFile(output_folder+'/'+fichier)[8])
+                basename = evtfile.split('.')[0]
+                liste_evtfile.append(basename)
+                liste_betaini.append(readBetaFile(output_folder+'/'+fichier)[2])
+            else:
+                
+                beta = readBetaFile(output_folder+'/'+fichier)[0]
+                liste_beta.append(beta)
+                evtfile = ntpath.basename(readBetaFile(output_folder+'/'+fichier)[8])
+                basename = evtfile.split('.')[0]
+                liste_evtfile.append(basename)
+                liste_betaini.append(readBetaFile(output_folder+'/'+fichier)[2])
+                #print(fichier, beta)
+                
+    return pd.DataFrame.from_dict({'beta' : liste_beta,
+                                   'beta_ini' : liste_betaini,
+                                   'database' : liste_evtfile})
+                
 """    
 output_folder = '../Outputs/FR_instru_01/Boostrap_FRinstru'
 output_folder_PYREST = '../Outputs/FR_instru_01_PYREST/Bootstrap'
