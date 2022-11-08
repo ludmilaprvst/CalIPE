@@ -310,7 +310,7 @@ def test_do_linregressC1regC2():
     print(resC1regC2)
     assert resC1regC2[0][0] == pytest.approx(C1a, abs=0.001)
     assert resC1regC2[0][1] == pytest.approx(C1b, abs=0.001)
-    assert resC1regC2[0][4] == pytest.approx(C2, abs=0.001)
+    assert resC1regC2[0][2] == pytest.approx(C2, abs=0.001)
     
     test_id = '06'
     obs_data = pd.read_csv('../Testpy_dataset/pytest_dataset' + test_id + '_obs.txt')
@@ -336,9 +336,7 @@ def test_do_linregressC1regC2():
     C2 = coeff_data[' C2'].values[0]
     
     resC1regC2 = WLSIC.WLS(obs_data, 1, 1, Beta, 0).do_linregressC1regC2(ftol=2e-3, max_nfev=1000, sigma=obs_data.StdI)
-    print(coeff_data)
-    print(resC1regC2)
-    print(C1a, C1b, C1c, C1d, C2)
+
     assert resC1regC2[0][0] == pytest.approx(C1a, abs=0.001)
     assert resC1regC2[0][1] == pytest.approx(C1b, abs=0.001)
     assert resC1regC2[0][2] == pytest.approx(C1c, abs=0.001)
@@ -349,8 +347,7 @@ def test_do_linregressC1regC2():
     obs_data = pd.read_csv('../Testpy_dataset/pytest_dataset' + test_id + '_obs.txt')
     evt_data = pd.read_csv('../Testpy_dataset/pytest_dataset' + test_id + '_evt.txt')
     coeff_data = pd.read_csv('../Testpy_dataset/pytest_dataset' + test_id + '_coeff.txt')
-    print(coeff_data.columns)
-    
+
     liste_evt = evt_data.EVID.values
     for evid in liste_evt:
         depth = evt_data[evt_data.EVID==evid].H.values[0]
@@ -366,6 +363,6 @@ def test_do_linregressC1regC2():
     C2 = coeff_data[' C2'].values[0]
     
     resC1regC2 = WLSIC.WLS(obs_data, 1, 1, Beta, 0).do_linregressC1regC2(ftol=2e-3, max_nfev=1000, sigma=obs_data.StdI.values)
-    print(resC1regC2)
+
     assert resC1regC2[0][0] == pytest.approx(C1a, abs=0.001)
-    assert resC1regC2[0][4] == pytest.approx(C2, abs=0.001)
+    assert resC1regC2[0][1] == pytest.approx(C2, abs=0.001)

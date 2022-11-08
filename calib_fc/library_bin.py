@@ -46,7 +46,7 @@ def ROBS(obsdata, depth, Ic, I0, QI0):
              number of intensity data point used compute the intensity bin.
     """
     #print(obsdata.EVID.values[0])
-    #print(obsdata.EVID.values[0])
+    print(obsdata.EVID.values[0])
     #print(Ic)
     obsdata = obsdata[obsdata.Iobs>=Ic].copy()
     obsdata['Depi'].replace(0, 0.5, inplace=True)
@@ -73,7 +73,10 @@ def ROBS(obsdata, depth, Ic, I0, QI0):
     
     obsbin = obsbin[['EVID', 'Iobs', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'I0', 'QI0', 'Ndata']]
     obsbin.columns = ['EVID', 'I', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'Io', 'Io_std', 'Ndata']
-    return obsbin.astype(np.float64)
+    print(obsbin)
+    print(obsbin.infer_objects())
+    #return obsbin.astype(np.float64)
+    return obsbin.infer_objects()
 
 
 def RAVG(obsdata, depth, Ic, I0, QI0):

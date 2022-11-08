@@ -847,11 +847,11 @@ class WLS():
         mags, dummy = X
         return C0a + dummy*C0b + mags*C2
     
-    def C1regionC2_EMIPE(self, X, C1a, C1b, C1c, C1d, C2):
+    def C1_4regionC2_EMIPE(self, X, C1a, C1b, C1c, C1d, C2):
         mags, id_region = X
         liste_region = np.unique(id_region)
-        if len(liste_region)>4:
-            raise ValueError('Number of region should not exceed 4')
+        if len(liste_region)!=4:
+            raise ValueError('Number of region should be 4')
         aregion = np.array([])
 
         for compt, region in enumerate(liste_region):
@@ -862,15 +862,62 @@ class WLS():
                 aregion = np.vstack((aregion, zeros))
             except ValueError:
                  aregion = np.concatenate((aregion, zeros))
-        if len(liste_region)<4:
-            len_noreg = 4 - len(liste_region)
-            for compt in range(len_noreg):
-                zeros = np.zeros(len(self.Obsbin_plus.EVID))
-                aregion = np.vstack((aregion, zeros))
 
         C1 = np.vstack(([C1a]*len(mags), [C1b]*len(mags), [C1c]*len(mags), [C1d]*len(mags)
                        ))
         IminusAtt = (C1*aregion).sum(axis=0) + C2*mags 
+        return IminusAtt
+    
+    def C1_3regionC2_EMIPE(self, X, C1a, C1b, C1c, C2):
+        mags, id_region = X
+        liste_region = np.unique(id_region)
+        if len(liste_region)!=3:
+            raise ValueError('Number of region should be 3')
+        aregion = np.array([])
+
+        for compt, region in enumerate(liste_region):
+            ind = (id_region == region)
+            zeros = np.zeros(len(mags))
+            zeros[ind] = 1
+            try:
+                aregion = np.vstack((aregion, zeros))
+            except ValueError:
+                 aregion = np.concatenate((aregion, zeros))
+       
+
+        C1 = np.vstack(([C1a]*len(mags), [C1b]*len(mags), [C1c]*len(mags)
+                       ))
+        IminusAtt = (C1*aregion).sum(axis=0) + C2*mags 
+        return IminusAtt
+    
+    def C1_2regionC2_EMIPE(self, X, C1a, C1b, C2):
+        mags, id_region = X
+        liste_region = np.unique(id_region)
+        if len(liste_region)!=2:
+            raise ValueError('Number of region should be 2')
+        aregion = np.array([])
+
+        for compt, region in enumerate(liste_region):
+            ind = (id_region == region)
+            zeros = np.zeros(len(mags))
+            zeros[ind] = 1
+            try:
+                aregion = np.vstack((aregion, zeros))
+            except ValueError:
+                 aregion = np.concatenate((aregion, zeros))
+       
+
+        C1 = np.vstack(([C1a]*len(mags), [C1b]*len(mags)
+                       ))
+        IminusAtt = (C1*aregion).sum(axis=0) + C2*mags 
+        return IminusAtt
+    
+    def C1C2_EMIPE(self, X, C1, C2):
+        mags, id_region = X
+        liste_region = np.unique(id_region)
+        if len(liste_region)!=1:
+            raise ValueError('Number of region should be 1')
+        IminusAtt = C1 + C2*mags 
         return IminusAtt
     
     def do_linregressC1regC2(self, sigma='none',
@@ -879,8 +926,27 @@ class WLS():
         IminusAtt = self.Obsbin_plus['I'].values - self.beta*np.log10(hypos) - self.gamma*hypos
         X = [self.Obsbin_plus.Mag.values.astype(float),
              self.Obsbin_plus.RegID.values.astype(float)]
-        C1regC2 = curve_fit(self.C1regionC2_EMIPE, X, IminusAtt, 
-                             sigma=sigma,
-                             absolute_sigma=True,
-                             xtol=xtol, ftol=ftol)
+        liste_region = np.unique(self.Obsbin_plus.RegID.values.astype(float))
+        if len(liste_region) == 4:
+            C1regC2 = curve_fit(self.C1_4regionC2_EMIPE, X, IminusAtt, 
+                                 sigma=sigma,
+                                 absolute_sigma=True,
+                                 xtol=xtol, ftol=ftol)
+        elif len(liste_region) == 3:
+            C1regC2 = curve_fit(self.C1_3regionC2_EMIPE, X, IminusAtt, 
+                                 sigma=sigma,
+                                 absolute_sigma=True,
+                                 xtol=xtol, ftol=ftol)
+        elif len(liste_region) == 2:
+            C1regC2 = curve_fit(self.C1_2regionC2_EMIPE, X, IminusAtt, 
+                                 sigma=sigma,
+                                 absolute_sigma=True,
+                                 xtol=xtol, ftol=ftol)
+        elif len(liste_region) == 1:
+            C1regC2 = curve_fit(self.C1C2_EMIPE, X, IminusAtt, 
+                                 sigma=sigma,
+                                 absolute_sigma=True,
+                                 xtol=xtol, ftol=ftol)
+        else:
+            raise ValueError('Number of region should be less than 4')
         return C1regC2

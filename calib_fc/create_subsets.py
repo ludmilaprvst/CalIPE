@@ -27,6 +27,7 @@ def create_basicdb_criteria(evtdata_name, obsdata_name,
     evtdata = pd.read_csv(evtdata_name, sep=';')
     obsbin_plus = prepare_input4calibration(obsdata_name, evtdata_name, ponderation,
                                             regiondata_name, binning_type)
+    print(obsbin_plus.head())
     obsbin_plus_gp_count = obsbin_plus[['EVID', 'I']].groupby('EVID').count()
     obsbin_plus_gp_count = obsbin_plus_gp_count.reset_index()
     obsbin_plus_gp_count.columns = ['EVID', 'NClass']

@@ -31,6 +31,7 @@ def prepare_input4calibration(obsdata_name, evtdata_name, ponderation,
     obsbin_plus = pd.DataFrame(columns=columns_obsbinplus)
     for evid in evtdata.EVID.values:
         # Attribuer un Depi aux Iobs
+        print(evid)
         #data.build(int(evid))
         data.build(evid)
         data.I0 = data.Io_ini
