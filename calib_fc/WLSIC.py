@@ -434,11 +434,16 @@ class WLSIC_oneEvt():
                 To compute one standard deviation errors on the parameters use
                 perr = np.sqrt(np.diag(pcov)).
         """
-        Ibin = self.Obsbin['I'].values
-        Depi = self.Obsbin['Depi'].values
+        Ibin = self.Obsbin['I'].values.astype(float)
+        Depi = self.Obsbin['Depi'].values.astype(float)
+        if self.depth<depth_inf:
+            self.depth = depth_inf+0.1
+        if self.depth>depth_sup:
+            self.depth = depth_sup-0.1
+
         resH = curve_fit(self.EMIPE_H, Depi, Ibin, p0=self.depth,
                                  jac= self.EMIPE_JACdH, bounds=(depth_inf, depth_sup),
-                                 sigma=self.Obsbin['StdI'].values, absolute_sigma=True,
+                                 sigma=self.Obsbin['StdI'].values.astype(float), absolute_sigma=True,
                                  ftol=5e-2)
         return resH
     
@@ -546,7 +551,60 @@ class WLS():
 
     def EMIPE_C1C2BetaH(self, X, C1, C2, Beta, H1, H2, H3, H4, H5, H6, H7, H8,
                         H9, H10, H11, H12, H13, H14, H15, H16, H17, H18, H19, H20,
-                        H21, H22, H23, H24, H25, H26, H27, H28, H29, H30, H31):
+                        H21, H22, H23, H24, H25, H26, H27, H28, H29, H30, H31, H32):
+        """
+        Function used to inverse the magnitude coefficients and the geometric attenuation
+        coefficient
+        :param X: matrix that contains magnitude, epicentral distance and depth
+                  intensity associated to the binned intensity
+        :param C1: first magnitude coefficient
+        :param C2: second magnitude coefficient
+        :param Beta: geometric attenuation coefficient
+        :type X: numpy.array
+        :type Beta: float
+        :type C1: float
+        :type C2: float
+        """
+        mags, depi, id_evid = X
+        liste_evid = np.unique(id_evid)
+        #ah --> (n, len(Depi)) array avec n le nombre de EQ. Chaque ligne contient
+        #des 1 et des 0 et correspond a un EQ. 1 est attribue aux indices de
+        # obsbin_plus.EVID ==evid concerne.
+        aH = np.array([])
+        for compt, evid in enumerate(liste_evid):
+            ind = (id_evid == evid)
+            zeros = np.zeros(len(mags))
+            zeros[ind] = 1
+            try:
+                aH = np.vstack((aH, zeros))
+            except ValueError:
+                 aH = np.concatenate((aH, zeros))
+        if len(liste_evid)<32:
+            len_noevt = 32 - len(liste_evid)
+            for compt in range(len_noevt):
+                zeros = np.zeros(len(self.Obsbin_plus.EVID))
+                aH = np.vstack((aH, zeros))
+        #ah = X[2:][0]
+        #H --> (n, len(Depi)) array avec n le nombre de EQ, chaque ligne contient obsbin_plus.Depth
+        H = np.vstack(([H1]*len(depi), [H2]*len(depi), [H3]*len(depi), [H4]*len(depi),
+                       [H5]*len(depi), [H6]*len(depi), [H7]*len(depi), [H8]*len(depi),
+                       [H9]*len(depi), [H10]*len(depi), [H11]*len(depi), [H12]*len(depi),
+                       [H13]*len(depi), [H14]*len(depi), [H15]*len(depi), [H16]*len(depi),
+                       [H17]*len(depi), [H18]*len(depi), [H19]*len(depi), [H20]*len(depi),
+                       [H21]*len(depi), [H22]*len(depi), [H23]*len(depi), [H24]*len(depi),
+                       [H25]*len(depi), [H26]*len(depi), [H27]*len(depi), [H28]*len(depi),
+                       [H29]*len(depi), [H30]*len(depi), [H31]*len(depi), [H32]*len(depi),
+                       ))
+        hypos = np.sqrt(depi**2 + (H*aH).sum(axis=0)**2)
+        I = C1 + C2*mags + Beta*np.log10(hypos)
+        return I
+    
+    def EMIPE_C1C2BetaH_2regC1beta(self, X, C1, C2, Beta, H1, H2, H3, H4, H5, H6, H7, H8,
+                                   H9, H10, H11, H12, H13, H14, H15, H16, H17, H18, H19, H20,
+                                   H21, H22, H23, H24, H25, H26, H27, H28, H29, H30, H31, H32,
+                                   H33, H34, H35, H36, H37, H38, H39, H40, H41, H42, H43,
+                                   H44, H45, H46, H47, H48, H49, H50, H51, H52, H53, H54,
+                                   H55, H56, H57, H58, H59, H60):
         """
         Function used to inverse the magnitude coefficients and the geometric attenuation
         coefficient
@@ -588,7 +646,14 @@ class WLS():
                        [H17]*len(depi), [H18]*len(depi), [H19]*len(depi), [H20]*len(depi),
                        [H21]*len(depi), [H22]*len(depi), [H23]*len(depi), [H24]*len(depi),
                        [H25]*len(depi), [H26]*len(depi), [H27]*len(depi), [H28]*len(depi),
-                       [H29]*len(depi), [H30]*len(depi), [H31]*len(depi)
+                       [H29]*len(depi), [H30]*len(depi), [H31]*len(depi), [H32]*len(depi),
+                       [H33]*len(depi), [H34]*len(depi), [H35]*len(depi), [H36]*len(depi),
+                       [H37]*len(depi), [H38]*len(depi), [H39]*len(depi), [H40]*len(depi),
+                       [H41]*len(depi), [H42]*len(depi), [H43]*len(depi), [H44]*len(depi),
+                       [H45]*len(depi), [H46]*len(depi), [H47]*len(depi), [H48]*len(depi),
+                       [H49]*len(depi), [H50]*len(depi), [H51]*len(depi), [H52]*len(depi),
+                       [H53]*len(depi), [H54]*len(depi), [H55]*len(depi), [H56]*len(depi),
+                       [H57]*len(depi), [H58]*len(depi), [H59]*len(depi), [H60]*len(depi),
                        ))
         hypos = np.sqrt(depi**2 + (H*aH).sum(axis=0)**2)
         I = C1 + C2*mags + Beta*np.log10(hypos)
@@ -923,29 +988,36 @@ class WLS():
     def do_linregressC1regC2(self, sigma='none',
                          ftol=5e-3, xtol=1e-8, max_nfev=200):
         hypos = np.sqrt(self.Obsbin_plus['Depi'].values.astype(float)**2 + self.Obsbin_plus['Depth'].values.astype(float)**2)
-        IminusAtt = self.Obsbin_plus['I'].values - self.beta*np.log10(hypos) - self.gamma*hypos
+        IminusAtt = self.Obsbin_plus['I'].values - self.Obsbin_plus['beta'].values*np.log10(hypos) -  self.Obsbin_plus['gamma'].values*hypos
         X = [self.Obsbin_plus.Mag.values.astype(float),
              self.Obsbin_plus.RegID.values.astype(float)]
+        # print(IminusAtt)
+        # print(self.Obsbin_plus['I'].values)
+        # print(self.Obsbin_plus['beta'].values)
+        # print(self.Obsbin_plus['gamma'].values)
+        # print(hypos)
+        #print(X)
         liste_region = np.unique(self.Obsbin_plus.RegID.values.astype(float))
+
         if len(liste_region) == 4:
             C1regC2 = curve_fit(self.C1_4regionC2_EMIPE, X, IminusAtt, 
                                  sigma=sigma,
-                                 absolute_sigma=True,
+                                 absolute_sigma=False,
                                  xtol=xtol, ftol=ftol)
         elif len(liste_region) == 3:
             C1regC2 = curve_fit(self.C1_3regionC2_EMIPE, X, IminusAtt, 
                                  sigma=sigma,
-                                 absolute_sigma=True,
+                                 absolute_sigma=False,
                                  xtol=xtol, ftol=ftol)
         elif len(liste_region) == 2:
             C1regC2 = curve_fit(self.C1_2regionC2_EMIPE, X, IminusAtt, 
                                  sigma=sigma,
-                                 absolute_sigma=True,
+                                 absolute_sigma=False,
                                  xtol=xtol, ftol=ftol)
         elif len(liste_region) == 1:
             C1regC2 = curve_fit(self.C1C2_EMIPE, X, IminusAtt, 
                                  sigma=sigma,
-                                 absolute_sigma=True,
+                                 absolute_sigma=False,
                                  xtol=xtol, ftol=ftol)
         else:
             raise ValueError('Number of region should be less than 4')

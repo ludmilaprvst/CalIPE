@@ -21,8 +21,8 @@ class Evt():
     
     def build(self, evid):
         # Standard deviation of epicentral intensity based on quality factors
-        Std ={'A':0.5,'B':0.5,'C':0.5,'E':0.750, 'K':0.5}
-        #Std ={'A':0.25,'B':0.375,'C':0.5,'E':0.750, 'K':0.5}
+        #Std ={'A':0.5,'B':0.5,'C':0.5,'E':0.750, 'K':0.5}
+        Std ={'A':0.25,'B':0.375,'C':0.5,'E':0.750, 'K':0.5}
         
         self.evid = evid
         try:
@@ -134,7 +134,6 @@ class Evt():
         if method_bin == 'RAVG':
             self.ObsBinn = libr.RAVG(self.Obsevid, depth, Ic, self.I0, self.QI0)
         elif method_bin == 'ROBS':
-            print('yo')
             self.ObsBinn = libr.ROBS(self.Obsevid, depth, Ic, self.I0, self.QI0)
         elif method_bin == 'RP50':
             self.ObsBinn = libr.RP50(self.Obsevid, depth, Ic, self.I0, self.QI0)

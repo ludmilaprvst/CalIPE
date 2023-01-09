@@ -10,22 +10,19 @@ import sys
 sys.path.append('../calib_fc')
 sys.path.append('../postprocessing_fc')
 #from combinaison_calib import calib_C1C2beta0, calib_C1C2beta1, calib_C1C2beta2
-from combinaison_calib import calib_C1C2betaH, calib_C1C2betaHb
+from combinaison_calib import calib_C1C2betaH
 from prepa_data import prepare_input4calibration, add_Mweigths
 
 # FR_instu
-obsdata_name = '../../Data/ObsData/ObsCalibration_Fr_Instru02_filtoutsiders.txt'
-evtdata_name = 'input_evt_calib_FRinstru_sansAlsace2018_HSihex.txt'
-evtdata_name = 'input_evt_calib_FRinstru_sansAlsace2018.txt'
-subset_folder = '../../Data/FR_instru_01/subsets_01'
-#subset_folder = '../../Data/FR_instru_01/bootstrap_1evt_FRinstru'
+obsdata_name = '../../Data/ObsData/ObsCalibration_Frextended_filtered.txt'
+evtdata_name = 'input_evt_calib_FRinstru01.txt'
 evtcalib_folder = '../../Data/FR_instru_01/'
-outputfolder = '../../Outputs/FR_instru_01/Subsets_01/IPE'
-regiondata_name = '../../Data/Regions/region2_FRinstru.txt'
+outputfolder = '../../Outputs/FR_instru_01/IPE/OneStep'
+regiondata_name = '../../Data/Regions/region_FRIT.txt'
 
 
 dummy_ponderation = 'Ponderation dI'
-binning_type = 'RAVG'
+binning_type = 'ROBS'
 gamma_option = False
 ponderation_list = ['Ponderation evt-stdM', 'Ponderation mag_class']
 ponderation_list = ['Ponderation mag_class']
@@ -39,12 +36,13 @@ obsbin_plus = prepare_input4calibration(obsdata_name, nom_evt_complet,
                                         regiondata_name, binning_type)
 liste_evt = np.unique(obsbin_plus.EVID.values)
 
-beta_liste = [-3]
+beta_liste = [-2.5, -3, -3.5]
 #beta_liste = [-3.5]
-C1_liste = [1]#, 2, 3]
-C2_liste = [1]
+C1_liste = [1.2, 1.7, 2.2, 2.7]
+C2_liste = [1.35]
 
-
+output_df = pd.DataFrame(columns=['beta_ini', 'C1_ini', 'C2_ini', 'ponderation', 'C1', 'C2', 'beta','std_C1', 'std_C2', 'std_beta'])
+ind = 0
 for beta in beta_liste:
     print(beta)
     for C1 in C1_liste:
@@ -59,35 +57,17 @@ for beta in beta_liste:
                 else:
                     ObsBin_plus, result = calib_C1C2betaH(liste_evt, obsbin_plus,
                                                                C1, C2, beta,
-                                                               inverse_depth=False,
-                                                               inverse_I0=False,
-                                                               NmaxIter=50)
+                                                               NmaxIter=100)
                     
-#                    resultb, ObsBin_plus_endb = calib_C1C2betaHb(liste_evt, obsbin_plus,
-#                                                               C1, C2, beta,
-#                                                               inverse_depth=False,
-#                                                               inverse_I0=False,
-#                                                               NmaxIter=50)
-                    
+                    pcov = result[1]
+                    std = np.sqrt(np.diag(pcov))
+                    output_df.loc[ind, :] = [beta, C1, C2, ponderation, result[0][0], result[0][1], result[0][2],
+                                             std[0], std[1], std[2]]
+                    ind += 1
+                    #print(result)
                     print(result[0][:3])
-                    print(result[0][3:])
-                    #(C1C2BetaH2[0][:3])
+                    # print(result[0][3:])
                     
-#                    (ObsBin_plus, C1, C2, beta,
-#                     suivi_beta, suivi_C1, suivi_C2) = calib_C1C2beta0(liste_evt, obsbin_plus,
-#                                                               C1, C2, beta,
-#                                                               inverse_depth=False,
-#                                                               inverse_I0=False,
-#                                                               NmaxIter=50)
-#                    stock_wrms, stock_C1, stock_C2, stock_beta = calib_C1C2beta1(liste_evt, obsbin_plus,
-#                                                                   C1, C2, beta,
-#                                                                   inverse_depth=False,
-#                                                                   inverse_I0=False,
-#                                                                   NmaxIter=50)
-#                    ObsBin_plusb, wrms, C1b, C2b, betab = calib_C1C2beta2(liste_evt, obsbin_plus,
-#                                                                   C1, C2, beta,
-#                                                                   inverse_depth=False,
-#                                                                   inverse_I0=False,
-#                                                                   NmaxIter=50)
-#
-#                    print(C1, C2, beta)
+                    # print(std[:3])
+                    
+output_df.to_excel(outputfolder + '/FRinstru01_diffvaliniC1beta.xlsx')

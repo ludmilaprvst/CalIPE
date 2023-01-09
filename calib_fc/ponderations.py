@@ -104,22 +104,19 @@ def C1C2_ponderation_evt_sdtM(obsbin_plus):
 
 def C1C2_ponderation_mag_class(obsbin_plus):
     """
-    eqStdM column will be meaned by EVID before being used for C1/C2 inversion:
-        only one data per earthquake is used for C1/C2 inversion
     Bin of 0.5 magnitude unit width
     """
     liste_evt = np.unique(obsbin_plus.EVID.values)
     for evid in liste_evt:
         poids = 1/(obsbin_plus[obsbin_plus.EVID==evid]['StdM'].values[0]**2)
         min_poids = 1/0.1
-        poids = np.max([min_poids, poids])
-        
+        poids = np.max([min_poids, poids])      
         obsbin_plus.loc[obsbin_plus.EVID==evid, 'poids_indiv'] = poids
     minMag = obsbin_plus.Mag.min()
     maxMag = obsbin_plus.Mag.max()
     mag_bins = np.arange(minMag, maxMag+0.5, 0.5)
     obsbin_plus.loc[:,'range1'] = pd.cut(obsbin_plus.Mag, mag_bins, include_lowest=True)
-    mag_bins_df = np.unique( obsbin_plus.range1.values)
+    mag_bins_df = np.unique(obsbin_plus.range1.values)
     # Normalisation des StdM par bin de magnitude
     liste_poids_class = []
     for bins in mag_bins_df:

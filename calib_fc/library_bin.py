@@ -46,7 +46,6 @@ def ROBS(obsdata, depth, Ic, I0, QI0):
              number of intensity data point used compute the intensity bin.
     """
     #print(obsdata.EVID.values[0])
-    print(obsdata.EVID.values[0])
     #print(Ic)
     obsdata = obsdata[obsdata.Iobs>=Ic].copy()
     obsdata['Depi'].replace(0, 0.5, inplace=True)
@@ -73,9 +72,6 @@ def ROBS(obsdata, depth, Ic, I0, QI0):
     
     obsbin = obsbin[['EVID', 'Iobs', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'I0', 'QI0', 'Ndata']]
     obsbin.columns = ['EVID', 'I', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'Io', 'Io_std', 'Ndata']
-    print(obsbin)
-    print(obsbin.infer_objects())
-    #return obsbin.astype(np.float64)
     return obsbin.infer_objects()
 
 
@@ -137,7 +133,7 @@ def RAVG(obsdata, depth, Ic, I0, QI0):
         Depi = 10**RAVG
         Hypo = np.sqrt(Depi**2+depth**2)
         obsbin.loc[compt, :] = [EVID, IAVG, Depi, Hypo, StdLogR, StdI, I0, QI0, Ndata]
-    return obsbin.astype(np.float64)
+    return obsbin.infer_objects()
 
 def weighted_percentile(data, percents, weights=None):
     ''' percents in units of 1%
@@ -180,7 +176,7 @@ def RP50(obsdata, depth, Ic, I0, QI0):
     
     obsbin = obsbin[['EVID', 'Iobs', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'I0', 'QI0', 'Ndata']]
     obsbin.columns = ['EVID', 'I', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'Io', 'Io_std', 'Ndata']
-    return obsbin.astype(np.float64)
+    return obsbin.infer_objects()
 
 
 def RP84(obsdata, depth, Ic, I0, QI0):
@@ -211,7 +207,7 @@ def RP84(obsdata, depth, Ic, I0, QI0):
     
     obsbin = obsbin[['EVID', 'Iobs', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'I0', 'QI0', 'Ndata']]
     obsbin.columns = ['EVID', 'I', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'Io', 'Io_std', 'Ndata']
-    return obsbin.astype(np.float64)
+    return obsbin.infer_objects()
 
 def RF50(obsdata, depth, Ic, I0, QI0):
     obsdata = obsdata[obsdata.Iobs>=Ic]
@@ -242,7 +238,7 @@ def RF50(obsdata, depth, Ic, I0, QI0):
     obsbin = obsbin[['EVID', 'Iobs', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'I0', 'QI0', 'Ndata']]
     obsbin.columns = ['EVID', 'I', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'Io', 'Io_std', 'Ndata']
     obsbin.loc[0, :] = [obsdata.EVID.values[0], I0, 0, depth, -1, QI0, I0, QI0, 0]
-    return obsbin.astype(np.float64)
+    return obsbin.infer_objects()
 
 def RF84(obsdata, depth, Ic, I0, QI0):
     obsdata = obsdata[obsdata.Iobs>=Ic].copy()
@@ -273,7 +269,7 @@ def RF84(obsdata, depth, Ic, I0, QI0):
     obsbin = obsbin[['EVID', 'Iobs', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'I0', 'QI0', 'Ndata']]
     obsbin.columns = ['EVID', 'I', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'Io', 'Io_std', 'Ndata']
     obsbin.loc[0, :] = [obsdata.EVID.values[0], I0, 0, depth, -1, QI0, I0, QI0, 0]
-    return obsbin.astype(np.float64)
+    return obsbin.infer_objects()
     
 #def Binning_Obs(obsdata, depth, Ic, I0, QI0, evid):
 #    # Old version for binning RAVG

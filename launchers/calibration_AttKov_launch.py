@@ -26,25 +26,30 @@ except KeyError:
 
 import os
 #import matplotlib.pyplot as plt
-
-# FR_instu
-obsdata_name = '../../Data/ObsData/ObsCalibration_Frextended_filtered.txt'
-evtdata_name = 'FR_extended_01.txt'
-subset_folder = '../../Data/FR_extended_01/Subsets_02'
-#subset_folder = ''
-#subset_folder = '../../Data/FR_instru_01/bootstrap_1evt_FRinstru'
-evtcalib_folder = '../../Data/FR_extended_01/'
-outputfolder = '../../Outputs/FR_extended_01/Subsets_02/BetaGamma'
-
 """
 # FR_extended
-obsdata_name = '../../Data/ObsData/ObsCalibration_Frextended.txt'
+obsdata_name = '../../Data/ObsData/ObsCalibration_Frextended_filtered.txt'
 evtcalib_folder = '../../Data/FR_extended_01/'
 evtdata_name = 'FR_extended_01.txt'
-#subset_folder = '../../Data/FR_extended_01/Subsets_01'
-subset_folder =''
-outputfolder = '../../Outputs/FR_extended_01/BetaGamma/basicdb'
+subset_folder = '../../Data/FR_extended_01/Subsets_03'
+outputfolder = '../../Outputs/FR_extended_01/Subsets_03/Beta'
 """
+"""
+# IT-instru
+obsdata_name = '../../Data/ObsData/obs_IT.txt'
+evtcalib_folder = '../../Data/IT_instru01/'
+evtdata_name = 'IT_instru_01c.txt'
+subset_folder = '../../Data/IT_instru01/Subsets_01/IT_instru_01c'
+outputfolder = '../../Outputs/IT_instru_01/Subsets_01c/Beta'
+"""
+
+# FR-instru
+obsdata_name = '../../Data/ObsData/ObsCalibration_Frextended_filtered.txt'
+evtcalib_folder = '../../Data/FR_instru_01/'
+evtdata_name = 'input_evt_calib_FRinstru01.txt'
+subset_folder = '../../Data/FR_instru_01/Subsets_02/input_evt_calib_FRinstru01'
+outputfolder = '../../Outputs/FR_instru_01/Subsets_02/Beta'
+
 """
 # FR_extended run by regions
 obsdata_name = '../../Data/ObsData/ObsCalibration_Frextended.txt'
@@ -74,7 +79,7 @@ binning_type = 'ROBS'
 ponderation_list = ['Ponderation evt-uniforme', 'Ponderation evt-reg']
 ponderation_list = ['Ponderation evt-uniforme']
 
-option_gamma = True
+option_gamma = False
 
 liste_beta_ini = [-2.0, -2.5, -3.0, -3.5, -4.0, -4.5, -5.0]#[-2.0, -2.5, -3.0, -3.5, -4.0, -4.5, -5.0]
 liste_gamma_ini = [0, -0.01, -0.001]
@@ -85,7 +90,7 @@ if not subset_folder == '':
     liste_subset = pd.read_excel(subset_folder +'/dataset_list.xlsx')
     liste_subset = liste_subset.Datasubsetname.values
     liste_subset = np.insert(liste_subset, 0, evtdata_name)
-    for subset in liste_subset[185:]:
+    for subset in liste_subset:
         if subset == evtdata_name:
             complete_subset = evtcalib_folder + subset
         else:

@@ -127,7 +127,7 @@ def readBetaGammaFile(nomFichier):
     
     return beta, stdbeta, beta_ini, gamma, stdgamma, gamma_ini, nbre_iteration, nbre_iterationMax, nbre_iterationMin, nbreEvt, nbreI, evtfile, obsfile
 
-def create_postprocessing_savedir(run_name, path):
+def create_savedir(run_name, path):
     directory = path + '/' + run_name
     if not os.path.exists(directory):
         os.mkdir(directory)
@@ -194,7 +194,7 @@ def plot_dIH(run_name, path, ax):
     outsiders = obsbin_gp[np.abs(obsbin_gp.dI)>0.5]
     return outsiders
 
-def plot_dII0(run_name, path, ax):
+def plot_dII0(run_name, path, ax, color):
     beta_file = 'betaFinal_' + run_name + '.txt'
     obsbinfile = 'obsbinEnd_' + run_name + '.csv'
     beta = readBetaFile(path + '/' + beta_file)[0]
@@ -203,14 +203,14 @@ def plot_dII0(run_name, path, ax):
                             obsbin.Depi.values, obsbin.Depth.values)
     obsbin.loc[:, 'dI'] = obsbin.I - obsbin.Ipred
     obsbin_gp = obsbin.groupby('EVID').mean()
-    ax.scatter(obsbin_gp.Io_ini.values, obsbin_gp.dI.values)
+    ax.scatter(obsbin_gp.Io_ini.values, obsbin_gp.dI.values, color=color)
     ax.axhline(y=obsbin_gp.dI.mean(), color='k', label='Mean event residual')
     ax.set_xlabel('I0 (from database)')
     ax.set_ylabel('dI = Iobs - Ipred')
     outsiders = obsbin_gp[np.abs(obsbin_gp.dI)>0.5]
     return outsiders
 
-def plot_dIMag(run_name, path, ax):
+def plot_dIMag(run_name, path, ax, color):
     beta_file = 'betaFinal_' + run_name + '.txt'
     obsbinfile = 'obsbinEnd_' + run_name + '.csv'
     beta = readBetaFile(path + '/' + beta_file)[0]
@@ -219,9 +219,9 @@ def plot_dIMag(run_name, path, ax):
                             obsbin.Depi.values, obsbin.Depth.values)
     obsbin.loc[:, 'dI'] = obsbin.I - obsbin.Ipred
     obsbin_gp = obsbin.groupby('EVID').mean()
-    ax.scatter(obsbin_gp.Mag.values, obsbin_gp.dI.values)
+    ax.scatter(obsbin_gp.Mag.values, obsbin_gp.dI.values, color=color)
     ax.axhline(y=obsbin_gp.dI.mean(), color='k', label='Mean event residual')
-    ax.set_xlabel('I0 (from database)')
+    ax.set_xlabel('Mag (from database)')
     ax.set_ylabel('dI = Iobs - Ipred')
     outsiders = obsbin_gp[np.abs(obsbin_gp.dI)>0.5]
     return outsiders
@@ -463,6 +463,8 @@ def plot_pearson_diffDB(output_folder, ax, xvalue_tested, **kwargs):
                 pearson_coeff, beta = compute_pearsonH_1db(run_name, output_folder)
             else:
                 raise KeyError("xvalue_tested "+ xvalue_tested + " does not exist")
+            if np.abs(pearson_coeff[0])>0.5:
+                print(xvalue_tested, pearson_coeff[0], run_name)
             pearson_list.append(pearson_coeff[0])
             beta_list.append(beta)
     ax.scatter(beta_list, pearson_list, **kwargs)
@@ -577,7 +579,11 @@ def plot_Iolim(run_name, path, ax):
     
 def plot_endIo_oneDataset(run_name, path, basicdatabase,
                          ax, beta_min=-4, beta_max=-2,
-                         colorbar=True):
+                         beta_center=-3,
+                         colorbar=True, cmap='viridis'):
+    divnorm = colors.TwoSlopeNorm(vmin=beta_min,
+                                  vcenter=beta_center,
+                                  vmax=beta_max)
     beta_file = 'betaFinal_' + run_name + '.txt'
     obsbinfile = 'obsbinEnd_' + run_name + '.csv'
     beta = readBetaFile(path + '/' + beta_file)[0]
@@ -588,13 +594,14 @@ def plot_endIo_oneDataset(run_name, path, basicdatabase,
     list_evt = grouped_data.EVID.values
     xdata = basicdatabase[basicdatabase.EVID.isin(list_evt)].index.values
     sc = ax.scatter(xdata, grouped_data.Io.values,
-               c=grouped_data.Beta.values, vmin=beta_min, vmax=beta_max,
+               c=grouped_data.Beta.values, cmap=cmap, norm=divnorm,
                zorder=10)
     if colorbar:
         plt.colorbar(sc, label="Beta value")
     
 def plot_endIo_diffSubsets(output_folder, basicdatabasename,
-                          ax, beta_min=-4, beta_max=-2):
+                          ax, beta_min=-4, beta_max=-2,
+                          beta_center=-3,colorbar=True, cmap='viridis'):
     basicdatabase = pd.read_csv(basicdatabasename, sep=';')
     grouped_basicdb = basicdatabase.groupby('EVID').mean()
     grouped_basicdb.reset_index(inplace=True)
@@ -608,10 +615,12 @@ def plot_endIo_diffSubsets(output_folder, basicdatabasename,
             run_name = fichier[10:-4]
             if compt == 1:
                 plot_endIo_oneDataset(run_name, output_folder, grouped_basicdb, ax,
-                                     beta_min=beta_min, beta_max=beta_max)
+                                     beta_min=beta_min, beta_max=beta_max,
+                                     beta_center=beta_center, cmap=cmap)
             else:
                 plot_endIo_oneDataset(run_name, output_folder, grouped_basicdb, ax,
                                      beta_min=beta_min, beta_max=beta_max,
+                                     beta_center=beta_center, cmap=cmap,
                                      colorbar=False)
                 
 def define_ls_color_byevt(count, cmap='tab20b', len_cmap=20):

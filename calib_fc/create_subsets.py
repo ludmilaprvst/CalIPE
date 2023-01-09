@@ -38,7 +38,7 @@ def create_basicdb_criteria(evtdata_name, obsdata_name,
     head, basename = os.path.split(evtdata_name)
     basename = basename[:-4]
     savename = "subset_criteria_" + basename
-    criteria.to_excel(outputfolder + '/' + savename + '.xlsx')
+    criteria.to_excel(outputfolder + '/' + savename + '.xlsx', index=False)
     return criteria
 
 

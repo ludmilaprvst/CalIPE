@@ -27,11 +27,11 @@ def prepare_input4calibration(obsdata_name, evtdata_name, ponderation,
     data = eio.Evt(fichiers)
     
     columns_obsbinplus = ['EVID', 'I', 'StdI', 'Io', 'Io_std', 'Io_ini', 'Depi','Ndata', 'Mag',
-                                        'StdM', 'Depth', 'Hmin', 'Hmax']
+                                        'StdM', 'Depth', 'Hmin', 'Hmax', 'Hmin_ini', 'Hmax_ini',
+                                        'StdIo_inv']
     obsbin_plus = pd.DataFrame(columns=columns_obsbinplus)
     for evid in evtdata.EVID.values:
         # Attribuer un Depi aux Iobs
-        print(evid)
         #data.build(int(evid))
         data.build(evid)
         data.I0 = data.Io_ini
@@ -46,9 +46,12 @@ def prepare_input4calibration(obsdata_name, evtdata_name, ponderation,
         evt_obsbin.loc[:, 'Depth'] = data.depth
         evt_obsbin.loc[:, 'Hmin'] = data.Hmin
         evt_obsbin.loc[:, 'Hmax'] = data.Hmax
+        evt_obsbin.loc[:, 'Hmin_ini'] = data.Hmin
+        evt_obsbin.loc[:, 'Hmax_ini'] = data.Hmax
         evt_obsbin.loc[:, 'Mag'] = data.Mag
         evt_obsbin.loc[:, 'StdM'] = data.StdM
         evt_obsbin.loc[:, 'Io_ini'] = data.I0
+        evt_obsbin.loc[:, 'StdIo_inv'] = data.QI0
         hypo_tmp = np.sqrt(evt_obsbin.Depi.values**2 + data.depth**2)
         X_tmp = evt_obsbin.I.values - Beta*np.log10(hypo_tmp) - Gamma*hypo_tmp
         evt_obsbin.loc[:, 'X'] = np.average(X_tmp, weights=1/evt_obsbin.StdI.values**2)
@@ -98,6 +101,11 @@ def add_I0as_datapoint(obsbin_plus, liste_evt):
         StdIo_inv = obsbin_plus[obsbin_plus.EVID==evid]['StdIo_inv'].values[0]
         I0 = obsbin_plus[obsbin_plus.EVID==evid]['Io'].values[0]
         I0_ini = obsbin_plus[obsbin_plus.EVID==evid]['Io_ini'].values[0]
+        regID = obsbin_plus[obsbin_plus.EVID==evid]['RegID'].values[0]
+        if 'beta' in obsbin_plus.columns:
+            beta = obsbin_plus[obsbin_plus.EVID==evid]['beta'].values[0]
+        if 'gamma' in obsbin_plus.columns:
+            gamma = obsbin_plus[obsbin_plus.EVID==evid]['gamma'].values[0]
         if StdIo_inv <= Std['A']:
             StdIo_inv = Std['A']
         elif StdIo_inv <= Std['B']:
@@ -146,24 +154,48 @@ def add_I0as_datapoint(obsbin_plus, liste_evt):
                                           'StdIo_inv': StdIo_inv})])
         print(obsbin_plus2)
         """
-        obsbin_plus = obsbin_plus.append({'EVID' : evid,
-                                          'Depi' : Depi,
-                                          'Hypo': depth,
-                                          'I': I0,
-                                          'StdI': StdI_eq,
-                                          'Io': I0,
-                                          'Io_std': Io_Std,
-                                          'eqStdM': eqStdM,
-                                          'Ndata': Ndata,
-                                          'Depth': depth,
-                                          'Hmin': Hmin,
-                                          'Hmax': Hmax,
-                                          'Hmin_ini': Hmin_ini,
-                                          'Hmax_ini': Hmax_ini,
-                                          'Mag': Mag,
-                                          'StdM': StdM,
-                                          'StdIo_inv': StdIo_inv} , 
-                                           ignore_index=True)
+        if ('beta' in obsbin_plus.columns)and('gamma' in obsbin_plus.columns):
+            obsbin_plus = obsbin_plus.append({'EVID' : evid,
+                                              'Depi' : Depi,
+                                              'Hypo': depth,
+                                              'I': I0,
+                                              'StdI': StdI_eq,
+                                              'Io': I0,
+                                              'Io_std': Io_Std,
+                                              'eqStdM': eqStdM,
+                                              'Ndata': Ndata,
+                                              'Depth': depth,
+                                              'Hmin': Hmin,
+                                              'Hmax': Hmax,
+                                              'Hmin_ini': Hmin_ini,
+                                              'Hmax_ini': Hmax_ini,
+                                              'Mag': Mag,
+                                              'StdM': StdM,
+                                              'StdIo_inv': StdIo_inv,
+                                              'RegID': regID,
+                                              'beta':beta,
+                                              'gamma':gamma} , 
+                                               ignore_index=True)
+        else:
+            obsbin_plus = obsbin_plus.append({'EVID' : evid,
+                                              'Depi' : Depi,
+                                              'Hypo': depth,
+                                              'I': I0,
+                                              'StdI': StdI_eq,
+                                              'Io': I0,
+                                              'Io_std': Io_Std,
+                                              'eqStdM': eqStdM,
+                                              'Ndata': Ndata,
+                                              'Depth': depth,
+                                              'Hmin': Hmin,
+                                              'Hmax': Hmax,
+                                              'Hmin_ini': Hmin_ini,
+                                              'Hmax_ini': Hmax_ini,
+                                              'Mag': Mag,
+                                              'StdM': StdM,
+                                              'StdIo_inv': StdIo_inv,
+                                              'RegID': regID}, 
+                                               ignore_index=True)
 #        ['EVID', 'I', 'StdI', 'Io', 'Io_std', 'Io_ini', 'Depi','Ndata', 'Mag',
 #                                        'StdM', 'Depth', 'Hmin', 'Hmax', 'eqStdM', 'StdIo_inv']
         last_index +=1

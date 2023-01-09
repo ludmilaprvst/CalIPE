@@ -305,6 +305,7 @@ def test_do_linregressC1regC2():
     C1a = coeff_data['C1a'].values[0]
     C1b = coeff_data[' C1b'].values[0]
     C2 = coeff_data[' C2'].values[0]
+    obs_data.loc[:, 'beta'] = Beta
     
     resC1regC2 = WLSIC.WLS(obs_data, 1, 1, Beta, 0).do_linregressC1regC2(ftol=2e-3, max_nfev=1000, sigma=obs_data.StdI)
     print(resC1regC2)
@@ -334,6 +335,7 @@ def test_do_linregressC1regC2():
     C1c = coeff_data[' C1c'].values[0]
     C1d = coeff_data[' C1d'].values[0]
     C2 = coeff_data[' C2'].values[0]
+    obs_data.loc[:, 'beta'] = Beta
     
     resC1regC2 = WLSIC.WLS(obs_data, 1, 1, Beta, 0).do_linregressC1regC2(ftol=2e-3, max_nfev=1000, sigma=obs_data.StdI)
 
@@ -361,6 +363,8 @@ def test_do_linregressC1regC2():
     Beta = coeff_data['Beta'].values[0]
     C1a = coeff_data['C1a'].values[0]
     C2 = coeff_data[' C2'].values[0]
+    obs_data.loc[:, 'beta'] = Beta
+    
     
     resC1regC2 = WLSIC.WLS(obs_data, 1, 1, Beta, 0).do_linregressC1regC2(ftol=2e-3, max_nfev=1000, sigma=obs_data.StdI.values)
 
