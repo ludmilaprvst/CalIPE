@@ -642,7 +642,6 @@ class WLS():
         if len(liste_region)!=2:
             raise ValueError('Number of region should be 2')
         aregion = np.array([])
-
         for compt, region in enumerate(liste_region):
             ind = (id_region == region)
             zeros = np.zeros(len(mags))
@@ -673,8 +672,72 @@ class WLS():
                        [H57]*len(depi), [H58]*len(depi), [H59]*len(depi), [H60]*len(depi),
                        ))
         hypos = np.sqrt(depi**2 + (H*aH).sum(axis=0)**2)
-        I = (C1*aregion).sum(axis=0) + C2*mags + (Beta*aregion).sum(axis=0)*np.log10(hypos)
+        I = (C1*aregion).sum(axis=0) + C2*mags + ((Beta*aregion).sum(axis=0))*np.log10(hypos)
         return I
+    
+    
+    def do_wls_C1C2BetaH_2regC1beta(self, sigma='none',
+                         ftol=5e-3, xtol=1e-8, max_nfev=200,
+                         C1a=1, C1b=1, betaa=-3.0, betab=-3.0):
+        """
+        Function used to launch the inversion of all coefficients, except the intrinsic
+        attenuation coefficient gamma.
+        
+         return: [popt, pcov] list with popt a (3, 1) shape array containing
+                the inverted coefficient with popt[0] the C1 coefficient,
+                popt[1] the C2 coefficient and popt[2] the beta coefficient. pcov is a 2-D array and 
+                the estimated covariance of popt. The diagonals provide the
+                variance of the parameter estimate. 
+                To compute one standard deviation errors on the parameters use
+                perr = np.sqrt(np.diag(pcov)). pcov values are not accurate with
+                the eqStdM as sigma. A function has to be developped to compute
+                accurate pcov
+        """
+        #print(self.Obsbin_plus.columns)
+        liste_evid = np.unique(self.Obsbin_plus.EVID.values)
+        depths = np.zeros(60)
+        Hmin = np.zeros(60)
+        Hmax = np.zeros(60)
+        id_evid = np.zeros(len(self.Obsbin_plus.EVID))
+        
+        for compt, evid in enumerate(liste_evid):
+            ind = (self.Obsbin_plus.EVID == evid)
+            depth = self.Obsbin_plus[ind]['Depth'].values[0]
+            hmin = self.Obsbin_plus[ind]['Hmin'].values[0]
+            hmax = self.Obsbin_plus[ind]['Hmax'].values[0]
+            depths[compt] = depth
+            Hmin[compt] = hmin
+            Hmax[compt] = hmax
+            id_evid[ind] = compt
+        Hmax[Hmax==0] = 0.01
+
+        X = [self.Obsbin_plus.Mag.values.astype(float),
+             self.Obsbin_plus.Depi.values.astype(float),
+             id_evid,
+             self.Obsbin_plus.RegID.values.astype(float)]
+        
+        Ibin = self.Obsbin_plus['I'].values.astype(float)
+        print(Ibin.dtype)
+        if sigma == 'none':
+            sigma = self.Obsbin_plus['eqStdM'].values.astype(float)
+        # if sigma.dtype is not np.dtype(np.float64):
+        #     raise TypeError("sigma.dtype is not float")
+
+        p0 = np.append(np.array([C1a, C1b, self.C2, betaa, betab]),
+                       depths)
+        bounds_inf = np.append(np.array([-np.inf, -np.inf, -np.inf, -np.inf, -np.inf]),
+                       Hmin)
+        bounds_sup = np.append(np.array([np.inf, np.inf, np.inf, np.inf, np.inf]),
+                       Hmax)
+        C1C2BetaH = curve_fit(self.EMIPE_C1C2BetaH, X, Ibin, 
+                             p0=p0,
+                             bounds=(bounds_inf, bounds_sup),
+                             sigma=sigma,
+                             absolute_sigma=True,
+                             ftol=ftol,
+                             xtol=xtol,
+                             max_nfev=max_nfev)
+        return C1C2BetaH
 
     def EMIPE_JACdC1C2BetaH(self, X, C1, C2, beta, H):
         """
