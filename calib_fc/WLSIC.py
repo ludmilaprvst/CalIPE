@@ -599,7 +599,7 @@ class WLS():
         I = C1 + C2*mags + Beta*np.log10(hypos)
         return I
     
-    def EMIPE_C1C2BetaH_2regC1beta(self, X, C1, C2, Beta, H1, H2, H3, H4, H5, H6, H7, H8,
+    def EMIPE_C1C2BetaH_2regC1beta(self, X, C1a, C1b, C2, Betaa, Betab, H1, H2, H3, H4, H5, H6, H7, H8,
                                    H9, H10, H11, H12, H13, H14, H15, H16, H17, H18, H19, H20,
                                    H21, H22, H23, H24, H25, H26, H27, H28, H29, H30, H31, H32,
                                    H33, H34, H35, H36, H37, H38, H39, H40, H41, H42, H43,
@@ -618,8 +618,9 @@ class WLS():
         :type C1: float
         :type C2: float
         """
-        mags, depi, id_evid = X
+        mags, depi, id_evid, id_region = X
         liste_evid = np.unique(id_evid)
+        liste_region = np.unique(id_region)
         #ah --> (n, len(Depi)) array avec n le nombre de EQ. Chaque ligne contient
         #des 1 et des 0 et correspond a un EQ. 1 est attribue aux indices de
         # obsbin_plus.EVID ==evid concerne.
@@ -637,6 +638,22 @@ class WLS():
             for compt in range(len_noevt):
                 zeros = np.zeros(len(self.Obsbin_plus.EVID))
                 aH = np.vstack((aH, zeros))
+                
+        if len(liste_region)!=2:
+            raise ValueError('Number of region should be 2')
+        aregion = np.array([])
+
+        for compt, region in enumerate(liste_region):
+            ind = (id_region == region)
+            zeros = np.zeros(len(mags))
+            zeros[ind] = 1
+            try:
+                aregion = np.vstack((aregion, zeros))
+            except ValueError:
+                 aregion = np.concatenate((aregion, zeros))
+
+        C1 = np.vstack(([C1a]*len(mags), [C1b]*len(mags)))
+        Beta = np.vstack(([Betaa]*len(mags), [Betab]*len(mags)))       
         #ah = X[2:][0]
         #H --> (n, len(Depi)) array avec n le nombre de EQ, chaque ligne contient obsbin_plus.Depth
         H = np.vstack(([H1]*len(depi), [H2]*len(depi), [H3]*len(depi), [H4]*len(depi),
@@ -656,7 +673,7 @@ class WLS():
                        [H57]*len(depi), [H58]*len(depi), [H59]*len(depi), [H60]*len(depi),
                        ))
         hypos = np.sqrt(depi**2 + (H*aH).sum(axis=0)**2)
-        I = C1 + C2*mags + Beta*np.log10(hypos)
+        I = (C1*aregion).sum(axis=0) + C2*mags + (Beta*aregion).sum(axis=0)*np.log10(hypos)
         return I
 
     def EMIPE_JACdC1C2BetaH(self, X, C1, C2, beta, H):
