@@ -283,7 +283,8 @@ def test_do_wls_C1C2BetaH():
             depth = evt_data[evt_data.EVID==evid].H.values[0]
             assert resC1C2Beta[0][3+compt] == pytest.approx(depth, abs=0.7)
             compt += 1
-"""            
+"""
+"""    
 def test_do_linregressC1regC2():
     test_id = '05'
     obs_data = pd.read_csv('../Testpy_dataset/pytest_dataset' + test_id + '_obs.txt')
@@ -370,3 +371,70 @@ def test_do_linregressC1regC2():
 
     assert resC1regC2[0][0] == pytest.approx(C1a, abs=0.001)
     assert resC1regC2[0][1] == pytest.approx(C2, abs=0.001)
+    
+"""    
+def test_do_linregressC1C2BetaHregC1Beta():
+    test_id = '05'
+    obs_data = pd.read_csv('../Testpy_dataset/pytest_dataset' + test_id + '_obs.txt')
+    evt_data = pd.read_csv('../Testpy_dataset/pytest_dataset' + test_id + '_evt.txt')
+    coeff_data = pd.read_csv('../Testpy_dataset/pytest_dataset' + test_id + '_coeff.txt')
+    print(coeff_data.columns)
+    
+    liste_evt = evt_data.EVID.values
+    for evid in liste_evt:
+        depth = evt_data[evt_data.EVID==evid].H.values[0]
+        mag = evt_data[evt_data.EVID==evid].Mag.values[0]
+        obs_data.loc[obs_data.EVID==evid, 'Depth'] = depth
+        obs_data.loc[obs_data.EVID==evid, 'Hmin'] = 1
+        obs_data.loc[obs_data.EVID==evid, 'Hmax'] = 25
+        obs_data.loc[obs_data.EVID==evid, 'Mag'] = mag
+        temp = obs_data[obs_data.EVID==evid]
+        obs_data.loc[obs_data.EVID==evid, 'eqStd'] = temp.StdI.values
+        obs_data.loc[obs_data.EVID==evid, 'eqStdM'] = temp.StdI.values
+        
+    Beta = coeff_data['Beta'].values[0]
+    C1a = coeff_data['C1a'].values[0]
+    C1b = coeff_data[' C1b'].values[0]
+    C2 = coeff_data[' C2'].values[0]
+    
+    result = WLSIC.WLS(obs_data, 1, 1, Beta, 0).do_wls_C1C2BetaH_2regC1beta(ftol=2e-3, max_nfev=1000)
+    print(result)
+    assert result[0][0] == pytest.approx(C1a, abs=0.001)
+    assert result[0][1] == pytest.approx(C1b, abs=0.001)
+    assert result[0][2] == pytest.approx(C2, abs=0.001)
+    assert result[0][3] == pytest.approx(Beta, abs=0.001)
+    assert result[0][4] == pytest.approx(Beta, abs=0.001)
+    
+    test_id = '08'
+    obs_data = pd.read_csv('../Testpy_dataset/pytest_dataset' + test_id + '_obs.txt')
+    evt_data = pd.read_csv('../Testpy_dataset/pytest_dataset' + test_id + '_evt.txt')
+    coeff_data = pd.read_csv('../Testpy_dataset/pytest_dataset' + test_id + '_coeff.txt')
+    print(coeff_data.columns)
+    
+    liste_evt = evt_data.EVID.values
+    for evid in liste_evt:
+        depth = evt_data[evt_data.EVID==evid].H.values[0]
+        mag = evt_data[evt_data.EVID==evid].Mag.values[0]
+        obs_data.loc[obs_data.EVID==evid, 'Depth'] = depth
+        obs_data.loc[obs_data.EVID==evid, 'Hmin'] = 1
+        obs_data.loc[obs_data.EVID==evid, 'Hmax'] = 25
+        obs_data.loc[obs_data.EVID==evid, 'Mag'] = mag
+        temp = obs_data[obs_data.EVID==evid]
+        obs_data.loc[obs_data.EVID==evid, 'eqStd'] = temp.StdI.values
+        obs_data.loc[obs_data.EVID==evid, 'eqStdM'] = temp.StdI.values
+        
+    C1a = coeff_data['C1a'].values[0]
+    C1b = coeff_data[' C1b'].values[0]
+    C2 = coeff_data[' C2'].values[0]
+    betaa = coeff_data[' Betaa'].values[0]
+    betab = coeff_data[' Betab'].values[0]
+    
+    result = WLSIC.WLS(obs_data, 1, 1.5, Beta, 0).do_wls_C1C2BetaH_2regC1beta(ftol=5e-5, max_nfev=5000,
+                                                                              betaa=-4.15, C1a=2, C1b=4)
+
+    assert result[0][0] == pytest.approx(C1a, abs=0.001)
+    assert result[0][1] == pytest.approx(C1b, abs=0.001)
+    assert result[0][2] == pytest.approx(C2, abs=0.001)
+    assert result[0][3] == pytest.approx(betaa, abs=0.001)
+    assert result[0][4] == pytest.approx(betab, abs=0.001)
+    

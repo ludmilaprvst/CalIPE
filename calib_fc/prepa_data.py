@@ -11,7 +11,53 @@ import EvtIntensityObject as eio
 from ponderations import evt_weights, attribute_region, evt_weights_C1C2
 
 class fichier_input:
+    """
+    Class used to create an object input to the class Evt in EvtIntensityObject.py
+    """
     def __init__(self, obsdata, evtdata):
+        """
+        Initialization and creation of the object used to initialize the Evt object
+
+        Parameters
+        ----------
+        obsdata : pandas.DataFrame
+            obsdata contains the macroseismic fields corresponding to the earthquakes stored in evtdata.
+        evtdata : pandas.DataFrame
+            evtdata contains the metadata of different earthquakes. 
+            Mandatory columns for evtdata:
+                EVID : ID of the earthquake
+                Lon : longitude in WGS84 of the earthquake location
+                Lat : latitude in WGS84 of the earthquake location
+                Qpos : quality associated to the earthquake location (A for very good quality, E for bad quality, i.e. more than 50 km of possible error)
+                I0 : epicentral intensity of the earthquake 
+                QI0: quality associated to the value of I0 (A to E)
+                Year : year of occurence of the earthquake
+                Month : month of occurence of the earthquake
+                Day : day of occurence of the earthquake
+                Ic : intensity of completeness of the earthquake. The intensities smaller than Ic in a macroseismic field are considered as incomplete
+                     In the isoseismal radii based on intensity bins, intensities smaller than Ic are not taken into account
+                     to compute the isoseismal radii.
+            Optional columns for EvtFile:
+                Dc : distance of completeness of the earthquake. The macroseismic field located at greater epicentral distance than Dc is considered as incomplete
+                Depth : hypocentral depth of the earthquake
+                Hmin : lower bound of depth uncertainty
+                Hmax : upper bound of depth uncertainty
+                Mag : magnitude of the earthquake
+                StdM : uncertainty associated to magnitude
+            Mandatory columns are mandatory to use the Evt class. However, to use the other functions
+            of CalIPE, the optional columns are mandatory.
+            Mandatory columns for the Obs file:
+                EVID : ID of the earthquake
+                Iobs : intenstity in the locality (coordinates Lon/Lat)
+                QIobs : quality of the value of Iobs. Possible values: A (very good quality), B (fair quality) and C (bad quality)
+                Lon : Longitude in WGS84 of the locality
+                Lat : Latitude in WGS84 of the locality
+
+        Returns
+        -------
+        None.
+
+        """
         self.EvtFile = evtdata
         self.ObsFile = obsdata
 
@@ -20,6 +66,84 @@ def prepare_input4calibration(obsdata_name, evtdata_name, ponderation,
                               binning_type = 'ROBS',
                               Beta=-3.5,
                               Gamma=0):
+    """
+    Prepare the data stored in evt file and obs file into a dataframe useable by the CalIPE
+    tool.
+
+    Parameters
+    ----------
+    obsdata_name : str
+        Name of the obs file that contains the macroseismic fields of the calibration
+        earthquakes.
+        Mandatory columns for the Obs file:
+            EVID : ID of the earthquake
+            Iobs : intenstity in the locality (coordinates Lon/Lat)
+            QIobs : quality of the value of Iobs. Possible values: A (very good quality), B (fair quality) and C (bad quality)
+            Lon : Longitude in WGS84 of the locality
+            Lat : Latitude in WGS84 of the locality
+    evtdata_name : str
+        Name of the evt file that contains the metadata of different earthquakes. 
+        Mandatory columns for evtdata:
+            EVID : ID of the earthquake
+            Lon : longitude in WGS84 of the earthquake location
+            Lat : latitude in WGS84 of the earthquake location
+            Qpos : quality associated to the earthquake location (A for very good quality, E for bad quality, i.e. more than 50 km of possible error)
+            I0 : epicentral intensity of the earthquake 
+            QI0: quality associated to the value of I0 (A to E)
+            Year : year of occurence of the earthquake
+            Month : month of occurence of the earthquake
+            Day : day of occurence of the earthquake
+            Ic : intensity of completeness of the earthquake. The intensities smaller than Ic in a macroseismic field are considered as incomplete
+                 In the isoseismal radii based on intensity bins, intensities smaller than Ic are not taken into account
+                 to compute the isoseismal radii.
+        Optional columns for EvtFile:
+            Dc : distance of completeness of the earthquake. The macroseismic field located at greater epicentral distance than Dc is considered as incomplete
+            Depth : hypocentral depth of the earthquake
+            Hmin : lower bound of depth uncertainty
+            Hmax : upper bound of depth uncertainty
+            Mag : magnitude of the earthquake
+            StdM : uncertainty associated to magnitude.
+    ponderation : str
+        Name of the ponderation option that weight the earthquakes in the attenuation calibration.
+        Available values are 'Ponderation dI', 'Ponderation evt-uniforme', 'Ponderation evt-reg' and
+        'Ponderation evt-depth'. See ponderations.py documentation of more information.
+        process (2 steps method).
+    regiondata_name : str, optional
+        Name of the file that contains the contour of different regions. Each region is identifed by an ID.
+        Coordinates of the points that define the contour are in WGS84. The default is ''.
+    binning_type : str, optional
+        Name of the method used to bin the intensity data points (define isoseismal radii).
+        The default is 'ROBS'.
+    Beta : float, optional
+        DESCRIPTION. The default is -3.5.
+    Gamma : TYPE, optional
+        DESCRIPTION. The default is 0.
+
+    Returns
+    -------
+    obsbin_plus : pandas.DataFrame
+        Dataframe that contains metadata of the calibration earthquakes and the
+        isoseismal radii of the calibration earthquakes.
+        Columns of the dataframe:
+            EVID : earthquake ID
+            I : intensity value of the isoseismal
+            StdI : uncertainty associated to I
+            Depi : epicentral distance (km) of the isoseismal
+            Ndata : number of intensity data point used to compute the isoseismal
+            Io : epicentral intensity
+            Io_std : uncertainty associated to Io
+            Mag : magnitude of the earthquake
+            StdM : uncertainty associated to the magnitude
+            Depth : hypocentral depth of the earthquake
+            Hmin : lower bound of the depth uncertainty
+            Hmax : upper bound of the depth uncertainty
+            Io_ini : initial value of Io in inversion process. Equal to Io in this function. Used in the calibration process 
+            Hmin_ini : initial value of Hmin in inversion process. Equal to Hmin in this function. Used in the calibration process
+            Hmax_ini : initial value of Hmax in inversion process. Equal to Hmax in this function. Used in the calibration process
+            StdIo_inv : Value of the standard deviation associated to Io after inversion. In this function, equal to Io_std
+            eqStd : equivalent standard deviation used to weight the earthquakes in the calibration process (weight=1/std**2)
+
+    """
     obsdata = pd.read_csv(obsdata_name, sep=';')
     evtdata = pd.read_csv(evtdata_name, sep=';')
     
@@ -52,9 +176,9 @@ def prepare_input4calibration(obsdata_name, evtdata_name, ponderation,
         evt_obsbin.loc[:, 'StdM'] = data.StdM
         evt_obsbin.loc[:, 'Io_ini'] = data.I0
         evt_obsbin.loc[:, 'StdIo_inv'] = data.QI0
-        hypo_tmp = np.sqrt(evt_obsbin.Depi.values**2 + data.depth**2)
-        X_tmp = evt_obsbin.I.values - Beta*np.log10(hypo_tmp) - Gamma*hypo_tmp
-        evt_obsbin.loc[:, 'X'] = np.average(X_tmp, weights=1/evt_obsbin.StdI.values**2)
+        #hypo_tmp = np.sqrt(evt_obsbin.Depi.values**2 + data.depth**2)
+        # X_tmp = evt_obsbin.I.values - Beta*np.log10(hypo_tmp) - Gamma*hypo_tmp
+        # evt_obsbin.loc[:, 'X'] = np.average(X_tmp, weights=1/evt_obsbin.StdI.values**2)
 #        evt_obsbin.loc[:, 'Io'] = data.I0
         evt_obsbin = evt_obsbin[columns_obsbinplus]
         #obsbin_plus = obsbin_plus.append(evt_obsbin)
@@ -68,22 +192,60 @@ def prepare_input4calibration(obsdata_name, evtdata_name, ponderation,
 
 
 
-def update_XCaCb(obsbin_plus, Beta, Gamma):
-    hypo_tmp = np.sqrt(obsbin_plus.Depi.values**2 + obsbin_plus.Depth.values**2)
-    obsbin_plus.loc[:, 'X_tmp'] = obsbin_plus.I.values - Beta*np.log10(hypo_tmp) - Gamma*hypo_tmp
-    liste_evt = np.unique(obsbin_plus.EVID.values)
-    for evid in liste_evt:
-        ind = obsbin_plus.EVID==evid
-        obsbin_plus.loc[ind, 'X'] = np.average(obsbin_plus.loc[ind, 'X_tmp'], weights=1/obsbin_plus.loc[ind, 'StdI'].values**2)
-    obsbin_plus.drop(['X_tmp'], axis=1, inplace=True)
-    return obsbin_plus
+# def update_XCaCb(obsbin_plus, Beta, Gamma):
+#     # voir si fonction utilisee
+#     hypo_tmp = np.sqrt(obsbin_plus.Depi.values**2 + obsbin_plus.Depth.values**2)
+#     obsbin_plus.loc[:, 'X_tmp'] = obsbin_plus.I.values - Beta*np.log10(hypo_tmp) - Gamma*hypo_tmp
+#     liste_evt = np.unique(obsbin_plus.EVID.values)
+#     for evid in liste_evt:
+#         ind = obsbin_plus.EVID==evid
+#         obsbin_plus.loc[ind, 'X'] = np.average(obsbin_plus.loc[ind, 'X_tmp'], weights=1/obsbin_plus.loc[ind, 'StdI'].values**2)
+#     obsbin_plus.drop(['X_tmp'], axis=1, inplace=True)
+#     return obsbin_plus
 
 
 def add_Mweigths(obsbin_plus, ponderation):
+    """
+    Add weights used in the calibration of C1 and C2 coefficients and in the one 
+    step calibration method.
+
+    Parameters
+    ----------
+    obsbin_plus : pandas.DataFrame
+        Output of prepare_input4calibration().
+    ponderation : str
+        Name of the ponderation option. Possible values are 'Ponderation evt-uniforme',
+        'Ponderation evt-stdM' and 'Ponderation mag_class'.
+        See ponderations.py documentation of more information.
+
+    Returns
+    -------
+    obsbin_plus : pandas.DataFrame
+        same as the obsbin_plus input with a supplementary column eqStdM, used
+        to weight the earthquakes in the calibration process.
+
+    """
     obsbin_plus = evt_weights_C1C2(obsbin_plus, ponderation)
     return obsbin_plus
 
 def add_I0as_datapoint(obsbin_plus, liste_evt):
+    """
+    Add the epicentral intensity in the isoseismal radii
+
+    Parameters
+    ----------
+    obsbin_plus : pandas.DataFrame
+        See prepare_input4calibration.
+    liste_evt : list
+        List of the calibration earthquakes in obsbin_plus.
+
+    Returns
+    -------
+    obsbin_plus with a supplementary isoseismal for each earthquake 
+    with intensity equal to eipcentral intensity and epicentral distance
+    equal to 0.
+
+    """
     Std ={'A':0.5,'B':0.5,'C':0.5,'E':0.750, 'K':0.5}
     #Std ={'A':0.25,'B':0.375,'C':0.5,'E':0.750, 'K':0.5}
     last_index = len(obsbin_plus)+1

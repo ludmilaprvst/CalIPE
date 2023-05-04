@@ -604,7 +604,7 @@ class WLS():
                                    H21, H22, H23, H24, H25, H26, H27, H28, H29, H30, H31, H32,
                                    H33, H34, H35, H36, H37, H38, H39, H40, H41, H42, H43,
                                    H44, H45, H46, H47, H48, H49, H50, H51, H52, H53, H54,
-                                   H55, H56, H57, H58, H59, H60):
+                                   H55, H56, H57, H58, H59, H60, H61, H62, H63, H64, H65):
         """
         Function used to inverse the magnitude coefficients and the geometric attenuation
         coefficient
@@ -633,8 +633,8 @@ class WLS():
                 aH = np.vstack((aH, zeros))
             except ValueError:
                  aH = np.concatenate((aH, zeros))
-        if len(liste_evid)<31:
-            len_noevt = 31 - len(liste_evid)
+        if len(liste_evid)<65:
+            len_noevt = 65 - len(liste_evid)
             for compt in range(len_noevt):
                 zeros = np.zeros(len(self.Obsbin_plus.EVID))
                 aH = np.vstack((aH, zeros))
@@ -670,13 +670,15 @@ class WLS():
                        [H49]*len(depi), [H50]*len(depi), [H51]*len(depi), [H52]*len(depi),
                        [H53]*len(depi), [H54]*len(depi), [H55]*len(depi), [H56]*len(depi),
                        [H57]*len(depi), [H58]*len(depi), [H59]*len(depi), [H60]*len(depi),
+                       [H61]*len(depi), [H62]*len(depi), [H63]*len(depi), [H64]*len(depi),
+                       [H65]*len(depi),
                        ))
         hypos = np.sqrt(depi**2 + (H*aH).sum(axis=0)**2)
         I = (C1*aregion).sum(axis=0) + C2*mags + ((Beta*aregion).sum(axis=0))*np.log10(hypos)
         return I
     
     
-    def do_wls_C1C2BetaH_2regC1beta(self, sigma='none',
+    def do_wls_C1C2BetaH_2regC1beta(self, 
                          ftol=5e-3, xtol=1e-8, max_nfev=200,
                          C1a=1, C1b=1, betaa=-3.0, betab=-3.0):
         """
@@ -695,9 +697,9 @@ class WLS():
         """
         #print(self.Obsbin_plus.columns)
         liste_evid = np.unique(self.Obsbin_plus.EVID.values)
-        depths = np.zeros(60)
-        Hmin = np.zeros(60)
-        Hmax = np.zeros(60)
+        depths = np.zeros(65)
+        Hmin = np.zeros(65)
+        Hmax = np.zeros(65)
         id_evid = np.zeros(len(self.Obsbin_plus.EVID))
         
         for compt, evid in enumerate(liste_evid):
@@ -717,9 +719,9 @@ class WLS():
              self.Obsbin_plus.RegID.values.astype(float)]
         
         Ibin = self.Obsbin_plus['I'].values.astype(float)
-        print(Ibin.dtype)
-        if sigma == 'none':
-            sigma = self.Obsbin_plus['eqStdM'].values.astype(float)
+        #print(Ibin.dtype)
+        
+        sigma = self.Obsbin_plus['eqStdM'].values.astype(float)
         # if sigma.dtype is not np.dtype(np.float64):
         #     raise TypeError("sigma.dtype is not float")
 
@@ -729,11 +731,11 @@ class WLS():
                        Hmin)
         bounds_sup = np.append(np.array([np.inf, np.inf, np.inf, np.inf, np.inf]),
                        Hmax)
-        C1C2BetaH = curve_fit(self.EMIPE_C1C2BetaH, X, Ibin, 
+        C1C2BetaH = curve_fit(self.EMIPE_C1C2BetaH_2regC1beta, X, Ibin, 
                              p0=p0,
                              bounds=(bounds_inf, bounds_sup),
                              sigma=sigma,
-                             absolute_sigma=True,
+                             absolute_sigma=False,
                              ftol=ftol,
                              xtol=xtol,
                              max_nfev=max_nfev)
@@ -888,7 +890,8 @@ class WLS():
     def do_wls_C1C2BetaGammaH(self, sigma='none',
                          ftol=5e-3, xtol=1e-8, max_nfev=200):
         """
-        Function used to launch the inversion of all coefficients
+        Function used to launch the inversion of all coefficients. Depth of 
+        each earthquake is also inverted.
         
          return: [popt, pcov] list with popt a (3, 1) shape array containing
                 the inverted coefficient with popt[0] the C1 coefficient,
@@ -944,6 +947,26 @@ class WLS():
         return C1C2BetaGammaH
 
     def do_wls_C1C2BetaH_std(self, sigma):
+        """
+        Function used to compute the covariance matrix associated to the 
+        inverted C1,, C2, Beta and depths based on the standard deviations associated
+        to the intensity data.
+
+        Parameters
+        ----------
+        sigma : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        Array
+            Covariance matrix pour the inverted C1,, C2, Beta and depths, based
+            on the standard deviations associated to the intensity data.
+            The output is the same as pcov output of scipy.optimize.curve_fit,
+            i.e. the estimated covariance of popt. The diagonals provide the variance of the parameter estimate.
+            To compute one standard deviation errors on the parameters use perr = np.sqrt(np.diag(pcov))
+
+        """
         aH = np.array([])
         liste_evid = np.unique(self.Obsbin_plus.EVID.values)
         depths = np.zeros(31)
@@ -984,15 +1007,63 @@ class WLS():
         return C1C2BetaH[1]
     
     def compute_2Dsigma(self, eta, col='eqStdM'):
+        """
+        Compute a 2D sigma. The diagonal if equal to the column col input. The other
+        elements of the matrix are filled with the eat input.
+        
+        Parameters
+        ----------
+        eta : float
+            DESCRIPTION.
+        col : str, optional
+            Name of the column where are stored the standard deviation used for the
+            diagonal of the 2D sigma matrix. The default is 'eqStdM'.
+        Returns
+        -------
+        sigma : 2D array
+            2D sigma corresponding to the sigma associated to the I column of the Obsbin_plus
+            dataframe in the inversion process 
+        """
         sigma = np.diag(self.Obsbin_plus[col].values)
         sigma[sigma==0] = eta
         return sigma
     
-    def example_function(X, C0a, C0b, C2):
-        mags, dummy = X
-        return C0a + dummy*C0b + mags*C2
     
     def C1_4regionC2_EMIPE(self, X, C1a, C1b, C1c, C1d, C2):
+        """
+        Function used to inverse the C1 and C2 coefficients.The C1 coefficient
+        is estimated for 4 different regions. 
+
+        Parameters
+        ----------
+        X : array
+            Array that contains the magnitudes of the calibration earthquakes and the corresponding 
+            region ID of the earthquakes. The array should correspond to the columns of the Obsbin_plus
+            dataframe.
+        C1a : float
+            C1 coefficient for the first region.
+        C1b : float
+            C1 coefficient for the second region.
+        C1c : float
+            C1 coefficient for the third region.
+        C1d : float
+            C1 coefficient for the fourth region.
+        C2 : float
+            C2 coefficient.
+
+        Raises
+        ------
+        ValueError
+            This error is raised if the number of regions given in the input
+            (stored in X input) is not equal to 4.
+
+        Returns
+        -------
+        IminusAtt : array
+            The predicted value of the intenisty minus the attenuation term, equal to
+            C1 + C2.mag (mag is the magnitude). 
+
+        """
         mags, id_region = X
         liste_region = np.unique(id_region)
         if len(liste_region)!=4:
@@ -1014,6 +1085,39 @@ class WLS():
         return IminusAtt
     
     def C1_3regionC2_EMIPE(self, X, C1a, C1b, C1c, C2):
+        """
+        Function used to inverse the C1 and C2 coefficients.The C1 coefficient
+        is estimated for 3 different regions. 
+
+        Parameters
+        ----------
+        X : array
+            Array that contains the magnitudes of the calibration earthquakes and the corresponding 
+            region ID of the earthquakes. The array should correspond to the columns of the Obsbin_plus
+            dataframe.
+        C1a : float
+            C1 coefficient for the first region.
+        C1b : float
+            C1 coefficient for the second region.
+        C1c : float
+            C1 coefficient for the third region.
+
+        C2 : float
+            C2 coefficient.
+
+        Raises
+        ------
+        ValueError
+            This error is raised if the number of regions given in the input
+            (stored in X input) is not equal to 3.
+
+        Returns
+        -------
+        IminusAtt : array
+            The predicted value of the intenisty minus the attenuation term, equal to
+            C1 + C2.mag (mag is the magnitude). 
+            
+        """
         mags, id_region = X
         liste_region = np.unique(id_region)
         if len(liste_region)!=3:
@@ -1036,6 +1140,36 @@ class WLS():
         return IminusAtt
     
     def C1_2regionC2_EMIPE(self, X, C1a, C1b, C2):
+        """
+        Function used to inverse the C1 and C2 coefficients.The C1 coefficient
+        is estimated for 2 different regions. 
+
+        Parameters
+        ----------
+        X : array
+            Array that contains the magnitudes of the calibration earthquakes and the corresponding 
+            region ID of the earthquakes. The array should correspond to the columns of the Obsbin_plus
+            dataframe.
+        C1a : float
+            C1 coefficient for the first region.
+        C1b : float
+            C1 coefficient for the second region.
+        C2 : float
+            C2 coefficient.
+
+        Raises
+        ------
+        ValueError
+            This error is raised if the number of regions given in the input
+            (stored in X input) is not equal to 2.
+
+        Returns
+        -------
+        IminusAtt : array
+            The predicted value of the intenisty minus the attenuation term, equal to
+            C1 + C2.mag (mag is the magnitude). 
+            
+        """
         mags, id_region = X
         liste_region = np.unique(id_region)
         if len(liste_region)!=2:
@@ -1058,6 +1192,33 @@ class WLS():
         return IminusAtt
     
     def C1C2_EMIPE(self, X, C1, C2):
+        """
+        Function used to inverse the C1 and C2 coefficients.
+
+        Parameters
+        ----------
+        X : array
+            Array that contains the magnitudes of the calibration earthquakes and the corresponding 
+            region ID of the earthquakes. The array should correspond to the columns of the Obsbin_plus
+            dataframe.
+        C1 : float
+            C1 coefficient.
+        C2 : float
+            C2 coefficient.
+
+        Raises
+        ------
+        ValueError
+            This error is raised if the number of regions given in the input
+            (stored in X input) is not equal to 1.
+
+        Returns
+        -------
+        IminusAtt : array
+            The predicted value of the intenisty minus the attenuation term, equal to
+            C1 + C2.mag (mag is the magnitude). 
+            
+        """
         mags, id_region = X
         liste_region = np.unique(id_region)
         if len(liste_region)!=1:
@@ -1067,6 +1228,50 @@ class WLS():
     
     def do_linregressC1regC2(self, sigma='none',
                          ftol=5e-3, xtol=1e-8, max_nfev=200):
+        """
+        Function that inverts the C1 and C2 coefficients in the following equation:
+            I = C1 + C2.Mag + beta.log10(hypo) + gamma.hypo
+        C1 coefficient can be estimated by regions, with a maximal number of region
+        equal to 4.
+
+        Parameters
+        ----------
+        sigma : float or array or 2D array, optional
+            sigma used to weight the data in the inversion process. The default is 'none'.
+            None (default) is equivalent of 1-D sigma filled with ones
+        ftol : TYPE, optional
+           Tolerance for termination by the change of the cost function.
+           The optimization process is stopped when dF < ftol * F, 
+           and there was an adequate agreement between a local quadratic model 
+           and the true model in the last step. This tolerance must be higher than machine epsilon.
+           The default is 5e-3.
+        xtol : TYPE, optional
+            Tolerance for termination by the change of the independent variables
+            The default is 1e-8. The condition is:
+                Delta < xtol * norm(xs), where Delta is a trust-region radius
+                and xs is the value of x scaled according to x_scale parameter
+        max_nfev : TYPE, optional
+            Maximum number of function evaluations before the termination. The default is 200.
+
+        Raises
+        ------
+        ValueError
+            This error is raised when the number of regions to regionalized C1 coefficient
+            is greater than 4. Each region is associated to an ID.
+
+        Returns
+        -------
+        C1regC2 : TYPE
+            array with two array elements. First element is the popt output of scipy.optimize.curve_fit,
+            i.e. the optimal values for the parameters so that the sum of the squared residuals
+            of f(xdata, *popt) - ydata is minimized. The number of elements of the popt depends on the number of region
+            defined by the user. The first elements are the C1 coefficients (one for each region defined) and the last one is the C2 coefficient.
+            The order of the regions is the same as the order of appareance in the RegID of the Obsbin_plus dataframe.
+            Second element is pcov output of scipy.optimize.curve_fit,
+            i.e. the estimated covariance of popt. The diagonals provide the variance of the parameter estimate.
+            To compute one standard deviation errors on the parameters use perr = np.sqrt(np.diag(pcov)).
+
+        """
         hypos = np.sqrt(self.Obsbin_plus['Depi'].values.astype(float)**2 + self.Obsbin_plus['Depth'].values.astype(float)**2)
         IminusAtt = self.Obsbin_plus['I'].values - self.Obsbin_plus['beta'].values*np.log10(hypos) -  self.Obsbin_plus['gamma'].values*hypos
         X = [self.Obsbin_plus.Mag.values.astype(float),

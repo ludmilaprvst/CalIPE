@@ -15,10 +15,67 @@ from matplotlib import colors
 
 
 def apply_KovBetaeq(I0, beta, Depi, H):
+    """
+    Apply the following equation:
+        I = I0 + beta.log10(sqrt(depi**2+h**2))
+    with I the intensity at epicentral distance depi. h is the hypocentral depth of 
+    the earthquake, I0 the epicentral intensity and beta the attenuation coefficient.
+        
+
+    Parameters
+    ----------
+    I0 : float
+        Epicentral intensity.
+    beta : float
+        Attenuation coefficient.
+    Depi : float or array
+        Epicentral distance.
+    H : float
+        Hypocentral depth.
+
+    Returns
+    -------
+    float or array
+        Intensity at epicentral distance depi.
+
+    """
     hypo = np.sqrt(Depi**2 + H**2)
     return I0 + beta*np.log10(hypo/H)
 
 def readBetaFile(nomFichier):
+    """
+    Read the output file of the beta calibration (see write_betaresults)
+
+    Parameters
+    ----------
+    nomFichier : str
+        name and path of the beta file.
+
+    Returns
+    -------
+    beta : float
+        Result of the calibration process: value of the beta coefficient (optimal value).
+    stdbeta : float
+        Standard deviation associated to beta, based on the standard deviation associated
+        to the isoseismal intensity values.
+    beta_ini : float
+        Value of beta used to initialize the calibration process.
+    nbre_iteration : int
+        Number of iteration needed before convergence of the calibration process.
+    nbre_iterationMax : int
+        Maximal number of iteration allowed.
+    nbre_iterationMin : int
+        Minimal number of iteration allowed.
+    nbreEvt : int
+        Number of calibration earthquake used in the calibration process.
+    nbreI : int
+        Number of intensity data used in the calibration process.
+    evtfile : str
+        Name of the evt file that contains the metadata of different earthquakes.
+    obsfile : str
+        Name and path of the obs file that contain the macroseismic fields of the calibration.
+
+    """
     fichier = open(nomFichier, 'r')
     contenuFichier = fichier.read()
     contenuFichier = contenuFichier.split('\n')
@@ -68,6 +125,46 @@ def readBetaFile(nomFichier):
 
 
 def readBetaGammaFile(nomFichier):
+    """
+    Read the output file of the beta/gamma calibration (see write_betagammaresults)
+
+    Parameters
+    ----------
+    nomFichier : str
+        name and path of the beta/gamma file..
+
+    Returns
+    -------
+    beta : float
+        Result of the calibration process: value of the beta coefficient (optimal value).
+    stdbeta : float
+        Standard deviation associated to beta, based on the standard deviation associated
+        to the isoseismal intensity values.
+    beta_ini : float
+        Value of beta used to initialize the calibration process.
+    gamma : float
+        Result of the calibration process: value of the gamma coefficient (optimal value).
+    stdgamma :float
+        Standard deviation associated to gamma, based on the standard deviation associated
+        to the isoseismal intensity values.
+    gamma_ini : float
+        Value of gamma used to initialize the calibration process..
+    nbre_iteration : int
+        Number of iteration needed before convergence of the calibration process.
+    nbre_iterationMax : int
+        Maximal number of iteration allowed.
+    nbre_iterationMin : int
+       Minimal number of iteration allowed.
+    nbreEvt : int
+        Number of calibration earthquake used in the calibration process.
+    nbreI : int
+        Number of intensity data used in the calibration process.
+    evtfile : str
+        Name of the evt file that contains the metadata of different earthquakes.
+    obsfile : str
+        Name and path of the obs file that contain the macroseismic fields of the calibration.
+
+    """
     fichier = open(nomFichier, 'r')
     contenuFichier = fichier.read()
     contenuFichier = contenuFichier.split('\n')
@@ -128,12 +225,52 @@ def readBetaGammaFile(nomFichier):
     return beta, stdbeta, beta_ini, gamma, stdgamma, gamma_ini, nbre_iteration, nbre_iterationMax, nbre_iterationMin, nbreEvt, nbreI, evtfile, obsfile
 
 def create_savedir(run_name, path):
+    """
+    Create a folder
+
+    Parameters
+    ----------
+    run_name : str
+        Name of the folder.
+    path : TYPE
+        path to the location where the folder will be created.
+
+    Returns
+    -------
+    directory : str
+        path to the created directory.
+
+    """
     directory = path + '/' + run_name
     if not os.path.exists(directory):
         os.mkdir(directory)
     return directory
 
 def plot_dI_Depi(run_name, path, ax, evthighlight='None'):
+    """
+    plot residual intensity from beta calibration output files. Only work for the following equation:
+        I = I0 + beta.log10(sqrt(depi**2+h**2))
+    with I the intensity at epicentral distance depi. h is the hypocentral depth of 
+    the earthquake, I0 the epicentral intensity and beta the attenuation coefficient.
+        
+
+    Parameters
+    ----------
+    run_name : str
+        core name of the output files.
+    path : str
+        path to the folder where the output files are saved.
+    ax : TYPE
+        DESCRIPTION.
+    evthighlight : TYPE, optional
+        DESCRIPTION. The default is 'None'.
+
+    Returns
+    -------
+    outsiders : TYPE
+        DESCRIPTION.
+
+    """
     beta_file = 'betaFinal_' + run_name + '.txt'
     obsbinfile = 'obsbinEnd_' + run_name + '.csv'
     beta = readBetaFile(path + '/' + beta_file)[0]
