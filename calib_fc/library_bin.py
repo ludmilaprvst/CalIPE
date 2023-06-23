@@ -129,7 +129,6 @@ def RAVG(obsdata, depth, Ic, I0, QI0):
         else:
             condition = np.logical_and(obsdata.Iobs>=Ibin-class_width/2, obsdata.Iobs<=Ibin+class_width/2)
         tmp = obsdata[condition].copy()
-        print(tmp)
         if tmp.empty:
            continue 
         Ndata = len(tmp)
@@ -397,10 +396,20 @@ def RF50(obsdata, depth, Ic, I0, QI0):
     obsbin.loc[:, 'StdI_min'] = obsbin.apply(lambda row: Stdobs['C']/np.sqrt(row['Ndata']), axis=1)
     obsbin.loc[:, 'StdI'] = obsbin.apply(lambda row: np.max([row['StdI_data'], row['StdI_min']]), axis=1)
     obsbin.loc[:, 'W'] = np.sqrt(obsbin.loc[:, 'Ndata'])*obsbin.loc[:, 'w2']*obsbin.loc[:, 'RAVG']
+    print(obsbin)
     obsbin = obsbin[obsbin.W==obsbin.W.max()]
     obsbin = obsbin[['EVID', 'Iobs', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'I0', 'QI0', 'Ndata']]
     obsbin.columns = ['EVID', 'I', 'Depi', 'Hypo', 'StdLogR', 'StdI', 'Io', 'Io_std', 'Ndata']
-    obsbin.loc[0, :] = [obsdata.EVID.values[0], I0, 0, depth, -1, QI0, I0, QI0, 0]
+    obsbin = obsbin.append({'EVID' : obsdata.EVID.values[0],
+                            'Depi' : 0,
+                            'Hypo': depth,
+                             'I': I0,
+                             'StdI': QI0,
+                             'Io': I0,
+                             'Io_std': QI0,
+                             'StdLogR': -1,
+                             'Ndata': 0}, 
+                                ignore_index=True)
     return obsbin.infer_objects()
 
 def RF84(obsdata, depth, Ic, I0, QI0):

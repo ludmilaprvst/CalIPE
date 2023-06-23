@@ -793,9 +793,9 @@ class WLS():
         """
         #print(self.Obsbin_plus.columns)
         liste_evid = np.unique(self.Obsbin_plus.EVID.values)
-        depths = np.zeros(31)
-        Hmin = np.zeros(31)
-        Hmax = np.zeros(31)
+        depths = np.zeros(32)
+        Hmin = np.zeros(32)
+        Hmax = np.zeros(32)
         id_evid = np.zeros(len(self.Obsbin_plus.EVID))
         for compt, evid in enumerate(liste_evid):
             ind = (self.Obsbin_plus.EVID == evid)
@@ -836,7 +836,7 @@ class WLS():
     
     def EMIPE_C1C2BetaGammaH(self, X, C1, C2, Beta, Gamma, H1, H2, H3, H4, H5, H6, H7, H8,
                         H9, H10, H11, H12, H13, H14, H15, H16, H17, H18, H19, H20,
-                        H21, H22, H23, H24, H25, H26, H27, H28, H29, H30, H31):
+                        H21, H22, H23, H24, H25, H26, H27, H28, H29, H30, H31, H32):
         """
         Function used to inverse the magnitude coefficients and the attenuation
         coefficients
@@ -879,7 +879,7 @@ class WLS():
                        [H17]*len(depi), [H18]*len(depi), [H19]*len(depi), [H20]*len(depi),
                        [H21]*len(depi), [H22]*len(depi), [H23]*len(depi), [H24]*len(depi),
                        [H25]*len(depi), [H26]*len(depi), [H27]*len(depi), [H28]*len(depi),
-                       [H29]*len(depi), [H30]*len(depi), [H31]*len(depi)
+                       [H29]*len(depi), [H30]*len(depi), [H31]*len(depi), [H32]*len(depi),
                        ))
         
         
