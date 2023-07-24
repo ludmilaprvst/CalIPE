@@ -1,0 +1,2 @@
+C1a, C1b, C1c, C1d, C2, Betaa, Betab, Gamma
+2.2,4.1,0,0,1.6,-4.2,-3.0,0
