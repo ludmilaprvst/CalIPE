@@ -258,15 +258,15 @@ def compute_WEresidualsKov(obsbin, beta, gamma):
         Name of the .csv file which contains the observed intensities, associated epicentral
         distance, hypocentral depth and magnitude and the IPE coefficient.
         Mandatory columns are:
-            C1 : C1 coefficient value
-            C2 : C2 coefficient value
-            beta : beta coefficient value
-            gamma : gamma coefficient value
-            I: observed intensity
-            Depi : epicentral distance associated to I
-            EVID : ID of the earthquake
-            Depth : hypocentral depth of the earthquake identified by EVID
-            Mag : magnitude of the earthquake identified by EVID
+            - C1: C1 coefficient value
+            - C2: C2 coefficient value
+            - beta: beta coefficient value
+            - gamma: gamma coefficient value
+            - I: observed (binned) intensity
+            - Depi: epicentral distance associated to I
+            - EVID: ID of the earthquake
+            - Depth: hypocentral depth of the earthquake identified by EVID
+            - Mag: magnitude of the earthquake identified by EVID
             
     path : str
         path to the folder where outputname is saved.
@@ -283,10 +283,11 @@ def compute_WEresidualsKov(obsbin, beta, gamma):
     obsbin_gp = obsbin.groupby('EVID').mean()
     dict_meandIevt = obsbin_gp.to_dict(orient='index')
     obsbin.loc[:, 'dImeanevt'] = obsbin.apply(lambda row: dict_meandIevt[row['EVID']]['dI'], axis=1)
-    obsbin.loc[:, 'within_residuals'] = obsbin.I.values - (obsbin.Ipred.values - obsbin.dImeanevt.values)
+    obsbin.loc[:, 'within_residuals'] = obsbin.I.values - (obsbin.Ipred.values + obsbin.dImeanevt.values)
+    #obsbin.loc[:, 'within_residuals'] = obsbin.I.values - obsbin.Ipred.values
     return obsbin
 
-def plot_dI_Depi(run_name, path, ax, gamma=False, evthighlight='None'):
+def plot_WE_Depi(run_name, path, ax, gamma=False, evthighlight='None'):
     """
     plot the within-event residual intensity from beta calibration output files. Only work for the following equation:
         I = I0 + beta.log10(sqrt(depi**2+h**2))
@@ -347,10 +348,78 @@ def plot_dI_Depi(run_name, path, ax, gamma=False, evthighlight='None'):
         liste_evt = np.unique(obsbin.EVID.values)
         if evthighlight in liste_evt:
             tmp = obsbin[obsbin.EVID==evthighlight]
-            ax.scatter(tmp.Depi.values, tmp.within_residuals.values, label=evthighlight)
+            ax.scatter(tmp.Depi.values, tmp.within_residuals.values, label=evthighlight, color='Pink')
             
     ax.set_xlabel('Epicentral distance [km]')
     ax.set_ylabel('Within event intensity residual')
+    outsiders = obsbin[np.abs(obsbin.dI)>0.5]
+    return outsiders, obsbin
+
+def plot_dI_Depi(run_name, path, ax, gamma=False, evthighlight='None'):
+    """
+    plot the intensity residual  from beta calibration output files. Only work for the following equation:
+        I = I0 + beta.log10(sqrt(depi**2+h**2))
+    with I the intensity at epicentral distance depi. h is the hypocentral depth of 
+    the earthquake, I0 the epicentral intensity and beta the attenuation coefficient.
+    The intensity residual are plotted in respect with the epicentral distance.
+        
+
+    Parameters
+    ----------
+    run_name : str
+        core name of the output files.
+    path : str
+        path to the folder where the output files are saved.
+    ax : matplotlib.axes
+        axe where the data are plotted.
+    evthighlight : TYPE, optional
+        ID of the wished highlighted earthquake. One earthquake can have a different color on the plot. The default is 'None'.
+
+    Returns
+    -------
+    outsiders : pandas.DataFrame
+        Data for which the absolute value of the intensity residual is greater than 0.5.
+    obsbin : pandas.DataFram
+        Intensity data with the within-event residual.
+
+    """
+    if not gamma:
+        beta_file = 'betaFinal_' + run_name + '.txt'
+        beta = readBetaFile(path + '/' + beta_file)[0]
+        gamma = 0
+    else:
+        beta_file = 'betagammaFinal_' + run_name + '.txt'
+        beta = readBetaGammaFile(path + '/' + beta_file)[0]
+        gamma = readBetaGammaFile(path + '/' + beta_file)[3]
+    obsbinfile = 'obsbinEnd_' + run_name + '.csv'
+    
+    obsbin = pd.read_csv(path + '/' + obsbinfile, sep=';')
+    
+    obsbin = compute_WEresidualsKov(obsbin, beta, gamma)   
+    mean_WEdI = obsbin.dI.mean()
+    
+    ax.scatter(obsbin.Depi.values, obsbin.dI.values)
+    depi_mean_val = []
+    depi_std_val = []
+    depi_plot = []
+    depi_bins = np.append(np.arange(0, 40+10, 10), np.arange(50, obsbin.Depi.max()+20, 20))
+    for i in range(len(depi_bins)-1):
+        tmp = obsbin[np.logical_and(obsbin.Depi>=depi_bins[i], obsbin.Depi<depi_bins[i+1])]
+        if len(tmp)>5:
+            depi_mean_val.append(tmp.dI.mean())
+            depi_std_val.append(tmp.dI.std())
+            depi_plot.append(depi_bins[i])
+    ax.errorbar(np.array(depi_plot)+5, depi_mean_val, yerr=depi_std_val,
+                color='r', fmt='o', label='Mean intensity residual\nfor a 10 km epicentral interval for depi<50 km\n and 20 km interval for depi>50 km')
+    ax.axhline(y=mean_WEdI, color='k', label='Mean intensity residual')
+    if not evthighlight == 'None':
+        liste_evt = np.unique(obsbin.EVID.values)
+        if evthighlight in liste_evt:
+            tmp = obsbin[obsbin.EVID==evthighlight]
+            ax.scatter(tmp.Depi.values, tmp.dI.values, label=evthighlight, color='Pink')
+            
+    ax.set_xlabel('Epicentral distance [km]')
+    ax.set_ylabel('Iobs - Ipred')
     outsiders = obsbin[np.abs(obsbin.dI)>0.5]
     return outsiders, obsbin
 
@@ -358,6 +427,70 @@ def plot_dI_Depi(run_name, path, ax, gamma=False, evthighlight='None'):
 def plot_dI_Iobs(run_name, path, ax, gamma=False, evthighlight='None'):
     """
     plot residual intensity from beta calibration output files. Only work for the following equation:
+        I = I0 + beta.log10(sqrt(depi**2+h**2))
+    with I the intensity at epicentral distance depi. h is the hypocentral depth of 
+    the earthquake, I0 the epicentral intensity and beta the attenuation coefficient.
+    The intensity residual are plotted in respect with the observed intensity value.
+
+    Parameters
+    ----------
+    run_name : str
+        core name of the output files.
+    path : str
+        path to the folder where the output files are saved.
+    ax : matplotlib.axes
+        axe where the data are plotted.
+    evthighlight : TYPE, optional
+        ID of the wished highlighted earthquake. One earthquake can have a different color on the plot. The default is 'None'.
+
+    Returns
+    -------
+    outsiders : pandas.DataFrame
+        Data for which the absolute value of the intensity residual is greater than 0.5.
+    obsbin : pandas.DataFram
+        Intensity data with the within-event residual.
+
+    """ 
+    if not gamma:
+        beta_file = 'betaFinal_' + run_name + '.txt'
+        beta = readBetaFile(path + '/' + beta_file)[0]
+        gamma = 0
+    else:
+        beta_file = 'betagammaFinal_' + run_name + '.txt'
+        beta = readBetaGammaFile(path + '/' + beta_file)[0]
+        gamma = readBetaGammaFile(path + '/' + beta_file)[3]
+    obsbinfile = 'obsbinEnd_' + run_name + '.csv'
+    
+    obsbin = pd.read_csv(path + '/' + obsbinfile, sep=';')
+    obsbin = compute_WEresidualsKov(obsbin, beta, gamma)
+    
+    mean_WEdI = obsbin.dI.mean()
+    ax.scatter(obsbin.I.values, obsbin.dI.values)
+    ax.axhline(y=mean_WEdI, color='k', label='Mean intensity residual')
+    ival_mean_val = []
+    ival_std_val = []
+    ival_plot = []
+    for ival in np.unique(obsbin.I.values):
+        tmp = obsbin[obsbin.I==ival]
+        if len(tmp)>5:
+            ival_mean_val.append(tmp.dI.mean())
+            ival_std_val.append(tmp.dI.std())
+            ival_plot.append(ival)
+    ax.errorbar(ival_plot, ival_mean_val, yerr=ival_std_val,
+                color='r', fmt='o', label='Mean intensity residual\nfor the observed intensity value')
+    if not evthighlight == 'None':
+        liste_evt = np.unique(obsbin.EVID.values)
+        if evthighlight in liste_evt:
+            tmp = obsbin[obsbin.EVID==evthighlight]
+            ax.scatter(tmp.I.values, tmp.within_residuals.values, label=evthighlight)
+    ax.set_xlabel('Observed intensity value')
+    ax.set_ylabel('Iobs - Ipred')
+    outsiders = obsbin[np.abs(obsbin.dI)>0.5]
+    return outsiders, obsbin
+
+def plot_WE_Iobs(run_name, path, ax, gamma=False, evthighlight='None'):
+    """
+    plot within-event residual intensity from beta calibration output files. Only work for the following equation:
         I = I0 + beta.log10(sqrt(depi**2+h**2))
     with I the intensity at epicentral distance depi. h is the hypocentral depth of 
     the earthquake, I0 the epicentral intensity and beta the attenuation coefficient.
@@ -464,10 +597,10 @@ def plot_dIH(run_name, path, ax, color, gamma=False):
     h_std_val = []
     h_plot = []
     for i in range(len(h_bins)-1):
-        tmp = obsbin[np.logical_and(obsbin.Depth>=h_bins[i], obsbin.Depth<h_bins[i+1])]
-        if len(tmp)>5:
-            h_mean_val.append(tmp.within_residuals.mean())
-            h_std_val.append(tmp.within_residuals.std())
+        tmp = obsbin_gp[np.logical_and(obsbin_gp.Depth>=h_bins[i], obsbin_gp.Depth<h_bins[i+1])]
+        if len(tmp)>3:
+            h_mean_val.append(tmp.dImeanevt.mean())
+            h_std_val.append(tmp.dImeanevt.std())
             h_plot.append(h_bins[i])
     ax.errorbar(np.array(h_plot)+0.125, h_mean_val, yerr=h_std_val,
                 color='r', fmt='o', label='Mean between-event residual\nfor a 2.5 km depth interval')
@@ -520,10 +653,10 @@ def plot_dII0(run_name, path, ax, color, gamma=False):
     I0_std_val = []
     I0_plot = []
     for io in np.unique(obsbin.Io_ini.values):
-        tmp = obsbin[obsbin.Io_ini==io]
-        if len(tmp)>5:
-            I0_mean_val.append(tmp.within_residuals.mean())
-            I0_std_val.append(tmp.within_residuals.std())
+        tmp = obsbin_gp[obsbin_gp.Io_ini==io]
+        if len(tmp)>3:
+            I0_mean_val.append(tmp.dImeanevt.mean())
+            I0_std_val.append(tmp.dImeanevt.std())
             I0_plot.append(io)
     ax.errorbar(I0_plot, I0_mean_val, yerr=I0_std_val,
                 color='r', fmt='o', label='Mean between-event residual\nfor each epicentral intensity value')
@@ -550,7 +683,7 @@ def plot_dIMag(run_name, path, ax, color, gamma=False):
         path to the folder where the output files are saved.
     ax : matplotlib.axes
         axe where the data are plotted.
-    evthighlight : TYPE, optional
+    evthighlight : str, int, optional
         ID of the wished highlighted earthquake. One earthquake can have a different color on the plot. The default is 'None'.
 
     Returns
@@ -573,15 +706,15 @@ def plot_dIMag(run_name, path, ax, color, gamma=False):
     
     obsbin_gp = obsbin.groupby('EVID').mean()
     ax.scatter(obsbin_gp.Mag.values, obsbin_gp.dImeanevt.values, color=color)
-    mag_bins = np.arange(obsbin.Mag.min(), obsbin.Mag.max()+0.25, 0.25)
+    mag_bins = np.arange(obsbin.Mag.min()-0.125, obsbin.Mag.max()+0.25, 0.25)
     mag_mean_val = []
     mag_std_val = []
     mag_plot = []
     for i in range(len(mag_bins)-1):
-        tmp = obsbin[np.logical_and(obsbin.Mag>=mag_bins[i], obsbin.Mag<mag_bins[i+1])]
-        if len(tmp)>5:
-            mag_mean_val.append(tmp.within_residuals.mean())
-            mag_std_val.append(tmp.within_residuals.std())
+        tmp = obsbin_gp[np.logical_and(obsbin_gp.Mag>=mag_bins[i], obsbin_gp.Mag<mag_bins[i+1])]
+        if len(tmp)>3:
+            mag_mean_val.append(tmp.dImeanevt.mean())
+            mag_std_val.append(tmp.dImeanevt.std())
             mag_plot.append(mag_bins[i])
     ax.errorbar(np.array(mag_plot)+0.125, mag_mean_val, yerr=mag_std_val,
                 color='r', fmt='o', label='Mean between-event residual\nfor a 0.25 magnitude interval')
@@ -603,11 +736,11 @@ def compute_withinbetweenevt_sigma(obsbin, beta):
     obsbin : pandas.DataFrame
         dataframe which contains the dataset.
         Mandatory columns are:
-            EVID : ID of the earthquake
-            Depth : hypocentral depth of the earthquake identified by EVID
-            Io : epicentral intensity of the earthquake identified by EVID
-            I: observed intensity
-            Depi : epicentral distance associated to I
+            - EVID: ID of the earthquake
+            - Depth: hypocentral depth of the earthquake identified by EVID
+            - Io: epicentral intensity of the earthquake identified by EVID
+            - I: observed (binned) intensity
+            - Depi: epicentral distance associated to I
             
     beta : float
         value of the beta coefficient in the IPE.
@@ -687,18 +820,26 @@ def compute_stats(run_name, path):
 
 def plot_sigma_diffDB(output_folder, ax):
     """
-    
+    Function that plot the intensity residual sigma, the witin-event and between-event
+    sigma for all attenuation inversion runs saved in the given output folder.
 
     Parameters
     ----------
-    output_folder : TYPE
-        DESCRIPTION.
-    ax : TYPE
-        DESCRIPTION.
+    output_folder : str
+        path to the folder where the output files are saved.
+    ax : matplotlib.axe
+        axe where the data are plotted.
 
-    Returns
-    -------
-    None.
+     Returns
+     -------
+     withinevt_sigma_list : list
+     List of the within-event sigma of each inversion run
+     betweennevt_sigma_list : list
+     List of the between-event sigma of each inversion run
+     sigma_list : list
+     List of the intensity residual sigma of each inversion run
+     beta_list : list
+     List of the values of the out beta coefficient of each inversion run
 
     """
     liste_fichiers = os.listdir(output_folder)
@@ -737,6 +878,25 @@ def plot_sigma_diffDB(output_folder, ax):
     return withinevt_sigma_list, betweennevt_sigma_list, sigma_list, beta_list
 
 def plot_meandI_diffDB(output_folder, ax):
+    """
+    Function that plot the mean intensity residual of each attenuation
+    inversion runs saved in the given output folder.
+
+    Parameters
+    ----------
+    output_folder : str
+        path to the folder where the output files are saved.
+    ax : matplotlib.axe
+        axe where the data are plotted.
+
+     Returns
+     -------
+     mean_dI : list
+     List of the mean intensity residual of each inversion run
+     beta_list : list
+     List of the values of the out beta coefficient of each inversion run
+
+    """
     liste_fichiers = os.listdir(output_folder)
     compt = 0
 
@@ -763,6 +923,27 @@ def plot_meandI_diffDB(output_folder, ax):
     return mean_dI, beta_list
             
 def plot_stats_diffDB(output_folder, ax1, ax2):
+    """
+    Function that plot the mean intensity residual of each attenuation
+    inversion runs saved in the given output folder and the intensity residual sigma,
+    the witin-event and between-event sigma of each attenuation inversion runs
+    saved in the given output folder
+
+    Parameters
+    ----------
+    output_folder : str
+        path to the folder where the output files are saved.
+    ax : matplotlib.axe
+        axe where the data are plotted.
+
+     Returns
+     -------
+     mean_dI : list
+     List of the mean intensity residual of each inversion run
+     beta_list : list
+     List of the values of the out beta coefficient of each inversion run
+
+    """
     liste_fichiers = os.listdir(output_folder)
     compt = 0
     withinevt_sigma_list = []
@@ -795,6 +976,28 @@ def plot_stats_diffDB(output_folder, ax1, ax2):
     ax2.set_ylabel('Mean intensity residual (Iobs- Ipred)')
 
 def plot_dI_Dhypo(run_name, path, ax, evthighlight='None'):
+    """
+    plot the intensity residual in function of hypocentral distance
+
+    Parameters
+    ----------
+    run_name : str
+        core name of the output files.
+    path : str
+        path to the folder where the output files are saved.
+    ax : matplotlib.axes
+        axe where the data are plotted.
+    evthighlight : str, int, optional
+        ID of the wished highlighted earthquake. One earthquake can have a different color on the plot. The default is 'None'.
+
+    Returns
+    -------
+    outsiders : pandas.DataFrame
+        Dataframe with all intensity data for which the absolute residual is
+        greater than 0.5.
+
+    """
+    
     beta_file = 'betaFinal_' + run_name + '.txt'
     obsbinfile = 'obsbinEnd_' + run_name + '.csv'
     beta = readBetaFile(path + '/' + beta_file)[0]
@@ -1072,12 +1275,12 @@ def plot_pearson_diffDB(output_folder, fig, ax, xvalue_tested, color='None', **k
     xvalue_tested : str
         Data chosen by the user to compute the pearson coefficient with the intensity
         residual. The possible values are:
-            Iobs, the intensity values
-            Depi, the epicentral distance
-            Dhypo, the hypocentral distance
-            Mag, the magnitude
-            I0, the epicentral intensity
-            Depth, the depth
+            - Iobs, the intensity values
+            - Depi, the epicentral distance
+            - Dhypo, the hypocentral distance
+            - Mag, the magnitude
+            - I0, the epicentral intensity
+            - Depth, the depth
     color : str, optional
         The points corresponding to the pearson coefficient on the plot can be colored
         in function of the corresponding mean intensity residual or the corresponding

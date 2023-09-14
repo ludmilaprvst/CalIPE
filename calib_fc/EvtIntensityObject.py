@@ -27,33 +27,33 @@ class Evt():
             are pandas.dataframe objects. EvtFile contains the metadata of different
             earthquakes and ObsFile contains the corresponding macroseismic fields.
             Mandatory columns for EvtFile:
-                EVID : ID of the earthquake
-                Lon : longitude in WGS84 of the earthquake location
-                Lat : latitude in WGS84 of the earthquake location
-                Qpos : quality associated to the earthquake location (A for very good quality, E for bad quality, i.e. more than 50 km of possible error)
-                I0 : epicentral intensity of the earthquake 
-                QI0: quality associated to the value of I0 (A to E)
-                Year : year of occurence of the earthquake
-                Month : month of occurence of the earthquake
-                Day : day of occurence of the earthquake
-                Ic : intensity of completeness of the earthquake. The intensities smaller than Ic in a macroseismic field are considered as incomplete
+                - EVID: ID of the earthquake
+                - Lon: longitude in WGS84 of the earthquake location
+                - Lat: latitude in WGS84 of the earthquake location
+                - Qpos: quality associated to the earthquake location (A for very good quality, E for bad quality, i.e. more than 50 km of possible error)
+                - I0: epicentral intensity of the earthquake 
+                - QI0: quality associated to the value of I0 (A to E)
+                - Year: year of occurence of the earthquake
+                - Month: month of occurence of the earthquake
+                - Day: day of occurence of the earthquake
+                - Ic: intensity of completeness of the earthquake. The intensities smaller than Ic in a macroseismic field are considered as incomplete
                      In the isoseismal radii based on intensity bins, intensities smaller than Ic are not taken into account
                      to compute the isoseismal radii.
             Optional columns for EvtFile:
-                Dc : distance of completeness of the earthquake. The macroseismic field located at greater epicentral distance than Dc is considered as incomplete
-                Depth : hypocentral depth of the earthquake
-                Hmin : lower bound of depth uncertainty
-                Hmax : upper bound of depth uncertainty
-                Mag : magnitude of the earthquake
-                StdM : uncertainty associated to magnitude
+                - Dc: distance of completeness of the earthquake. The macroseismic field located at greater epicentral distance than Dc is considered as incomplete
+                - Depth: hypocentral depth of the earthquake
+                - Hmin: lower bound of depth uncertainty
+                - Hmax: upper bound of depth uncertainty
+                - Mag: magnitude of the earthquake
+                - StdM: uncertainty associated to magnitude
             Mandatory columns are mandatory to use the Evt class. However, to use the other functions
             of CalIPE, the optional columns are mandatory.
             Mandatory columns for the Obs file:
-                EVID : ID of the earthquake
-                Iobs : intenstity in the locality (coordinates Lon/Lat)
-                QIobs : quality of the value of Iobs. Possible values: A (very good quality), B (fair quality) and C (bad quality)
-                Lon : Longitude in WGS84 of the locality
-                Lat : Latitude in WGS84 of the locality
+                - EVID: ID of the earthquake
+                - Iobs: intenstity in the locality (coordinates Lon/Lat)
+                - QIobs: quality of the value of Iobs. Possible values: A (very good quality), B (fair quality) and C (bad quality)
+                - Lon: Longitude in WGS84 of the locality
+                - Lat: Latitude in WGS84 of the locality
         Returns
         -------
         None.
@@ -203,28 +203,28 @@ class Evt():
             Name of the chosen method to compute isoseismal radii. The default is 'ROBS'.
             The other names are 'RAVG', 'RP50', 'RP84', 'RF50' and 'RF84'. All methods are based
             on intensity bins.
-            ROBS : width of the intensity bin : 0.1. 
+            - ROBS : width of the intensity bin : 0.1. 
                   Value of intensity for one bin : weighted mean of the IDP's
                   intensity within the intensity bin. With a width of 0.1 in intensity, 
                   the mean is equal to the intensity value of the intensity bin
                   Value of the epicentral distance for one bin: weighted mean of 
                   decimal logarithm of the IDP's distance within the intensity bin.
-            RAVG : width of the intensity bin : 1. 
+            - RAVG : width of the intensity bin : 1. 
                   Value of intensity for one bin : weighted mean of the IDP's
                   intensity within the intensity bin. 
                   Value of the epicentral distance for one bin: weighted mean of 
                   decimal logarithm of the IDP's distance within the intensity bin.
-            RP50 : width of the intensity bin : 0.1. 
+            - RP50 : width of the intensity bin : 0.1. 
                   Value of intensity for one bin : intensity value of the intensity bin. 
                   Value of the epicentral distance for one bin: weighted median of 
                   decimal logarithm of the IDP's distance within the intensity bin.
-            RP84 : width of the intensity bin : 0.1. 
+            - RP84 : width of the intensity bin : 0.1. 
                  Value of intensity for one bin : intensity value of the intensity bin. 
                  Value of the epicentral distance for one bin: weighted 84 percentile of 
                  decimal logarithm of the IDP's distance within the intensity bin.
-            RF50 : same as RP50, however only the epicentral intensity and the intensity
+            - RF50 : same as RP50, however only the epicentral intensity and the intensity
                   bin being representative of far field reliable information are kept
-            RF84 : same as RP84, however only the epicentral intensity and the intensity
+            - RF84 : same as RP84, however only the epicentral intensity and the intensity
                   bin being representative of far field reliable information are kept
 
         Returns

@@ -25,33 +25,33 @@ class fichier_input:
         evtdata : pandas.DataFrame
             evtdata contains the metadata of different earthquakes. 
             Mandatory columns for evtdata:
-                EVID : ID of the earthquake
-                Lon : longitude in WGS84 of the earthquake location
-                Lat : latitude in WGS84 of the earthquake location
-                Qpos : quality associated to the earthquake location (A for very good quality, E for bad quality, i.e. more than 50 km of possible error)
-                I0 : epicentral intensity of the earthquake 
-                QI0: quality associated to the value of I0 (A to E)
-                Year : year of occurence of the earthquake
-                Month : month of occurence of the earthquake
-                Day : day of occurence of the earthquake
-                Ic : intensity of completeness of the earthquake. The intensities smaller than Ic in a macroseismic field are considered as incomplete
+                - EVID: ID of the earthquake
+                - Lon: longitude in WGS84 of the earthquake location
+                - Lat: latitude in WGS84 of the earthquake location
+                - Qpos: quality associated to the earthquake location (A for very good quality, E for bad quality, i.e. more than 50 km of possible error)
+                - I0: epicentral intensity of the earthquake 
+                - QI0: quality associated to the value of I0 (A to E)
+                - Year: year of occurence of the earthquake
+                - Month: month of occurence of the earthquake
+                - Day: day of occurence of the earthquake
+                - Ic: intensity of completeness of the earthquake. The intensities smaller than Ic in a macroseismic field are considered as incomplete
                      In the isoseismal radii based on intensity bins, intensities smaller than Ic are not taken into account
                      to compute the isoseismal radii.
             Optional columns for EvtFile:
-                Dc : distance of completeness of the earthquake. The macroseismic field located at greater epicentral distance than Dc is considered as incomplete
-                Depth : hypocentral depth of the earthquake
-                Hmin : lower bound of depth uncertainty
-                Hmax : upper bound of depth uncertainty
-                Mag : magnitude of the earthquake
-                StdM : uncertainty associated to magnitude
+                - Dc: distance of completeness of the earthquake. The macroseismic field located at greater epicentral distance than Dc is considered as incomplete
+                - Depth: hypocentral depth of the earthquake
+                - Hmin: lower bound of depth uncertainty
+                - Hmax: upper bound of depth uncertainty
+                - Mag: magnitude of the earthquake
+                - StdM: uncertainty associated to magnitude
             Mandatory columns are mandatory to use the Evt class. However, to use the other functions
             of CalIPE, the optional columns are mandatory.
             Mandatory columns for the Obs file:
-                EVID : ID of the earthquake
-                Iobs : intenstity in the locality (coordinates Lon/Lat)
-                QIobs : quality of the value of Iobs. Possible values: A (very good quality), B (fair quality) and C (bad quality)
-                Lon : Longitude in WGS84 of the locality
-                Lat : Latitude in WGS84 of the locality
+                - EVID: ID of the earthquake
+                - Iobs: intenstity in the locality (coordinates Lon/Lat)
+                - QIobs: quality of the value of Iobs. Possible values: A (very good quality), B (fair quality) and C (bad quality)
+                - Lon: Longitude in WGS84 of the locality
+                - Lat: Latitude in WGS84 of the locality
 
         Returns
         -------
@@ -76,33 +76,33 @@ def prepare_input4calibration(obsdata_name, evtdata_name, ponderation,
         Name of the obs file that contains the macroseismic fields of the calibration
         earthquakes.
         Mandatory columns for the Obs file:
-            EVID : ID of the earthquake
-            Iobs : intenstity in the locality (coordinates Lon/Lat)
-            QIobs : quality of the value of Iobs. Possible values: A (very good quality), B (fair quality) and C (bad quality)
-            Lon : Longitude in WGS84 of the locality
-            Lat : Latitude in WGS84 of the locality
+            - EVID: ID of the earthquake
+            - Iobs: intenstity in the locality (coordinates Lon/Lat)
+            - QIobs: quality of the value of Iobs. Possible values: A (very good quality), B (fair quality) and C (bad quality)
+            - Lon: Longitude in WGS84 of the locality
+            - Lat: Latitude in WGS84 of the locality
     evtdata_name : str
         Name of the evt file that contains the metadata of different earthquakes. 
         Mandatory columns for evtdata:
-            EVID : ID of the earthquake
-            Lon : longitude in WGS84 of the earthquake location
-            Lat : latitude in WGS84 of the earthquake location
-            Qpos : quality associated to the earthquake location (A for very good quality, E for bad quality, i.e. more than 50 km of possible error)
-            I0 : epicentral intensity of the earthquake 
-            QI0: quality associated to the value of I0 (A to E)
-            Year : year of occurence of the earthquake
-            Month : month of occurence of the earthquake
-            Day : day of occurence of the earthquake
-            Ic : intensity of completeness of the earthquake. The intensities smaller than Ic in a macroseismic field are considered as incomplete
+            - EVID: ID of the earthquake
+            - Lon: longitude in WGS84 of the earthquake location
+            - Lat: latitude in WGS84 of the earthquake location
+            - Qpos: quality associated to the earthquake location (A for very good quality, E for bad quality, i.e. more than 50 km of possible error)
+            - I0: epicentral intensity of the earthquake 
+            - QI0: quality associated to the value of I0 (A to E)
+            - Year: year of occurence of the earthquake
+            - Month: month of occurence of the earthquake
+            - Day: day of occurence of the earthquake
+            - Ic: intensity of completeness of the earthquake. The intensities smaller than Ic in a macroseismic field are considered as incomplete
                  In the isoseismal radii based on intensity bins, intensities smaller than Ic are not taken into account
                  to compute the isoseismal radii.
         Optional columns for EvtFile:
-            Dc : distance of completeness of the earthquake. The macroseismic field located at greater epicentral distance than Dc is considered as incomplete
-            Depth : hypocentral depth of the earthquake
-            Hmin : lower bound of depth uncertainty
-            Hmax : upper bound of depth uncertainty
-            Mag : magnitude of the earthquake
-            StdM : uncertainty associated to magnitude.
+            - Dc: distance of completeness of the earthquake. The macroseismic field located at greater epicentral distance than Dc is considered as incomplete
+            - Depth: hypocentral depth of the earthquake
+            - Hmin: lower bound of depth uncertainty
+            - Hmax: upper bound of depth uncertainty
+            - Mag: magnitude of the earthquake
+            - StdM: uncertainty associated to magnitude.
     ponderation : str
         Name of the ponderation option that weight the earthquakes in the attenuation calibration.
         Available values are 'Ponderation dI', 'Ponderation evt-uniforme', 'Ponderation evt-reg' and
@@ -125,23 +125,23 @@ def prepare_input4calibration(obsdata_name, evtdata_name, ponderation,
         Dataframe that contains metadata of the calibration earthquakes and the
         isoseismal radii of the calibration earthquakes.
         Columns of the dataframe:
-            EVID : earthquake ID
-            I : intensity value of the isoseismal
-            StdI : uncertainty associated to I
-            Depi : epicentral distance (km) of the isoseismal
-            Ndata : number of intensity data point used to compute the isoseismal
-            Io : epicentral intensity
-            Io_std : uncertainty associated to Io
-            Mag : magnitude of the earthquake
-            StdM : uncertainty associated to the magnitude
-            Depth : hypocentral depth of the earthquake
-            Hmin : lower bound of the depth uncertainty
-            Hmax : upper bound of the depth uncertainty
-            Io_ini : initial value of Io in inversion process. Equal to Io in this function. Used in the calibration process 
-            Hmin_ini : initial value of Hmin in inversion process. Equal to Hmin in this function. Used in the calibration process
-            Hmax_ini : initial value of Hmax in inversion process. Equal to Hmax in this function. Used in the calibration process
-            StdIo_inv : Value of the standard deviation associated to Io after inversion. In this function, equal to Io_std
-            eqStd : equivalent standard deviation used to weight the earthquakes in the calibration process (weight=1/std**2)
+            - EVID: earthquake ID
+            - I: intensity value of the isoseismal
+            - StdI: uncertainty associated to I
+            - Depi: epicentral distance (km) of the isoseismal
+            - Ndata: number of intensity data point used to compute the isoseismal
+            - Io: epicentral intensity
+            - Io_std: uncertainty associated to Io
+            - Mag: magnitude of the earthquake
+            - StdM: uncertainty associated to the magnitude
+            - Depth: hypocentral depth of the earthquake
+            - Hmin: lower bound of the depth uncertainty
+            - Hmax: upper bound of the depth uncertainty
+            - Io_ini: initial value of Io in inversion process. Equal to Io in this function. Used in the calibration process 
+            - Hmin_ini: initial value of Hmin in inversion process. Equal to Hmin in this function. Used in the calibration process
+            - Hmax_ini: initial value of Hmax in inversion process. Equal to Hmax in this function. Used in the calibration process
+            - StdIo_inv: Value of the standard deviation associated to Io after inversion. In this function, equal to Io_std
+            - eqStd: equivalent standard deviation used to weight the earthquakes in the calibration process (weight=1/std**2)
 
     """
     obsdata = pd.read_csv(obsdata_name, sep=';')

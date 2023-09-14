@@ -37,13 +37,15 @@ def ROBS(obsdata, depth, Ic, I0, QI0):
     :type QI0: float
     
     :return: a pandas.DataFrame with the binned intensity. The columns are:
-             'EVID'  the earthquake ID, 'I' the value of the binned intensity,
-             'Depi' the associated epicentral distance, 'Hypo' the associated
-             hypocentral distance, 'StdLogR' the log standard deviation of the
-             epicentral geometric mean, 'StdI' the standard deviation associated
-             to the binned intensity value, 'Io' the epicentral intensity,
-             'Io_std' the epicentral intensity standard deviation and 'Ndata' the
-             number of intensity data point used compute the intensity bin.
+             - EVID: the earthquake ID, 
+             - I: the value of the binned intensity,
+             - Depi: the associated epicentral distance,
+             - Hypo: the associated hypocentral distance,
+             - StdLogR: the log standard deviation of the epicentral geometric mean,
+             - StdI: the standard deviation associatedto the binned intensity value,
+             - Io: the epicentral intensity,
+             - Io_std: the epicentral intensity standard deviation,
+             - Ndata: the number of intensity data point used compute the intensity bin.
     """
     #print(obsdata.EVID.values[0])
     #print(Ic)
@@ -99,13 +101,15 @@ def RAVG(obsdata, depth, Ic, I0, QI0):
     :type QI0: float
     
     :return: a pandas.DataFrame with the binned intensity. The columns are:
-             'EVID'  the earthquake ID, 'I' the value of the binned intensity,
-             'Depi' the associated epicentral distance, 'Hypo' the associated
-             hypocentral distance, 'StdLogR' the log standard deviation of the
-             epicentral geometric mean, 'StdI' the standard deviation associated
-             to the binned intensity value, 'Io' the epicentral intensity,
-             'Io_std' the epicentral intensity standard deviation and 'Ndata' the
-             number of intensity data point used compute the intensity bin.
+             - EVID: the earthquake ID, 
+             - I: the value of the binned intensity,
+             - Depi: the associated epicentral distance,
+             - Hypo: the associated hypocentral distance,
+             - StdLogR: the log standard deviation of the epicentral geometric mean,
+             - StdI: the standard deviation associatedto the binned intensity value,
+             - Io: the epicentral intensity,
+             - Io_std: the epicentral intensity standard deviation,
+             - Ndata: the number of intensity data point used compute the intensity bin.
     """
     obsdata = obsdata[obsdata.Iobs>=Ic-0.5]
     obsdata['Depi'].replace(0, 0.5, inplace=True)
@@ -241,13 +245,15 @@ def RP50(obsdata, depth, Ic, I0, QI0):
     :type QI0: float
     
     :return: a pandas.DataFrame with the binned intensity. The columns are:
-             'EVID'  the earthquake ID, 'I' the value of the binned intensity,
-             'Depi' the associated epicentral distance, 'Hypo' the associated
-             hypocentral distance, 'StdLogR' the log standard deviation of the
-             epicentral geometric mean, 'StdI' the standard deviation associated
-             to the binned intensity value, 'Io' the epicentral intensity,
-             'Io_std' the epicentral intensity standard deviation and 'Ndata' the
-             number of intensity data point used compute the intensity bin.
+             - EVID: the earthquake ID, 
+             - I: the value of the binned intensity,
+             - Depi: the associated epicentral distance,
+             - Hypo: the associated hypocentral distance,
+             - StdLogR: the log standard deviation of the epicentral geometric mean,
+             - StdI: the standard deviation associatedto the binned intensity value,
+             - Io: the epicentral intensity,
+             - Io_std: the epicentral intensity standard deviation,
+             - Ndata: the number of intensity data point used compute the intensity bin.
     """
     obsdata = obsdata[obsdata.Iobs>=Ic].copy()
     obsdata['Depi'].replace(0, 0.5, inplace=True)
@@ -302,13 +308,15 @@ def RP84(obsdata, depth, Ic, I0, QI0):
     :type QI0: float
     
     :return: a pandas.DataFrame with the binned intensity. The columns are:
-             'EVID'  the earthquake ID, 'I' the value of the binned intensity,
-             'Depi' the associated epicentral distance, 'Hypo' the associated
-             hypocentral distance, 'StdLogR' the log standard deviation of the
-             epicentral geometric mean, 'StdI' the standard deviation associated
-             to the binned intensity value, 'Io' the epicentral intensity,
-             'Io_std' the epicentral intensity standard deviation and 'Ndata' the
-             number of intensity data point used compute the intensity bin.
+             - EVID: the earthquake ID, 
+             - I: the value of the binned intensity,
+             - Depi: the associated epicentral distance,
+             - Hypo: the associated hypocentral distance,
+             - StdLogR: the log standard deviation of the epicentral geometric mean,
+             - StdI: the standard deviation associatedto the binned intensity value,
+             - Io: the epicentral intensity,
+             - Io_std: the epicentral intensity standard deviation,
+             - Ndata: the number of intensity data point used compute the intensity bin.
     """
     obsdata = obsdata[obsdata.Iobs>=Ic].copy()
     obsdata['Depi'].replace(0, 0.5, inplace=True)
@@ -364,13 +372,15 @@ def RF50(obsdata, depth, Ic, I0, QI0):
     :type QI0: float
     
     :return: a pandas.DataFrame with the binned intensity. The columns are:
-             'EVID'  the earthquake ID, 'I' the value of the binned intensity,
-             'Depi' the associated epicentral distance, 'Hypo' the associated
-             hypocentral distance, 'StdLogR' the log standard deviation of the
-             epicentral geometric mean, 'StdI' the standard deviation associated
-             to the binned intensity value, 'Io' the epicentral intensity,
-             'Io_std' the epicentral intensity standard deviation and 'Ndata' the
-             number of intensity data point used compute the intensity bin.
+             - EVID: the earthquake ID, 
+             - I: the value of the binned intensity,
+             - Depi: the associated epicentral distance,
+             - Hypo: the associated hypocentral distance,
+             - StdLogR: the log standard deviation of the epicentral geometric mean,
+             - StdI: the standard deviation associatedto the binned intensity value,
+             - Io: the epicentral intensity,
+             - Io_std: the epicentral intensity standard deviation,
+             - Ndata: the number of intensity data point used compute the intensity bin.
     """
     obsdata = obsdata[obsdata.Iobs>=Ic]
     obsdata['Depi'].replace(0, 0.5, inplace=True)
@@ -438,13 +448,15 @@ def RF84(obsdata, depth, Ic, I0, QI0):
     :type QI0: float
     
     :return: a pandas.DataFrame with the binned intensity. The columns are:
-             'EVID'  the earthquake ID, 'I' the value of the binned intensity,
-             'Depi' the associated epicentral distance, 'Hypo' the associated
-             hypocentral distance, 'StdLogR' the log standard deviation of the
-             epicentral geometric mean, 'StdI' the standard deviation associated
-             to the binned intensity value, 'Io' the epicentral intensity,
-             'Io_std' the epicentral intensity standard deviation and 'Ndata' the
-             number of intensity data point used compute the intensity bin.
+             - EVID: the earthquake ID, 
+             - I: the value of the binned intensity,
+             - Depi: the associated epicentral distance,
+             - Hypo: the associated hypocentral distance,
+             - StdLogR: the log standard deviation of the epicentral geometric mean,
+             - StdI: the standard deviation associatedto the binned intensity value,
+             - Io: the epicentral intensity,
+             - Io_std: the epicentral intensity standard deviation,
+             - Ndata: the number of intensity data point used compute the intensity bin.
     """
     obsdata = obsdata[obsdata.Iobs>=Ic].copy()
     obsdata['Depi'].replace(0, 0.5, inplace=True)

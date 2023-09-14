@@ -21,17 +21,17 @@ def write_betaresults(name, outputfolder, beta, suivi_beta, beta_ini,
     """
     Function that writes the output of the attenuation coefficient beta calibration
     The outputs will be written in three files. The first file contains:
-        the final beta value of the inversion process (median value of the gaussian),
-        its associated standard deviation based on the uncertainties of the intensity data,
-        the initial value of the coefficient beta before inversion,
-        the number of iteration needed to converge,
-        the maximal number of iteration allowed,
-        the minimal number of iteration allowed,
-        the number of calibration earthquake used,
-        the number of intensity data used,
-        the Evt file used for the calibration process,
-        the Obs file used for the calibration process,
-        the name of the python file where this function is called
+        - the final beta value of the inversion process (median value of the gaussian),
+        - its associated standard deviation based on the uncertainties of the intensity data,
+        - the initial value of the coefficient beta before inversion,
+        - the number of iteration needed to converge,
+        - the maximal number of iteration allowed,
+        - the minimal number of iteration allowed,
+        - the number of calibration earthquake used,
+        - the number of intensity data used,
+        - the Evt file used for the calibration process,
+        - the Obs file used for the calibration process,
+        - the name of the python file where this function is called
     The beginning of the first file name is betaFinal. The second file contains
     the values of the beta coefficient of each iteration. The two columns of the file
     are respectively the number of the iteration and the corresponding value of beta.
@@ -39,27 +39,27 @@ def write_betaresults(name, outputfolder, beta, suivi_beta, beta_ini,
     The third file contains the intensities data used in the inversion process, along
     with the depth and epicentral intensity after inversion for each earthquake.
     The columns of this .csv file are:
-        EVID : earthquake ID
-        I: value of the intensity of the isoseismal radii
-        StdI: Uncertainty associated to I
-        Io: epicentral intensity after the inversion process
-        Io_std : uncertainty associated to the inital value of Io
-        Io_ini: initial value of epicentral intensity
-        Depi : value of the epicentral distance of the isoseismal radii
-        Ndata: number of data used to compute the isoseismal radii
-        Mag: magnitude of the earthquake
-        StdM : uncertainty associated to the magnitude
-        Depth: hypocentral depth after the inversion process
-        Hmin : minimal bound for the depth inversion
-        Hmax : maximal bound for the depth inversion
-        RegID: ID of the geographical region of the considered earthquake
-        eqStd: the equivalent standard deviation used in the inversion process
+        - EVID : earthquake ID
+        - I: value of the intensity of the isoseismal radii
+        - StdI: Uncertainty associated to I
+        - Io: epicentral intensity after the inversion process
+        - Io_std : uncertainty associated to the inital value of Io
+        - Io_ini: initial value of epicentral intensity
+        - Depi : value of the epicentral distance of the isoseismal radii
+        - Ndata: number of data used to compute the isoseismal radii
+        - Mag: magnitude of the earthquake
+        - StdM : uncertainty associated to the magnitude
+        - Depth: hypocentral depth after the inversion process
+        - Hmin : minimal bound for the depth inversion
+        - Hmax : maximal bound for the depth inversion
+        - RegID: ID of the geographical region of the considered earthquake
+        - eqStd: the equivalent standard deviation used in the inversion process
         to compute weight for each isoseismal radii. (see the weights function)
-        Hmin_ini : identical to Hmin
-        Hmax_ini : identical to Hmax
+        - Hmin_ini : identical to Hmin
+        - Hmax_ini : identical to Hmax
     The beginning of the third file name is obsbinEnd.
     :param name: core name given to the outputs. For example, for the first output
-                 file, the output name would be 'betaFinal_'+ name +'_betaini.txt'
+                 file, the output name would be 'betaFinal_''+ name +'_betaini.txt'
     :param outputfolder: folder where the outputs will be saved
     :param beta: the value of the beta coefficient after inversion
     :param suivi_beta: array with the values of the beta coefficient of each iteration in the inversion process
@@ -120,20 +120,20 @@ def write_betagammaresults(name, outputfolder,
     """
     Function that writes the output of the attenuation coefficients beta and gamma calibration
     The outputs will be written in three files. The first file contains:
-        the final beta value of the inversion process (median value of the gaussian),
-        its associated standard deviation based on the uncertainties of the intensity data,
-        the initial value of the coefficient beta before inversion,
-        the final gamma value of the inversion process (median value of the gaussian),
-        its associated standard deviation based on the uncertainties of the intensity data,
-        the initial value of the coefficient gamma before inversion,
-        the number of iteration needed to converge,
-        the maximal number of iteration allowed,
-        the minimal number of iteration allowed,
-        the number of calibration earthquake used,
-        the number of intensity data used,
-        the Evt file used for the calibration process,
-        the Obs file used for the calibration process,
-        the name of the python file where this function is called
+        - the final beta value of the inversion process (median value of the gaussian),
+        - its associated standard deviation based on the uncertainties of the intensity data,
+        - the initial value of the coefficient beta before inversion,
+        - the final gamma value of the inversion process (median value of the gaussian),
+        - its associated standard deviation based on the uncertainties of the intensity data,
+        - the initial value of the coefficient gamma before inversion,
+        - the number of iteration needed to converge,
+        - the maximal number of iteration allowed,
+        - the minimal number of iteration allowed,
+        - the number of calibration earthquake used,
+        - the number of intensity data used,
+        - the Evt file used for the calibration process,
+        - the Obs file used for the calibration process,
+        - the name of the python file where this function is called
     The beginning of the first file name is betagammaFinal. The second file contains
     the values of the beta coefficient of each iteration. The two columns of the file
     are respectively the number of the iteration and the corresponding value of beta.
@@ -141,24 +141,24 @@ def write_betagammaresults(name, outputfolder,
     The third file contains the intensities data used in the inversion process, along
     with the depth and epicentral intensity after inversion for each earthquake.
     The columns of this .csv file are:
-        EVID : earthquake ID
-        I: value of the intensity of the isoseismal radii
-        StdI: Uncertainty associated to I
-        Io: epicentral intensity after the inversion process
-        Io_std : uncertainty associated to the inital value of Io
-        Io_ini: initial value of epicentral intensity
-        Depi : value of the epicentral distance of the isoseismal radii
-        Ndata: number of data used to compute the isoseismal radii
-        Mag: magnitude of the earthquake
-        StdM : uncertainty associated to the magnitude
-        Depth: hypocentral depth after the inversion process
-        Hmin : minimal bound for the depth inversion
-        Hmax : maximal bound for the depth inversion
-        RegID: ID of the geographical region of the considered earthquake
-        eqStd: the equivalent standard deviation used in the inversion process
+        - EVID: earthquake ID
+        - I: value of the intensity of the isoseismal radii
+        - StdI: Uncertainty associated to I
+        - Io: epicentral intensity after the inversion process
+        - Io_std: uncertainty associated to the inital value of Io
+        - Io_ini: initial value of epicentral intensity
+        - Depi: value of the epicentral distance of the isoseismal radii
+        - Ndata: number of data used to compute the isoseismal radii
+        - Mag: magnitude of the earthquake
+        - StdM: uncertainty associated to the magnitude
+        - Depth: hypocentral depth after the inversion process
+        - Hmin: minimal bound for the depth inversion
+        - Hmax: maximal bound for the depth inversion
+        - RegID: ID of the geographical region of the considered earthquake
+        - eqStd: the equivalent standard deviation used in the inversion process
         to compute weight for each isoseismal radii. (see the weights function)
-        Hmin_ini : identical to Hmin
-        Hmax_ini : identical to Hmax
+        - Hmin_ini : identical to Hmin
+        - Hmax_ini : identical to Hmax
     The beginning of the third file name is obsbinEnd.
 
     :param name: core name given to the outputs. For example, for the first output
@@ -247,30 +247,30 @@ def Kovbeta_onedataset(evtdata_name, obsdata_name, outputfolder,
     evtdata_name : str
         name of the evt data file. The list of the calibration earthquakes and associated 
         metadata are stored in this file. This .txt file contains 16 columns, separated by the ";" string:
-            EVID: ID of the earthquake
-            Year : year of occurence of the earthquake
-            Month : month of occurence of the earthquake
-            Day: day of occurence of the earthquake
-            Lon: longitude in WGS84 of the epicenter
-            Lat: latitude in WGS84 of the epicenter
-            QPos: quality of the epicenter location
-            I0 : epicentral intensity
-            QI0 : quality of the epicentral intensity value
-            Ic : intensity of completeness
-            Dc : distance of completeness
-            Mag: magnitude of the earthquake
-            StdM : uncertainty associated with the magnitude
-            Depth: hypocentral depth of the earthquake
-            Hmin : lower bound of uncertainty associated to depth
-            Hmax : upper bound of uncertainty associated to depth
+            - EVID: ID of the earthquake
+            - Year: year of occurence of the earthquake
+            - Month: month of occurence of the earthquake
+            - Day: day of occurence of the earthquake
+            - Lon: longitude in WGS84 of the epicenter
+            - Lat: latitude in WGS84 of the epicenter
+            - QPos: quality of the epicenter location
+            - I0 : epicentral intensity
+            - QI0 : quality of the epicentral intensity value
+            - Ic : intensity of completeness
+            - Dc : distance of completeness
+            - Mag: magnitude of the earthquake
+            - StdM : uncertainty associated with the magnitude
+            - Depth: hypocentral depth of the earthquake
+            - Hmin : lower bound of uncertainty associated to depth
+            - Hmax : upper bound of uncertainty associated to depth
     obsdata_name : str
         name of the obs data file. The IDPs of the calibration earthquakes are stored in this file.
         This .txt file contains 5 columns, separated by the ";" string:
-            EVID : ID of the earthquake
-            Lon: longitude in WGS84 of the IDP
-            Lat: latitude in WGS84 of the IDP
-            Iobs: value of intensity of the IDP
-            QIobs : quality associated to Iobs
+            - EVID : ID of the earthquake
+            - Lon: longitude in WGS84 of the IDP
+            - Lat: latitude in WGS84 of the IDP
+            - Iobs: value of intensity of the IDP
+            - QIobs : quality associated to Iobs
     outputfolder : str
         Folder name where the outputs will be saved. See function write_betaresults()
     liste_beta_ini : list of float
@@ -287,9 +287,9 @@ def Kovbeta_onedataset(evtdata_name, obsdata_name, outputfolder,
         defined by the user. Contour is described by a polygon. The coordinates of
         the polygon points are in WGS84 longitude and latitude.
         The three columns are separeted by ";":
-            ID_region : ID of the considered region
-            Lon: Longitude of the polygon points
-            Lat: Latitude of the polygon points
+            - ID_region: ID of the considered region
+            - Lon: Longitude of the polygon points
+            - Lat: Latitude of the polygon points
     NminIter : int
         Minimal number of iteration allowed
     NmaxIter : int
@@ -338,30 +338,30 @@ def Kovbetagamma_onedataset(evtdata_name, obsdata_name, outputfolder,
     evtdata_name : str
         name of the evt data file. The list of the calibration earthquakes and associated 
         metadata are stored in this file. This .txt file contains 16 columns, separated by the ";" string:
-            EVID: ID of the earthquake
-            Year : year of occurence of the earthquake
-            Month : month of occurence of the earthquake
-            Day: day of occurence of the earthquake
-            Lon: longitude in WGS84 of the epicenter
-            Lat: latitude in WGS84 of the epicenter
-            QPos: quality of the epicenter location
-            I0 : epicentral intensity
-            QI0 : quality of the epicentral intensity value
-            Ic : intensity of completeness
-            Dc : distance of completeness
-            Mag: magnitude of the earthquake
-            StdM : uncertainty associated with the magnitude
-            Depth: hypocentral depth of the earthquake
-            Hmin : lower bound of uncertainty associated to depth
-            Hmax : upper bound of uncertainty associated to depth
+            - EVID: ID of the earthquake
+            - Year: year of occurence of the earthquake
+            - Month: month of occurence of the earthquake
+            - Day: day of occurence of the earthquake
+            - Lon: longitude in WGS84 of the epicenter
+            - Lat: latitude in WGS84 of the epicenter
+            - QPos: quality of the epicenter location
+            - I0: epicentral intensity
+            - QI0: quality of the epicentral intensity value
+            - Ic: intensity of completeness
+            - Dc: distance of completeness
+            - Mag: magnitude of the earthquake
+            - StdM: uncertainty associated with the magnitude
+            - Depth: hypocentral depth of the earthquake
+            - Hmin: lower bound of uncertainty associated to depth
+            - Hmax: upper bound of uncertainty associated to depth
     obsdata_name : str
         name of the obs data file. The IDPs of the calibration earthquakes are stored in this file.
         This .txt file contains 5 columns, separated by the ";" string:
-            EVID : ID of the earthquake
-            Lon: longitude in WGS84 of the IDP
-            Lat: latitude in WGS84 of the IDP
-            Iobs: value of intensity of the IDP
-            QIobs : quality associated to Iobs
+            - EVID: ID of the earthquake
+            - Lon: longitude in WGS84 of the IDP
+            - Lat: latitude in WGS84 of the IDP
+            - Iobs: value of intensity of the IDP
+            - QIobs: quality associated to Iobs
     outputfolder : str
         Folder name where the outputs will be saved. See function write_betagammaresults()
     liste_beta_ini : list of float
@@ -380,9 +380,9 @@ def Kovbetagamma_onedataset(evtdata_name, obsdata_name, outputfolder,
         defined by the user. Contour is described by a polygon. The coordinates of
         the polygon points are in WGS84 longitude and latitude.
         The three columns are separeted by ";":
-            ID_region : ID of the considered region
-            Lon: Longitude of the polygon points
-            Lat: Latitude of the polygon points
+            - ID_region: ID of the considered region
+            - Lon: Longitude of the polygon points
+            - Lat: Latitude of the polygon points
     NminIter : int
         Minimal number of iteration allowed
     NmaxIter : int

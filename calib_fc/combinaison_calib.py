@@ -191,16 +191,16 @@ def calib_attBeta_Kov(liste_evt, ObsBin_plus, beta_ini,
     :param ObsBin_plus: dataframe with the binned intensity data for all calibration earthquakes.
                         This dataframe should at least have have the following
                         columns : 
-                            'I' the binned intensity value,
-                            'StdI' the binned intensity standard deviation,
-                            'Depi' the associated epicentral distance,
-                            'Depth' the initial depth before inversion,
-                            'Hmin' the lower depth limit for inversion,
-                            'Hmax' the upper depth limit for inversion,
-                            'Io' the initial epicentral intensity before inversion,
-                            'Io_ini' the initial epicentral intensity before inversion,
-                            'Io_std' the epicentral intensity standard deviation,
-                            'eqStd' the inverse of the root square of the weights
+                            -  I: the binned intensity value,
+                            - StdI: the binned intensity standard deviation,
+                            - Depi: the associated epicentral distance,
+                            - Depth: the initial depth before inversion,
+                            - Hmin: the lower depth limit for inversion,
+                            - Hmax: the upper depth limit for inversion,
+                            - Io: the initial epicentral intensity before inversion,
+                            - Io_ini: the initial epicentral intensity before inversion,
+                            - Io_std: the epicentral intensity standard deviation,
+                            - eqStd: the inverse of the root square of the weights
                                     used in the geometric attenuation coefficient,
     :param beta_ini: initial value of the geometric attenuation coefficient beta                        
     :param NminIter: minimum number of iteration
@@ -279,16 +279,16 @@ def calib_attBeta_Kov_unit(liste_evt, ObsBin_plus, beta,
     :param ObsBin_plus: dataframe with the binned intensity data for all calibration earthquakes.
                         This dataframe should at least have have the following
                         columns : 
-                            'I' the binned intensity value,
-                            'StdI' the binned intensity standard deviation,
-                            'Depi' the associated epicentral distance,
-                            'Depth' the initial depth before inversion,
-                            'Hmin' the lower depth limit for inversion,
-                            'Hmax' the upper depth limit for inversion,
-                            'Io' the initial epicentral intensity before inversion,
-                            'Io_ini' the initial epicentral intensity before inversion,
-                            'Io_std' the epicentral intensity standard deviation,
-                            'eqStd' the inverse of the root square of the weights
+                            - I: the binned intensity value,
+                            - StdI: the binned intensity standard deviation,
+                            - Depi: the associated epicentral distance,
+                            - Depth: the initial depth before inversion,
+                            - Hmin: the lower depth limit for inversion,
+                            - Hmax: the upper depth limit for inversion,
+                            - Io: the initial epicentral intensity before inversion,
+                            - Io_ini: the initial epicentral intensity before inversion,
+                            - Io_std: the epicentral intensity standard deviation,
+                            - eqStd: the inverse of the root square of the weights
                                     used in the geometric attenuation coefficient,
 
     :param beta: initial value of the geometric attenuation coefficient beta
@@ -350,16 +350,16 @@ def calib_attBetaGamma_Kov(liste_evt, ObsBin_plus, beta_ini, gamma_ini,
     :param ObsBin_plus: dataframe with the binned intensity data for all calibration earthquakes.
                         This dataframe should at least have have the following
                         columns : 
-                            'I' the binned intensity value,
-                            'StdI' the binned intensity standard deviation,
-                            'Depi' the associated epicentral distance,
-                            'Depth' the initial depth before inversion,
-                            'Hmin' the lower depth limit for inversion,
-                            'Hmax' the upper depth limit for inversion,
-                            'Io' the initial epicentral intensity before inversion,
-                            'Io_ini' the initial epicentral intensity before inversion,
-                            'Io_std' the epicentral intensity standard deviation,
-                            'eqStd' the inverse of the root square of the weights
+                            - I: the binned intensity value,
+                            - StdI: the binned intensity standard deviation,
+                            - Depi: the associated epicentral distance,
+                            - Depth: the initial depth before inversion,
+                            - Hmin: the lower depth limit for inversion,
+                            - Hmax: the upper depth limit for inversion,
+                            - Io: the initial epicentral intensity before inversion,
+                            - Io_ini: the initial epicentral intensity before inversion,
+                            - Io_std: the epicentral intensity standard deviation,
+                            - eqStd: the inverse of the root square of the weights
                                     used in the geometric attenuation coefficient,
 
     :param beta_ini: initial value of the geometric attenuation coefficient beta
@@ -434,16 +434,16 @@ def calib_attBetaGamma_Kov_unit(liste_evt, ObsBin_plus, beta, gamma):
     :param ObsBin_plus: dataframe with the binned intensity data for all calibration earthquakes.
                         This dataframe should at least have have the following
                         columns : 
-                            'I' the binned intensity value,
-                            'StdI' the binned intensity standard deviation,
-                            'Depi' the associated epicentral distance,
-                            'Depth' the initial depth before inversion,
-                            'Hmin' the lower depth limit for inversion,
-                            'Hmax' the upper depth limit for inversion,
-                            'Io' the initial epicentral intensity before inversion,
-                            'Io_ini' the initial epicentral intensity before inversion,
-                            'Io_std' the epicentral intensity standard deviation,
-                            'eqStd' the inverse of the root square of the weights
+                            - I: the binned intensity value,
+                            - StdI: the binned intensity standard deviation,
+                            - Depi: the associated epicentral distance,
+                            - Depth: the initial depth before inversion,
+                            - Hmin: the lower depth limit for inversion,
+                            - Hmax: the upper depth limit for inversion,
+                            - Io: the initial epicentral intensity before inversion,
+                            - Io_ini: the initial epicentral intensity before inversion,
+                            - Io_std: the epicentral intensity standard deviation,
+                            - eqStd: the inverse of the root square of the weights
                                     used in the geometric attenuation coefficient,
 
     :param beta: initial value of the geometric attenuation coefficient beta
@@ -546,16 +546,16 @@ def initialize_HI0(ObsBin_plus, liste_evt, beta, gamma, NmaxIter=50):
     ObsBin_plus : pandas.DataFrame
         DataFrame with all isoseismal radii (intensity bin) used in the inversion. The dataframe
         should contain the isoseismal radii of each earthquake listed in liste_evt. The mandatory columns are:
-            EVID : ID of the earthquake
-            Depth : initial depth of the earthquake
-            Hmin : minimal value of the depth uncertainty bounds
-            Hmax : maximal value of the depth uncertainty bounds
-            I : intensity value of the isoseismal radii
-            StdI : uncertainty associated to I
-            Depi : epcientral distance of the isoseismal radii
-            I0 : initial epicentral intensity of the earthquake
-            Io_ini : same as I0
-            Io_std : uncertainty associated to the epicentral intensity value
+            - EVID: ID of the earthquake
+            - Depth: initial depth of the earthquake
+            - Hmin: minimal value of the depth uncertainty bounds
+            - Hmax: maximal value of the depth uncertainty bounds
+            - I: intensity value of the isoseismal radii
+            - StdI: uncertainty associated to I
+            - Depi: epcientral distance of the isoseismal radii
+            - I0: initial epicentral intensity of the earthquake
+            - Io_ini: same as I0
+            - Io_std: uncertainty associated to the epicentral intensity value
     liste_evt : list
         list the earthquake whose depths and epicentral intensities will be inverted
     beta : float
@@ -626,13 +626,13 @@ def initialize_C1C2(ObsBin_plus):
     ObsBin_plus : pandas.DataFrame
         DataFrame with all isoseismal radii (intensity bin) used in the inversion.
         The mandatory columns are:
-            EVID : ID of the earthquake
-            Depth : initial depth of the earthquake
-            I : intensity value of the isoseismal radii
-            Depi : epcientral distance of the isoseismal radii
-            beta : the attenuation coefficient beta
-            gamma : the attenuation coefficient gamma
-            eqStdM : the equivalent standard deviation used to weight the data used in the inversion.
+            - EVID: ID of the earthquake
+            - Depth: initial depth of the earthquake
+            - I: intensity value of the isoseismal radii
+            - Depi: epcientral distance of the isoseismal radii
+            - beta: the attenuation coefficient beta
+            - gamma: the attenuation coefficient gamma
+            - eqStdM: the equivalent standard deviation used to weight the data used in the inversion.
                      The weights are equal to 1/obsgp.eqStdM.values**2
 
     Returns
@@ -674,11 +674,11 @@ def check_ifHlim_ok(obsbin, beta, C1, C2):
     ----------
     obsbin : pandas.Dataframe
         DataFrame with all isoseismal radii (intensity bin) of one earthquake. The mandatory columns are:
-            Io_ini : initial epicentral intensity of the earthquake
-            Io_std : uncertainty associated to the epicentral intensity value 
-            Mag : magnitude of the earthquake
-            Hmin_ini : initial minimal depth bounds
-            Hmax_ini : initial maximal depth bounds
+            - Io_ini: initial epicentral intensity of the earthquake
+            - Io_std: uncertainty associated to the epicentral intensity value 
+            - Mag: magnitude of the earthquake
+            - Hmin_ini: initial minimal depth bounds
+            - Hmax_ini: initial maximal depth bounds
     beta : float
         beta coefficient in the equation used to check the depth bounds.
     C1 : float
@@ -751,16 +751,18 @@ def calib_C1C2H(liste_evt, ObsBin_plus,
     ObsBin_plus : pandas.DataFrame
         DataFrame with all isoseismal radii (intensity bin) used in the inversion. The dataframe
         should contain the isoseismal radii of each earthquake listed in liste_evt. The mandatory columns are:
-            EVID : ID of the earthquake
-            RegID : region ID of the location of the earthquake
-            Depth : initial depth of the earthquake
-            I : intensity value of the isoseismal radii
-            StdI : uncertainty associated to I
-            Depi : epicentral distance of the isoseismal radii
-            beta : the attenuation coefficient beta, corresponding to the region of the location of the earthquake
-            gamma : the attenuation coefficient gamma, corresponding to the region of the location of the earthquake
-            Mag : magnitude of the earthquake
-            eqStdM : the equivalent standard deviation used to weight the data used in the inversion.
+            - EVID: ID of the earthquake
+            - RegID: region ID of the location of the earthquake
+            - Depth: initial depth of the earthquake
+            - Hmin: shallow limit of depth for the inversion
+            - Hmax: deep limit of depth for the inversion
+            - I: intensity value of the isoseismal radii
+            - StdI: uncertainty associated to I
+            - Depi: epicentral distance of the isoseismal radii
+            - beta: the attenuation coefficient beta, corresponding to the region of the location of the earthquake
+            - gamma: the attenuation coefficient gamma, corresponding to the region of the location of the earthquake
+            - Mag: magnitude of the earthquake
+            - eqStdM: the equivalent standard deviation used to weight the data used in the inversion.
                      The weights are equal to 1/obsgp.eqStdM.values**2
             
     
@@ -812,10 +814,13 @@ def calib_C1C2H(liste_evt, ObsBin_plus,
             C1 = C1_dict[regID]
             # Verification Hlim compatible avec I0
             Hmin, Hmax = check_ifHlim_ok(obsbin, beta, C1, C2)
+            Hmin = np.min([depth, Hmin])
+            Hmax = np.max([depth, Hmax])
             obsbin.loc[:, 'Hypo'] = np.sqrt(
                 obsbin['Depi'].values.astype(float)**2 + depth**2)
             suivi_depth[evid] = np.array([depth])
-            # Inversion de la profondeur 
+            # Inversion de la profondeur
+            #print(evid, depth, Hmin, Hmax)
             resH = WLSIC.WLSIC_oneEvt(
                 obsbin, depth, mag, beta, gamma, C1, C2).do_wlsic_depth(Hmin, Hmax)
             new_depth = resH[0][0]
@@ -847,16 +852,16 @@ def calib_C1C2(liste_evt, ObsBin_plus,
     ObsBin_plus : pandas.DataFrame
         DataFrame with all isoseismal radii (intensity bin) used in the inversion. The dataframe
         should contain the isoseismal radii of each earthquake listed in liste_evt. The mandatory columns are:
-            EVID : ID of the earthquake
-            RegID : region ID of the location of the earthquake
-            Depth : initial depth of the earthquake
-            I : intensity value of the isoseismal radii
-            StdI : uncertainty associated to I
-            Depi : epicentral distance of the isoseismal radii
-            beta : the attenuation coefficient beta, corresponding to the region of the location of the earthquake
-            gamma : the attenuation coefficient gamma, corresponding to the region of the location of the earthquake
-            Mag : magnitude of the earthquake
-            eqStdM : the equivalent standard deviation used to weight the data used in the inversion.
+            - EVID: ID of the earthquake
+            - RegID: region ID of the location of the earthquake
+            - Depth: initial depth of the earthquake
+            - I: intensity value of the isoseismal radii
+            - StdI: uncertainty associated to I
+            - Depi: epicentral distance of the isoseismal radii
+            - beta: the attenuation coefficient beta, corresponding to the region of the location of the earthquake
+            - gamma: the attenuation coefficient gamma, corresponding to the region of the location of the earthquake
+            - Mag: magnitude of the earthquake
+            - eqStdM: the equivalent standard deviation used to weight the data used in the inversion.
                      The weights are equal to 1/obsgp.eqStdM.values**2
     NmaxIter : int, optional
        Maximal number of iteration allowed. The default is 50.
@@ -909,8 +914,8 @@ def update_depth(ObsBin_plus, depths, liste_evt):
         DataFrame with all isoseismal radii (intensity bin) used in the inversion. The dataframe
         should contain the isoseismal radii of each earthquake listed in liste_evt. 
         The mandatories columns for this function are:
-            EVID : ID of the earthquake
-            Depth : depth of the earthquake
+            - EVID: ID of the earthquake
+            - Depth: depth of the earthquake
             
         TThe ObsBin_plus dataframe should at least contains information about the isoseismal radii, i.e.
         I (intensity value of the isoseismal radii) and Depi (epicentral distance of the isoseismal radii) but
@@ -950,19 +955,19 @@ def calib_C1C2betaH(liste_evt, ObsBin_plus, C1, C2, beta,
     ObsBin_plus : pandas.DataFrame
         DataFrame with all isoseismal radii (intensity bin) used in the inversion. The dataframe
         should contain the isoseismal radii of each earthquake listed in liste_evt. The mandatory columns are:
-            EVID : ID of the earthquake
-            RegID : region ID of the location of the earthquake
-            Depth : initial depth of the earthquake
-            I : intensity value of the isoseismal radii
-            StdI : uncertainty associated to I
-            Depi : epicentral distance of the isoseismal radii
-            beta : the attenuation coefficient beta, corresponding to the region of the location of the earthquake
-            gamma : the attenuation coefficient gamma, corresponding to the region of the location of the earthquake
-            Mag : magnitude of the earthquake
-            eqStdM : the equivalent standard deviation used to weight the data used in the inversion.
+            - EVID: ID of the earthquake
+            - RegID: region ID of the location of the earthquake
+            - Depth: initial depth of the earthquake
+            - I: intensity value of the isoseismal radii
+            - StdI: uncertainty associated to I
+            - Depi: epicentral distance of the isoseismal radii
+            - beta: the attenuation coefficient beta, corresponding to the region of the location of the earthquake
+            - gamma: the attenuation coefficient gamma, corresponding to the region of the location of the earthquake
+            - Mag: magnitude of the earthquake
+            - eqStdM: the equivalent standard deviation used to weight the data used in the inversion.
                      The weights are equal to 1/obsgp.eqStdM.values**2
-            Hmin : lower bound of uncertainty associated to depth
-            Hmax : upper bound of uncertainty associated to depth
+            - Hmin: lower bound of uncertainty associated to depth
+            - Hmax: upper bound of uncertainty associated to depth
     C1 : float
         Initial value of the C1 coefficient.
     C2 : float
@@ -1024,19 +1029,19 @@ def calib_C1C2betagammaH(liste_evt, ObsBin_plus, C1, C2, beta, gamma,
     ObsBin_plus : pandas.DataFrame
         DataFrame with all isoseismal radii (intensity bin) used in the inversion. The dataframe
         should contain the isoseismal radii of each earthquake listed in liste_evt. The mandatory columns are:
-            EVID : ID of the earthquake
-            RegID : region ID of the location of the earthquake
-            Depth : initial depth of the earthquake
-            I : intensity value of the isoseismal radii
-            StdI : uncertainty associated to I
-            Depi : epicentral distance of the isoseismal radii
-            beta : the attenuation coefficient beta, corresponding to the region of the location of the earthquake
-            gamma : the attenuation coefficient gamma, corresponding to the region of the location of the earthquake
-            Mag : magnitude of the earthquake
-            eqStdM : the equivalent standard deviation used to weight the data used in the inversion.
+            - EVID: ID of the earthquake
+            - RegID: region ID of the location of the earthquake
+            - Depth: initial depth of the earthquake
+            - I: intensity value of the isoseismal radii
+            - StdI: uncertainty associated to I
+            - Depi: epicentral distance of the isoseismal radii
+            - beta: the attenuation coefficient beta, corresponding to the region of the location of the earthquake
+            - gamma: the attenuation coefficient gamma, corresponding to the region of the location of the earthquake
+            - Mag: magnitude of the earthquake
+            - eqStdM: the equivalent standard deviation used to weight the data used in the inversion.
                      The weights are equal to 1/obsgp.eqStdM.values**2
-            Hmin : lower bound of uncertainty associated to depth
-            Hmax : upper bound of uncertainty associated to depth
+            - Hmin: lower bound of uncertainty associated to depth
+            - Hmax: upper bound of uncertainty associated to depth
     C1 : float
         Initial value of the C1 coefficient.
     C2 : float

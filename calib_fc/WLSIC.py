@@ -38,9 +38,11 @@ class WLSIC_Kov_oneEvt():
         """
         :param Obsbinn: dataframe with the binned intensity data for one earthquake.
                         This dataframe should at least have have the following
-                        columns : 'I', 'Depi', 'StdI', which are respectively
-                        the binned intensity, the associated epicentral distance
-                        and the associated standard deviation.
+                        columns : 
+                            - 'I': the binned intensity,
+                            - 'Depi': the associated epicentral distance
+                            - 'StdI': the binned intensity associated standard deviation
+  
         :param depth: hypocenter's depth of the considered earthquake.
                       Should be greater than 0
         :param Beta: the geometric attenuation coefficient of the Koveslighety equation
@@ -170,11 +172,14 @@ class WLS_Kov():
         """
         :param ObsBin_plus: dataframe with the binned intensity data for all calibration earthquakes.
                         This dataframe should at least have have the following
-                        columns : 'I', 'Depi', 'Depth', 'Io',  'StdI 'and 'eqStd'
-                        which are respectively the binned intensity, the associated epicentral distance,
-                        the associated depth, the associated epicentral intensity,
-                        the associated standard deviation and the associated
-                        inverse square root of the weights used in the inversion.
+                        columns :
+                            - 'I': the binned intensity,
+                            - 'Depi': the associated epicentral distance,
+                            - 'Depth': the associated hypocentral depth,
+                            - 'Io': the associated epicentral intensity,
+                            - 'StdI': the associated binned intensity standard deviation
+                            - 'eqStd': the associated inverse square root of
+                            the weights used in the inversion
         :param Beta: the geometric attenuation coefficient of the Koveslighety equation
         :param Gamma: the intresic attenuation coefficient of the Koveslighety equation
         :type ObsBin_plus: pandas.DataFrame
@@ -525,12 +530,16 @@ class WLS():
         """
         :param ObsBin_plus: dataframe with the binned intensity data for all calibration earthquakes.
                         This dataframe should at least have have the following
-                        columns : 'I', 'Depi', 'Depth', 'Mag', 'X', 'eqStd' and 'eqStdM'
-                        which are respectively the binned intensity, the associated epicentral distance,
-                        the associated depth, the associated magnitude, the X parameter used in C1/C2 inversion,
-                        the associated inverse square root of the weights used in the inversion
-                        of Gamma and the associated square root of the weights used in the inversion
-                        of C1/C2, C1/C2/Beta, C1/C2/Beta/Gamma.
+                        columns :
+                            - 'I': the binned intensity,
+                            - 'Depi': the associated epicentral distance,
+                            - 'Depth': the associated hypocentral depth,
+                            - 'Mag': the associated magnitude,
+                            - 'X': the X parameter used in C1/C2 inversion,
+                            - 'eqStd': the associated inverse square root of the weights used in the inversion
+                            of Beta and Gamma
+                            - 'eqStdM': the associated square root of the weights used in the inversion
+                            of C1/C2, C1/C2/Beta, C1/C2/Beta/Gamma
         :param Beta: the geometric attenuation coefficient
         :param Gamma: the intresic attenuation coefficient
         :param C1: first magnitude coefficient
@@ -824,15 +833,30 @@ class WLS():
                        Hmin)
         bounds_sup = np.append(np.array([np.inf, np.inf, np.inf]),
                        Hmax)
-        C1C2BetaH = curve_fit(self.EMIPE_C1C2BetaH, X, Ibin, 
-                             p0=p0,
-                             bounds=(bounds_inf, bounds_sup),
-                             sigma=sigma,
-                             absolute_sigma=True,
-                             ftol=ftol,
-                             xtol=xtol,
-                             max_nfev=max_nfev)
-        return C1C2BetaH
+        C1C2BetaH, pcov_false = curve_fit(self.EMIPE_C1C2BetaH, X, Ibin, 
+                                          p0=p0,
+                                          bounds=(bounds_inf, bounds_sup),
+                                          sigma=sigma,
+                                          absolute_sigma=False,
+                                          ftol=ftol,
+                                          xtol=xtol,
+                                          max_nfev=max_nfev)
+        bounds_inf = np.append(np.array([C1C2BetaH[0]-0.001, C1C2BetaH[1]-0.001, C1C2BetaH[2]-0.001]),
+                       C1C2BetaH[3:]-0.1)
+        bounds_sup = np.append(np.array([C1C2BetaH[0]+0.001, C1C2BetaH[1]+0.001, C1C2BetaH[2]+0.001]),
+                       C1C2BetaH[3:]+0.1)
+        sigma_cov = self.Obsbin_plus['StdI'].values.astype(float)
+        p0 = np.append(np.array([C1C2BetaH[0], C1C2BetaH[1], C1C2BetaH[2]]),
+                       C1C2BetaH[3:])
+        C1C2BetaH_dum, pcov = curve_fit(self.EMIPE_C1C2BetaH, X, Ibin, 
+                                          p0=p0,
+                                          bounds=(bounds_inf, bounds_sup),
+                                          sigma=sigma_cov,
+                                          absolute_sigma=True,
+                                          ftol=ftol,
+                                          xtol=xtol,
+                                          max_nfev=max_nfev)
+        return C1C2BetaH, pcov
     
     def EMIPE_C1C2BetaGammaH(self, X, C1, C2, Beta, Gamma, H1, H2, H3, H4, H5, H6, H7, H8,
                         H9, H10, H11, H12, H13, H14, H15, H16, H17, H18, H19, H20,
@@ -954,8 +978,8 @@ class WLS():
 
         Parameters
         ----------
-        sigma : TYPE
-            DESCRIPTION.
+        sigma : numpy.array
+            Array with the square root of the weights used in the inversion.
 
         Returns
         -------
@@ -1014,7 +1038,8 @@ class WLS():
         Parameters
         ----------
         eta : float
-            DESCRIPTION.
+            Number used to fill the sigma 2D matrix by integrated some covariance
+            between the parameters equal to eta.
         col : str, optional
             Name of the column where are stored the standard deviation used for the
             diagonal of the 2D sigma matrix. The default is 'eqStdM'.
@@ -1289,21 +1314,57 @@ class WLS():
                                  sigma=sigma,
                                  absolute_sigma=False,
                                  xtol=xtol, ftol=ftol)
+            p0 = C1regC2[0]
+            bounds_inf = p0 - 0.001
+            bounds_sup = p0 + 0.001
+            res_dum, pcov = curve_fit(self.C1_4regionC2_EMIPE, X, IminusAtt, 
+                                 sigma=self.Obsbin_plus.StdI.values.astype(float),
+                                 absolute_sigma=True,
+                                 p0=p0,
+                                 bounds=(bounds_inf, bounds_sup),
+                                 xtol=xtol, ftol=ftol)
         elif len(liste_region) == 3:
             C1regC2 = curve_fit(self.C1_3regionC2_EMIPE, X, IminusAtt, 
                                  sigma=sigma,
                                  absolute_sigma=False,
+                                 xtol=xtol, ftol=ftol)
+            p0 = C1regC2[0]
+            bounds_inf = p0 - 0.001
+            bounds_sup = p0 + 0.001
+            res_dum, pcov = curve_fit(self.C1_3regionC2_EMIPE, X, IminusAtt, 
+                                 sigma=self.Obsbin_plus.StdI.values.astype(float),
+                                 absolute_sigma=True,
+                                 p0=p0,
+                                 bounds=(bounds_inf, bounds_sup),
                                  xtol=xtol, ftol=ftol)
         elif len(liste_region) == 2:
             C1regC2 = curve_fit(self.C1_2regionC2_EMIPE, X, IminusAtt, 
                                  sigma=sigma,
                                  absolute_sigma=False,
                                  xtol=xtol, ftol=ftol)
+            p0 = C1regC2[0]
+            bounds_inf = p0 - 0.001
+            bounds_sup = p0 + 0.001
+            res_dum, pcov = curve_fit(self.C1_2regionC2_EMIPE, X, IminusAtt, 
+                                 sigma=self.Obsbin_plus.StdI.values.astype(float),
+                                 absolute_sigma=True,
+                                 p0=p0,
+                                 bounds=(bounds_inf, bounds_sup),
+                                 xtol=xtol, ftol=ftol)
         elif len(liste_region) == 1:
             C1regC2 = curve_fit(self.C1C2_EMIPE, X, IminusAtt, 
                                  sigma=sigma,
                                  absolute_sigma=False,
                                  xtol=xtol, ftol=ftol)
+            p0 = C1regC2[0]
+            bounds_inf = p0 - 0.001
+            bounds_sup = p0 + 0.001
+            res_dum, pcov = curve_fit(self.C1C2_EMIPE, X, IminusAtt, 
+                                 sigma=self.Obsbin_plus.StdI.values.astype(float),
+                                 absolute_sigma=True,
+                                 p0=p0,
+                                 bounds=(bounds_inf, bounds_sup),
+                                 xtol=xtol, ftol=ftol)
         else:
             raise ValueError('Number of region should be less than 4')
-        return C1regC2
+        return C1regC2[0], pcov

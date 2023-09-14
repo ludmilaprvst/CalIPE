@@ -20,9 +20,9 @@ def calcul_wrms_evt(obsbin, Beta, I0, depth, Gamma=0):
     obsbin : pandas.DataFrame
         Dataframe with the observed intensity and their associated epicentral 
         depth for the given earthquake. Mandatory columns are:
-            I : observed intensity
-            Depi : associated epicentral intensity
-            StdI : standard deviation/uncertainty associated to the intensity value
+            - I: observed intensity
+            - Depi: associated epicentral intensity
+            - StdI: standard deviation/uncertainty associated to the intensity value
     Beta : float
         Geometric attenuation coefficient.
     I0 : float
@@ -57,11 +57,11 @@ def calcul_wrms_beta(obsdata, Beta, Gamma=0):
     obsdata : pandas.DataFrame
         Dataframe with the observed intensity and their associated epicentral 
         depth for the given earthquake. Mandatory columns are:
-            I : observed intensity
-            Depi : associated epicentral intensity
-            StdI : standard deviation/uncertainty associated to the intensity value
-            Depth : hypocentral depth
-            Io : epicentral intensity
+            - I: observed intensity
+            - Depi: associated epicentral intensity
+            - StdI: standard deviation/uncertainty associated to the intensity value
+            - Depth: hypocentral depth
+            - Io: epicentral intensity
     Beta : float
         Value of the geometric attenuation coefficient beta.
      Gamma : float, optional
@@ -125,11 +125,11 @@ def calcul_wrms_C1C2betagamma(obsdata, C1, C2, Beta, Gamma):
     obsdata : pandas.DataFrame
         DataFrame which contain for one earthquake the observed intensities, the associated epicentral distances,
         magnitude and hypocentral depth. Mandatory columns are:
-            I : observed intensity
-            Depi : associated epicentral intensity
-            StdI : standard deviation/uncertainty associated to the intensity value
-            Depth : hypocentral depth
-            Mag : magnitude
+            - I: observed intensity
+            - Depi: associated epicentral intensity
+            - StdI: standard deviation/uncertainty associated to the intensity value
+            - Depth: hypocentral depth
+            - Mag: magnitude
     C1 : float
         C1 coefficient.
     C2 : float
@@ -216,11 +216,11 @@ def getHline_in_HI0wrms_space(obsdata, evid, Beta, minH=1, maxH=25, pasH=0.25,
     obsdata : pandas.DataFrame
         dataframe with the observed intensities and the inverted epicentral
         intensity. The mandatory columns are:
-            EVID : ID of the earthquake
-            I : observed intensity
-            Depi: associated epicentral distance
-            StdI : standard deviation/uncertainty associated to I value
-            Io : value of the inverted epicentral intensity
+            - EVID: ID of the earthquake
+            - I: observed intensity
+            - Depi: associated epicentral distance
+            - StdI: standard deviation/uncertainty associated to I value
+            - Io: value of the inverted epicentral intensity
     evid : float, int, str
         ID of the earthquake.
     Beta : float
@@ -267,11 +267,11 @@ def getI0line_in_HI0wrms_space(obsdata, evid, Beta, minH=1, maxH=25, pasH=0.25,
     obsdata : pandas.DataFrame
         dataframe with the observed intensities and the inverted epicentral
         intensity. The mandatory columns are:
-            EVID : ID of the earthquake
-            I : observed intensity
-            Depi: associated epicentral distance
-            StdI : standard deviation/uncertainty associated to I value
-            Io : value of the inverted epicentral intensity
+            - EVID: ID of the earthquake
+            - I: observed intensity
+            - Depi: associated epicentral distance
+            - StdI: standard deviation/uncertainty associated to I value
+            - Io: value of the inverted epicentral intensity
     evid : float, int, str
         ID of the earthquake.
     Beta : float
@@ -426,11 +426,11 @@ def plot_wrms_withHI0lines(fig_wrms,
     obsdata : pandas.DataFrame
         dataframe with the observed intensities and the inverted epicentral
         intensity. The mandatory columns are:
-            EVID : ID of the earthquake
-            I : observed intensity
-            Depi: associated epicentral distance
-            StdI : standard deviation/uncertainty associated to I value
-            Io : value of the inverted epicentral intensity.
+            - EVID: ID of the earthquake
+            - I: observed intensity
+            - Depi: associated epicentral distance
+            - StdI: standard deviation/uncertainty associated to I value
+            - Io: value of the inverted epicentral intensity.
     evid : float, int, str
         ID of the earthquake.
     Beta : float
@@ -510,11 +510,11 @@ def plot_wrms_beta_1evt(ax, obsdata, evid,
     obsdata : pandas.DataFrame
         Dataframe with the observed intensity and their associated epicentral 
         depth for the given earthquake. Mandatory columns are:
-            I : observed intensity
-            Depi : associated epicentral intensity
-            StdI : standard deviation/uncertainty associated to the intensity value
-            Depth : hypocentral depth
-            Io : epicentral intensity
+            - I: observed intensity
+            - Depi: associated epicentral intensity
+            - StdI: standard deviation/uncertainty associated to the intensity value
+            - Depth: hypocentral depth
+            - Io: epicentral intensity
     evid : float, int, str
         ID of the earthquake.
     minbeta : float

@@ -50,30 +50,30 @@ def create_basicdb_criteria(evtdata_name, obsdata_name,
     evtdata_name : str
         name of the evt data file. The list of the calibration earthquakes and associated 
         metadata are stored in this file. This .txt file contains 16 columns, separated by the ";" string:
-            EVID: ID of the earthquake
-            Year : year of occurence of the earthquake
-            Month : month of occurence of the earthquake
-            Day: day of occurence of the earthquake
-            Lon: longitude in WGS84 of the epicenter
-            Lat: latitude in WGS84 of the epicenter
-            QPos: quality of the epicenter location
-            I0 : epicentral intensity
-            QI0 : quality of the epicentral intensity value
-            Ic : intensity of completeness
-            Dc : distance of completeness
-            Mag: magnitude of the earthquake
-            StdM : uncertainty associated with the magnitude
-            Depth: hypocentral depth of the earthquake
-            Hmin : lower bound of uncertainty associated to depth
-            Hmax : upper bound of uncertainty associated to depth
+            - EVID: ID of the earthquake
+            - Year: year of occurence of the earthquake
+            - Month: month of occurence of the earthquake
+            - Day: day of occurence of the earthquake
+            - Lon: longitude in WGS84 of the epicenter
+            - Lat: latitude in WGS84 of the epicenter
+            - QPos: quality of the epicenter location
+            - I0: epicentral intensity
+            - QI0: quality of the epicentral intensity value
+            - Ic: intensity of completeness
+            - Dc: distance of completeness
+            - Mag: magnitude of the earthquake
+            - StdM: uncertainty associated with the magnitude
+            - Depth: hypocentral depth of the earthquake
+            - Hmin: lower bound of uncertainty associated to depth
+            - Hmax: upper bound of uncertainty associated to depth
     obsdata_name : str
         name of the obs data file. The IDPs of the calibration earthquakes are stored in this file.
         This .txt file contains 5 columns, separated by the ";" string:
-            EVID : ID of the earthquake
-            Lon: longitude in WGS84 of the IDP
-            Lat: latitude in WGS84 of the IDP
-            Iobs: value of intensity of the IDP
-            QIobs : quality associated to Iobs
+            - EVID: ID of the earthquake
+            - Lon: longitude in WGS84 of the IDP
+            - Lat: latitude in WGS84 of the IDP
+            - Iobs: value of intensity of the IDP
+            - QIobs: quality associated to Iobs
     binning_type : str, optional
         Name of the method applied to the calibration earthquakes intensity date to compute 
         isoseismal radii. The isoseismal radii are the intensity data used in the 
@@ -87,9 +87,9 @@ def create_basicdb_criteria(evtdata_name, obsdata_name,
         defined by the user. Contour is described by a polygon. The coordinates of
         the polygon points are in WGS84 longitude and latitude.
         The three columns are separeted by ";":
-            ID_region : ID of the considered region
-            Lon: Longitude of the polygon points
-            Lat: Latitude of the polygon points.
+            - ID_region: ID of the considered region
+            - Lon: Longitude of the polygon points
+            - Lat: Latitude of the polygon points.
         The default is ''.
     ponderation : TYPE, optional
         Name of the ponderation applied to the calibration earthquakes intensity data used
@@ -137,12 +137,12 @@ def create_liste_subset(criteria, year_inf, year_sup,
     ----------
     criteria : pandas.DataFrame
         dataframe with metadata about the earthquakes of the basic calibration. The metadata required are:
-            EVID : ID of the earthquake
-            Year : year of occurence of the earthquake
-            Dc : distance of completeness of the earthquake's macroseismic field
-            NClass : number of intensity class of the isoseismal radii of the earthquake
-            Ndata : number of data used to compute the isoseismal radii of the earthquake
-            QH : quality of the depth estimate
+            - EVID: ID of the earthquake
+            - Year: year of occurence of the earthquake
+            - Dc: distance of completeness of the earthquake's macroseismic field
+            - NClass: number of intensity class of the isoseismal radii of the earthquake
+            - Ndata: number of data used to compute the isoseismal radii of the earthquake
+            - QH: quality of the depth estimate
     year_inf : list of int
         list of the minimal year of occurence allowed.
     year_sup : list int
