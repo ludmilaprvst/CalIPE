@@ -56,6 +56,7 @@ def evt_weights(obsbin_plus, option_ponderation):
         print(option_ponderation)
     return obsbin_plus
 
+
 def weight_IStdI(obsbin_plus):
     """
     Function that compute a weight based on intensity standard deviation
@@ -70,6 +71,7 @@ def weight_IStdI(obsbin_plus):
     """
     obsbin_plus.loc[:, 'eqStd'] = obsbin_plus.loc[:, 'StdI']
     return obsbin_plus
+
 
 def normaliser_poids_par_evt(evid, obsbin_plus):
     """
@@ -90,10 +92,30 @@ def normaliser_poids_par_evt(evid, obsbin_plus):
              data is be equal to one.
     """
     ind = obsbin_plus[obsbin_plus.EVID==evid].index
-    obsbin_plus.loc[ind, 'Poids_inevt'] = 1/obsbin_plus.loc[ind, 'StdI']**2
-    somme_poids_par_evt = np.sum(obsbin_plus.loc[ind, 'Poids_inevt'])
-    obsbin_plus.loc[ind, 'Poids_inevt_norm'] = obsbin_plus.loc[ind, 'Poids_inevt']/somme_poids_par_evt
-    obsbin_plus.drop(['Poids_inevt'], axis=1, inplace=True)
+    obsbin_plus.loc[ind, 'Poids_int'] = 1/obsbin_plus.loc[ind, 'StdI']**2
+    somme_poids_par_evt = np.sum(obsbin_plus.loc[ind, 'Poids_int'])
+    obsbin_plus.loc[ind, 'Poids_int_norm'] = obsbin_plus.loc[ind, 'Poids_int']/somme_poids_par_evt
+    obsbin_plus.drop(['Poids_int'], axis=1, inplace=True)
+    return obsbin_plus
+
+
+def weight_evtUni(obsbin_plus):
+    """
+    
+
+    Parameters
+    ----------
+    obsbin_plus : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    liste_evt = np.unique(obsbin_plus.EVID.values)
+    poids_evt = 1/len(liste_evt)
+    obsbin_plus.loc[:, 'Poids_evt_norm'] = poids_evt
     return obsbin_plus
 
 def weight_IStdI_evtUni(obsbin_plus):
@@ -101,39 +123,71 @@ def weight_IStdI_evtUni(obsbin_plus):
     eqStdM column will be meaned by EVID before being used for C1/C2 inversion
     """
     liste_evt = np.unique(obsbin_plus.EVID.values)
-    poids_evt = 1/len(liste_evt)
     for evid in liste_evt:
         obsbin_plus = normaliser_poids_par_evt(evid, obsbin_plus)
-    obsbin_plus.loc[:, 'Poids'] = obsbin_plus.loc[:, 'Poids_inevt_norm'].astype(float)*poids_evt
-    obsbin_plus.loc[:, 'eqStdM'] = 1/np.sqrt(obsbin_plus.loc[:, 'Poids'])
+    obsbin_plus = weight_evtUni(obsbin_plus)
+    obsbin_plus.loc[:, 'Poids'] = obsbin_plus.loc[:, 'Poids_int_norm'].astype(float)*obsbin_plus.loc[:, 'Poids_evt_norm']
+    obsbin_plus.loc[:, 'Poids'] = obsbin_plus.loc[:, 'Poids']/obsbin_plus.loc[:, 'Poids'].sum()
+    obsbin_plus.loc[:, 'eqStd'] = 1/np.sqrt(obsbin_plus.loc[:, 'Poids'])
+    return obsbin_plus
+
+
+def weight_evtStdM(obsbin_plus):
+    """
+    
+
+    Parameters
+    ----------
+    obsbin_plus : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    gp_evid_obsbinplus = obsbin_plus.groupby('EVID').mean()
+    poids = 1/(gp_evid_obsbinplus.StdM.values**2)
+    max_poids = 1/(0.1**2)*np.ones(len(poids))
+    poids = np.min([poids, max_poids], axis=0)
+    poids_norm = poids/np.sum(poids)
+    gp_evid_obsbinplus.loc[:, 'poids_norm'] = poids_norm
+    dict_poids_norm = gp_evid_obsbinplus['poids_norm'].to_dict()
+    obsbin_plus.loc[:, 'Poids_evt_norm'] = obsbin_plus.apply(lambda row: dict_poids_norm[row['EVID']], axis=0)
+    # liste_evt = np.unique(obsbin_plus.EVID.values)
+    # tous_lespoidsStdM = []
+    # for evid in liste_evt:
+    #     # Compute the weight linked to StdM for each event
+    #     poids = 1/(obsbin_plus[obsbin_plus.EVID==evid]['StdM'].values[0]**2)
+    #     max_poids = 1/(0.1**2)
+    #     poids = np.min([max_poids, poids])
+    #     tous_lespoidsStdM.append(poids)
+    #     obsbin_plus.loc[obsbin_plus.EVID==evid, 'Poids_evt'] = poids
+    # # Normalize the event weight   
+    # obsbin_plus.loc[:, 'Poids_evt_norm'] = obsbin_plus.loc[:, 'Poids_evt']/sum(tous_lespoidsStdM)
     return obsbin_plus
 
 def weight_IStdI_evtStdM(obsbin_plus):
     """
     eqStdM column will be meaned by EVID before being used for C1/C2 inversion:
-        only one data per earthquake is used for C1/C2 inversion
+        only one data per earthquake is used for C1/C2 inversion  --> faux maintenant?
     """
     liste_evt = np.unique(obsbin_plus.EVID.values)
+
     for evid in liste_evt:
+        # Normalized by event the intensity weight
         obsbin_plus = normaliser_poids_par_evt(evid, obsbin_plus)
-    tous_lespoidsStdM = []
-    for evid in liste_evt:
-        poids = 1/(obsbin_plus[obsbin_plus.EVID==evid]['StdM'].values[0]**2)
-        max_poids = 1/(0.1**2)
-        poids = np.min([max_poids, poids])
-        tous_lespoidsStdM.append(poids)
-        #eqStdM = np.sqrt(1/poids)
-        #print(evid, poids,eqStdM )
-        obsbin_plus.loc[obsbin_plus.EVID==evid, 'poids_evt_StdM'] = poids
-    obsbin_plus.loc[:, 'poids_evt_StdM'] = obsbin_plus.loc[:, 'poids_evt_StdM']/sum(tous_lespoidsStdM)
-    
-    obsbin_plus.loc[:, 'poids'] = obsbin_plus.loc[:, 'Poids_inevt_norm'].astype(float)*obsbin_plus.loc[:, 'poids_evt_StdM']
         
+    obsbin_plus = weight_evtStdM(obsbin_plus)
+    # Combine the intensity weight and the event weight
+    obsbin_plus.loc[:, 'poids'] = obsbin_plus.loc[:, 'Poids_inevt_norm'].astype(float)*obsbin_plus.loc[:, 'poids_evt_StdM']   
     obsbin_plus.loc[:, 'poids'] = obsbin_plus.loc[:, 'poids']/ obsbin_plus.poids.sum()
-    obsbin_plus.loc[:, 'eqStdM'] = np.sqrt(1/obsbin_plus.loc[:, 'poids'])
+    # Compute equivalent Std for the inversion process
+    obsbin_plus.loc[:, 'eqStd'] = np.sqrt(1/obsbin_plus.loc[:, 'poids'])
     return obsbin_plus
 
-def Kovatt_ponderation_evt_depth(obsbin_plus):
+
+def weight_IStdI_evtStdH(obsbin_plus):
     """
     Function that attribute a weight based on instrumental depth uncertainties.
     
@@ -149,45 +203,21 @@ def Kovatt_ponderation_evt_depth(obsbin_plus):
              the inverse of the root square of a weight based on instrumental depth uncertainties. 
     """
     liste_evt = np.unique(obsbin_plus.EVID.values)
-    poids_evt = 1/len(liste_evt)
+    tous_lespoidsStdH = []
     for evid in liste_evt:
+        # Normalized by event the intensity weight
         obsbin_plus = normaliser_poids_par_evt(evid, obsbin_plus)
-    obsbin_plus.loc[:, 'Poids'] = obsbin_plus.loc[:, 'Poids_inevt_norm']*poids_evt
-    obsbin_plus.loc[:, 'Poids'] = obsbin_plus.loc[:, 'Poids']/(obsbin_plus.loc[:, 'Hmax']-obsbin_plus.loc[:, 'Hmin'])
+        # Compute the weight linked to StdH for each event
+        Hmax = obsbin_plus[obsbin_plus.EVID==evid]['Hmax'].values[0]
+        Hmin = obsbin_plus[obsbin_plus.EVID==evid]['Hmin'].values[0]
+        StdH = (Hmax-Hmin)/2
+        poids = 1/(StdH**2)
+        tous_lespoidsStdH.append(poids)
+        obsbin_plus.loc[obsbin_plus.EVID==evid, 'poids_evt_StdH'] = poids
+    obsbin_plus.loc[:, 'Poids'] = obsbin_plus.loc[:, 'Poids']/(StdH**2)
     obsbin_plus.loc[:, 'eqStd'] = 1/np.sqrt(obsbin_plus.loc[:, 'Poids'])
     obsbin_plus.drop(['Poids_inevt_norm', 'Poids'], axis=1, inplace=True)
     return obsbin_plus
-
-
-# def evt_weights_C1C2(obsbin_plus, option_ponderation):
-#     """
-#     Function that attribute a weight to the intensity data
-#     :param obsbin_plus:dataframe with the binned intensity data for all calibration earthquakes.
-#                         This dataframe should at least have have the following
-#                         columns : 
-#                             - Mag: the magnitude of the earthquake
-#                             - StdM: the associated standard deviation,
-#                             - EVID: the earthquake ID
-#     :param option_ponderation: type of weighting whished. Possible values:
-#                                 'Ponderation evt-uniforme',
-#                                'Ponderation evt-stdM', 'Ponderation mag-class'
-#     :type obsbin_plus: pandas.DataFrame
-#     :type option_ponderation: str
-    
-#     :return: a completed obsbin_plus DataFrame, with a eqStdM column that contains
-#              the associated inverse square root of the weights
-#     """
-#     if option_ponderation == 'Ponderation evt-uniforme':
-#         obsbin_plus = C1C2_ponderation_evt_uniforme(obsbin_plus)
-#     elif option_ponderation == 'Ponderation evt-stdM':
-#         obsbin_plus = C1C2_ponderation_evt_sdtM(obsbin_plus)
-#     elif option_ponderation == 'Ponderation mag_class':
-#         obsbin_plus = C1C2_ponderation_mag_class(obsbin_plus)
-#     else:
-#         print('No such ponderation option:')
-#         print(option_ponderation)
-#     return obsbin_plus
-
 
 
 def normaliser_par_region(regid, obsbin_plus):
@@ -216,8 +246,7 @@ def normaliser_par_region(regid, obsbin_plus):
     return obsbin_plus
 
 
-
-def C1C2_ponderation_mag_class(obsbin_plus):
+def weight_IStdI_evtStdM_gMclass(obsbin_plus):
     """
     Bin of 0.5 magnitude unit width
     """
@@ -249,57 +278,6 @@ def C1C2_ponderation_mag_class(obsbin_plus):
     obsbin_plus.drop(['poids_indiv', 'poids_class', 'poids', 'range1', 'poids_evt_StdM'], axis=1, inplace=True)  
     return obsbin_plus
     
-def savename_weights(option_ponderation):
-    """
-    Function that gives the savename id of the chosen wieghting scheme
-    :param option_ponderation: type of weighting whished. Possible values:
-                               'Ponderation dI', 'Ponderation evt-uniforme',
-                               'Ponderation evt-reg', 'Ponderation evt-depth'
-    :type option_ponderation: str
-    :return: a str with the savename id. For 'Ponderation dI', 'wStdI',
-             for 'Ponderation evt-uniforme', 'wdevt-uni', for'Ponderation evt-reg',
-             'wdevt-reg', and for 'Ponderation evt-depth', 'wdevt-depth'.
-             
-    """
-    if option_ponderation == 'Ponderation dI':
-        name = 'wStdI'
-    elif option_ponderation == 'Ponderation evt-uniforme':
-        name = 'wdevt-uni'
-    elif option_ponderation == 'Ponderation evt-reg':
-        name = 'wdevt-reg'
-    elif option_ponderation == 'Ponderation evt-depth':
-        name = 'wdevt-depth'
-    else:
-        print('No such ponderation option:')
-        print(option_ponderation)
-    return name
-
-
-
-
-
-def Kovatt_ponderation_evt_uniforme(obsbin_plus):
-    """
-    Function that attribute an equal weight to each earthquake.
-    
-    :param obsbin_plus: dataframe with the binned intensity data for all calibration earthquakes.
-                        This dataframe should at least have have the following
-                        columns : 'EVID' and 'StdI', which are respectively id
-                        of the chosen earthquake and the standard deviation
-                        associated to the binned intensity data
-    :type obsbin_plus: pandas.DataFrame                    
-    :return: a completed obsbin_plus DataFrame, with a eqStd column that contains
-             the inverse of the root square of the normalized weigths per earthquake. 
-    """
-    liste_evt = np.unique(obsbin_plus.EVID.values)
-    poids_evt = 1/len(liste_evt)
-    for evid in liste_evt:
-        obsbin_plus = normaliser_poids_par_evt(evid, obsbin_plus)
-    obsbin_plus.loc[:, 'Poids'] = obsbin_plus.loc[:, 'Poids_inevt_norm'].astype(float)*poids_evt
-    obsbin_plus.loc[:, 'eqStd'] = 1/np.sqrt(obsbin_plus.loc[:, 'Poids'])
-    
-    obsbin_plus.drop(['Poids_inevt_norm', 'Poids'], axis=1, inplace=True)
-    return obsbin_plus
 
 def lecture_fichierregions(fichier_regions):
     """
@@ -362,7 +340,7 @@ def attribute_region(data_evt, obsbin_plus, fichier_regions):
     return obsbin_plus
 
 
-def Kovatt_ponderation_evt_reg(obsbin_plus):
+def weight_IStdI_evtStdM_gRegion(obsbin_plus):
     """
     Function that attribute an equal weight to each region.
     
@@ -392,4 +370,69 @@ def Kovatt_ponderation_evt_reg(obsbin_plus):
     obsbin_plus.drop(['Poids_inevt_norm', 'Poids_inreg_norm', 'Poids'], axis=1, inplace=True)
     return obsbin_plus
 
+def savename_weights(option_ponderation):
+    """
+    Function that gives the savename id of the chosen wieghting scheme
+    :param option_ponderation: type of weighting whished. Possible values:
+                               'Ponderation dI', 'Ponderation evt-uniforme',
+                               'Ponderation evt-reg', 'Ponderation evt-depth'
+    :type option_ponderation: str
+    :return: a str with the savename id. For 'Ponderation dI', 'wStdI',
+             for 'Ponderation evt-uniforme', 'wdevt-uni', for'Ponderation evt-reg',
+             'wdevt-reg', and for 'Ponderation evt-depth', 'wdevt-depth'.
+             
+    """
+    return 'w' + option_ponderation
 
+
+# def evt_weights_C1C2(obsbin_plus, option_ponderation):
+#     """
+#     Function that attribute a weight to the intensity data
+#     :param obsbin_plus:dataframe with the binned intensity data for all calibration earthquakes.
+#                         This dataframe should at least have have the following
+#                         columns : 
+#                             - Mag: the magnitude of the earthquake
+#                             - StdM: the associated standard deviation,
+#                             - EVID: the earthquake ID
+#     :param option_ponderation: type of weighting whished. Possible values:
+#                                 'Ponderation evt-uniforme',
+#                                'Ponderation evt-stdM', 'Ponderation mag-class'
+#     :type obsbin_plus: pandas.DataFrame
+#     :type option_ponderation: str
+    
+#     :return: a completed obsbin_plus DataFrame, with a eqStdM column that contains
+#              the associated inverse square root of the weights
+#     """
+#     if option_ponderation == 'Ponderation evt-uniforme':
+#         obsbin_plus = C1C2_ponderation_evt_uniforme(obsbin_plus)
+#     elif option_ponderation == 'Ponderation evt-stdM':
+#         obsbin_plus = C1C2_ponderation_evt_sdtM(obsbin_plus)
+#     elif option_ponderation == 'Ponderation mag_class':
+#         obsbin_plus = C1C2_ponderation_mag_class(obsbin_plus)
+#     else:
+#         print('No such ponderation option:')
+#         print(option_ponderation)
+#     return obsbin_plus
+
+def Kovatt_ponderation_evt_uniforme(obsbin_plus):
+    """
+    Function that attribute an equal weight to each earthquake.
+    
+    :param obsbin_plus: dataframe with the binned intensity data for all calibration earthquakes.
+                        This dataframe should at least have have the following
+                        columns : 'EVID' and 'StdI', which are respectively id
+                        of the chosen earthquake and the standard deviation
+                        associated to the binned intensity data
+    :type obsbin_plus: pandas.DataFrame                    
+    :return: a completed obsbin_plus DataFrame, with a eqStd column that contains
+             the inverse of the root square of the normalized weigths per earthquake. 
+    """
+    liste_evt = np.unique(obsbin_plus.EVID.values)
+    poids_evt = 1/len(liste_evt)
+    for evid in liste_evt:
+        obsbin_plus = normaliser_poids_par_evt(evid, obsbin_plus)
+    obsbin_plus.loc[:, 'Poids'] = obsbin_plus.loc[:, 'Poids_inevt_norm'].astype(float)*poids_evt
+    obsbin_plus.loc[:, 'eqStd'] = 1/np.sqrt(obsbin_plus.loc[:, 'Poids'])
+    
+    obsbin_plus.drop(['Poids_inevt_norm', 'Poids'], axis=1, inplace=True)
+    return obsbin_plus
