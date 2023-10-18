@@ -1,0 +1,248 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Tutorial &#8212; CalIPE_doc 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Welcome to CalIPE_doc’s documentation!" href="output_files.html" />
+    <link rel="prev" title="Input data files" href="input_files.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="tutorial">
+<h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
+<p>blabla</p>
+<section id="launch-a-calibration">
+<h2>Launch a calibration<a class="headerlink" href="#launch-a-calibration" title="Permalink to this headline">¶</a></h2>
+<dl class="simple">
+<dt>Let’s start with the calibration of the following mathematical formulation:</dt><dd><ul class="simple">
+<li><p>I = I0 + beta.log10(Hypo/H)</p></li>
+</ul>
+</dd>
+</dl>
+<p>First, you have to add the path to your CalIPE repository to the Python paths:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;path_to_your_CalIPE_package/calib_fc&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then you can import the CalIPE function adapted to the chosen mathematical formulation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">attKov_onedataset</span> <span class="kn">import</span> <span class="n">Kovbeta_onedataset</span>
+</pre></div>
+</div>
+<p>Enter the Evt file, Obs file and Region file names. If you don’t need the Region file, just put a blank
+name as following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">evt_name</span> <span class="o">=</span> <span class="s1">&#39;path_to_evtfile/evtfilename.txt&#39;</span>
+<span class="n">obs_name</span> <span class="o">=</span> <span class="s1">&#39;path_to_obsfile/obsfilename.txt&#39;</span>
+<span class="n">regiondata_name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+</pre></div>
+</div>
+<p>The calibration dataset is given by the Evt file. All calibration functions will calibrate the chosen
+mathematical formulation with all calibration earthquakes in the Evt file.
+Enter the name of the output folder:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">outputfolder</span> <span class="o">=</span> <span class="s1">&#39;path_to_the_outputfolder&#39;</span>
+</pre></div>
+</div>
+<p>The output folder should be created before launching the CalIPE function.
+Then enter the name of the chosen weighting scheme:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">weighting_scheme</span> <span class="o">=</span> <span class="s1">&#39;Ponderation evt-uniforme&#39;</span>
+</pre></div>
+</div>
+<p>Choose the intensity binning method:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">binning_type</span> <span class="o">=</span> <span class="s1">&#39;ROBS&#39;</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>Choose the beta initial values::</dt><dd><p>list_beta_ini = [-2.5, -3.0, -3.5]</p>
+</dd>
+</dl>
+<p>You are ready to launch the calibration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Kovbeta_onedataset</span><span class="p">(</span><span class="n">evt_name</span><span class="p">,</span> <span class="n">obs_name</span><span class="p">,</span>
+                   <span class="n">outputfolder</span><span class="o">=</span><span class="n">outputfolder</span><span class="p">,</span>
+                   <span class="n">liste_beta_ini</span><span class="o">=</span><span class="n">liste_beta_ini</span><span class="p">,</span>
+                   <span class="n">ponderation</span><span class="o">=</span><span class="n">ponderation</span><span class="p">,</span>
+                   <span class="n">binning_type</span><span class="o">=</span><span class="n">binning_type</span><span class="p">,</span>
+                   <span class="n">regiondata_name</span><span class="o">=</span><span class="n">regiondata_name</span><span class="p">,</span>
+                   <span class="n">NminIter</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">NmaxIter</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The result are saved in the output folder. Example python script calibrating this mathematical formulation
+are available in the github repository (adress). Other calibration examples are also available in this repository.</p>
+</section>
+<section id="creating-subsets">
+<h2>Creating subsets<a class="headerlink" href="#creating-subsets" title="Permalink to this headline">¶</a></h2>
+<p>When using one of the calibration function, it is easy to use a for loop to explore different
+weighting scheme or calibration dataset.</p>
+<p>The CalIPE package provides a tool to create subsets from a given calibration dataset, based on filters on the metadata. Here is one example.
+First, you have to add the path to your CalIPE repository to the Python paths:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;path_to_your_CalIPE_package/calib_fc&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then import the needed functions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">create_subsets</span> <span class="kn">import</span> <span class="n">create_liste_subset</span><span class="p">,</span> <span class="n">filter_by_nevt</span><span class="p">,</span> <span class="n">check_duplicate</span><span class="p">,</span> <span class="n">create_basicdb_criteria</span>
+<span class="kn">from</span> <span class="nn">create_subsets</span> <span class="kn">import</span> <span class="n">create_subsets</span>
+</pre></div>
+</div>
+<p>Create a table with the metadata used to create the subsets. Excel file can be created/modified manually:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">basic_db_name</span> <span class="o">=</span> <span class="s1">&#39;path_to_evtfile/evtfilename.txt&#39;</span>
+<span class="n">obsdata_name</span> <span class="o">=</span> <span class="s1">&#39;path_to_obsfile/obsfilename.txt&#39;</span>
+<span class="n">subset_folder</span> <span class="o">=</span> <span class="s1">&#39;path_to_the_folder_where_the_subset_Evtfiles_will_be_saved&#39;</span>
+<span class="n">criteria</span> <span class="o">=</span> <span class="n">create_basicdb_criteria</span><span class="p">(</span><span class="n">basic_db_name</span><span class="p">,</span> <span class="n">obsdata_name</span><span class="p">,</span>
+                                   <span class="n">binning_type</span><span class="o">=</span><span class="s1">&#39;ROBS&#39;</span><span class="p">,</span>
+                                   <span class="n">outputfolder</span><span class="o">=</span><span class="s1">&#39;../../Data&#39;</span><span class="p">,</span>
+                                   <span class="n">regiondata_name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+                                   <span class="n">ponderation</span><span class="o">=</span><span class="s1">&#39;Ponderation evt-uniforme&#39;</span><span class="p">,</span>
+                                   <span class="p">)</span>
+</pre></div>
+</div>
+<p>The table will be saved in the subset_folder. This folder should be created before lauching the create_basicdb_criteria function.
+Then create the different lists of calibration earthquakes, corresponding to the different subsets.
+Before that, an additional column QH should be added in the criteria excel file, corresponding to the depth
+value quality, ranked from A (best quality) to E (Unknown depth). An example of the completed criteria Excel file is
+available in the github repository (adress).
+In this example, the metadata used to create subsets are the year of occurence of the earthquake, the depth quality,
+the number of intensity class of the calibration earthquake macroseismic field, the number of intensity data points
+of each calibration earthquake macroseismic field and the distance of completeness:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">global_liste</span><span class="p">,</span> <span class="n">criteres</span> <span class="o">=</span> <span class="n">create_liste_subset</span><span class="p">(</span><span class="n">criteria</span><span class="p">,</span>
+                                             <span class="n">year_inf</span><span class="o">=</span><span class="p">[</span><span class="mi">1980</span><span class="p">],</span>
+                                             <span class="n">year_sup</span><span class="o">=</span><span class="p">[</span><span class="mi">2020</span><span class="p">,</span> <span class="mi">2006</span><span class="p">],</span>
+                                             <span class="n">QH</span><span class="o">=</span><span class="p">[[</span><span class="s1">&#39;A&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">]],</span>
+                                             <span class="n">NClass</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span>
+                                             <span class="n">Nobs</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span>
+                                             <span class="n">Dc</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Once done, you can filter all calibration earthquake list with a number of earthquakes smaller than a certyain amount,
+in this example 10 earthquakes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">new_liste_nmin</span><span class="p">,</span> <span class="n">new_critere_nmin</span> <span class="o">=</span> <span class="n">filter_by_nevt</span><span class="p">(</span><span class="n">global_liste</span><span class="p">,</span> <span class="n">criteres</span><span class="p">,</span> <span class="n">nmin</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To ensure that no subsets are identical, run this function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">new_liste</span><span class="p">,</span> <span class="n">new_critere</span> <span class="o">=</span> <span class="n">check_duplicate</span><span class="p">(</span><span class="n">new_liste_nmin</span><span class="p">,</span> <span class="n">new_critere_nmin</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Once the list of the subsets is ready, the corresponding Evt files should be written:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">create_subsets</span><span class="p">(</span><span class="n">new_liste</span><span class="p">,</span> <span class="n">new_critere</span><span class="p">,</span> <span class="n">basic_db_name</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="n">subset_folder</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The new Evt files, which correspond to each subset, are saved in the subset_folder defined previously.
+The name of the subsets Evt files are Datasubsetxx.csv, where xx is the number of the subset.</p>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">CalIPE_doc</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="input_files.html">Input data files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="input_files.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#launch-a-calibration">Launch a calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-subsets">Creating subsets</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output_files.html">Welcome to CalIPE_doc’s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output_files.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inventory.html">Welcome to CalIPE_doc’s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inventory.html#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="input_files.html" title="previous chapter">Input data files</a></li>
+      <li>Next: <a href="output_files.html" title="next chapter">Welcome to CalIPE_doc’s documentation!</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Ludmila Provost.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/examples.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

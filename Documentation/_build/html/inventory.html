@@ -1,0 +1,1388 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Welcome to CalIPE_doc’s documentation! &#8212; CalIPE_doc 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome to CalIPE_doc’s documentation!" href="examples.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="welcome-to-calipe-doc-s-documentation">
+<h1>Welcome to CalIPE_doc’s documentation!<a class="headerlink" href="#welcome-to-calipe-doc-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<section id="module-attKov_onedataset">
+<span id="calibration-functions"></span><h2>Calibration functions<a class="headerlink" href="#module-attKov_onedataset" title="Permalink to this headline">¶</a></h2>
+<p>Created on Wed Jul 28 13:51:29 2021</p>
+<p>&#64;author: PROVOST-LUD</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="attKov_onedataset.Kovbeta_onedataset">
+<span class="sig-prename descclassname"><span class="pre">attKov_onedataset.</span></span><span class="sig-name descname"><span class="pre">Kovbeta_onedataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">evtdata_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obsdata_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputfolder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">liste_beta_ini</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ponderation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binning_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regiondata_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NminIter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NmaxIter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#attKov_onedataset.Kovbeta_onedataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that calibrates the attenuation coefficient beta in the Koveslighety
+mathematical formula, with the hypothesis gamma coefficient equal to 0, for a given
+list of earthquake, its associated IDPs, depth and its uncertainties and epicentral
+intensity and its uncertainties. IDPs are grouped into isoseismal radii, with the
+method given by the user. Depth and epicentral intensity are inverted sequentially
+with the beta coefficient, within their defined uncertainties.
+See Provost, CalIPE (in writing) for more information</p>
+<dl>
+<dt>evtdata_name<span class="classifier">str</span></dt><dd><p>name of the evt data file. The list of the calibration earthquakes and associated 
+metadata are stored in this file. This .txt file contains 16 columns, separated by the “;” string:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>EVID: ID of the earthquake</p></li>
+<li><p>Year: year of occurence of the earthquake</p></li>
+<li><p>Month: month of occurence of the earthquake</p></li>
+<li><p>Day: day of occurence of the earthquake</p></li>
+<li><p>Lon: longitude in WGS84 of the epicenter</p></li>
+<li><p>Lat: latitude in WGS84 of the epicenter</p></li>
+<li><p>QPos: quality of the epicenter location</p></li>
+<li><p>I0 : epicentral intensity</p></li>
+<li><p>QI0 : quality of the epicentral intensity value</p></li>
+<li><p>Ic : intensity of completeness</p></li>
+<li><p>Dc : distance of completeness</p></li>
+<li><p>Mag: magnitude of the earthquake</p></li>
+<li><p>StdM : uncertainty associated with the magnitude</p></li>
+<li><p>Depth: hypocentral depth of the earthquake</p></li>
+<li><p>Hmin : lower bound of uncertainty associated to depth</p></li>
+<li><p>Hmax : upper bound of uncertainty associated to depth</p></li>
+</ul>
+</div></blockquote>
+</dd>
+<dt>obsdata_name<span class="classifier">str</span></dt><dd><p>name of the obs data file. The IDPs of the calibration earthquakes are stored in this file.
+This .txt file contains 5 columns, separated by the “;” string:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>EVID : ID of the earthquake</p></li>
+<li><p>Lon: longitude in WGS84 of the IDP</p></li>
+<li><p>Lat: latitude in WGS84 of the IDP</p></li>
+<li><p>Iobs: value of intensity of the IDP</p></li>
+<li><p>QIobs : quality associated to Iobs</p></li>
+</ul>
+</div></blockquote>
+</dd>
+<dt>outputfolder<span class="classifier">str</span></dt><dd><p>Folder name where the outputs will be saved. See function write_betaresults()</p>
+</dd>
+<dt>liste_beta_ini<span class="classifier">list of float</span></dt><dd><p>list with different initial beta values</p>
+</dd>
+<dt>ponderation<span class="classifier">str</span></dt><dd><p>Name of the ponderation applied to the calibration earthquakes intensity data used
+in the inversion process of the beta coefficient</p>
+</dd>
+<dt>binning_type<span class="classifier">str</span></dt><dd><p>Name of the method applied to the calibration earthquakes intensity date to compute 
+isoseismal radii. The isoseismal radii are the intensity data used in the 
+inversion process</p>
+</dd>
+<dt>regiondata_name<span class="classifier">str</span></dt><dd><p>Name of the .txt file which contains the contour of the different regions
+defined by the user. Contour is described by a polygon. The coordinates of
+the polygon points are in WGS84 longitude and latitude.
+The three columns are separeted by “;”:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>ID_region: ID of the considered region</p></li>
+<li><p>Lon: Longitude of the polygon points</p></li>
+<li><p>Lat: Latitude of the polygon points</p></li>
+</ul>
+</div></blockquote>
+</dd>
+<dt>NminIter<span class="classifier">int</span></dt><dd><p>Minimal number of iteration allowed</p>
+</dd>
+<dt>NmaxIter<span class="classifier">int</span></dt><dd><p>Maximal number of iteration allowed.</p>
+</dd>
+</dl>
+<p>None.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="attKov_onedataset.Kovbetagamma_onedataset">
+<span class="sig-prename descclassname"><span class="pre">attKov_onedataset.</span></span><span class="sig-name descname"><span class="pre">Kovbetagamma_onedataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">evtdata_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obsdata_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputfolder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">liste_beta_ini</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">liste_gamma_ini</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ponderation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binning_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regiondata_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NminIter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NmaxIter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#attKov_onedataset.Kovbetagamma_onedataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that calibrates the attenuation coefficients beta and gamma in the Koveslighety
+mathematical formula,for a given list of earthquake, its associated IDPs
+depth and its uncertainties and epicentral intensity and its uncertainties. 
+IDPs are grouped into isoseismal radii, with the method given by the user. 
+Depth and epicentral intensity are inverted sequentiallyvwith the beta and gamma coefficients, within their defined uncertainties.
+See Provost, CalIPE (in writing) for more information</p>
+<dl>
+<dt>evtdata_name<span class="classifier">str</span></dt><dd><p>name of the evt data file. The list of the calibration earthquakes and associated 
+metadata are stored in this file. This .txt file contains 16 columns, separated by the “;” string:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>EVID: ID of the earthquake</p></li>
+<li><p>Year: year of occurence of the earthquake</p></li>
+<li><p>Month: month of occurence of the earthquake</p></li>
+<li><p>Day: day of occurence of the earthquake</p></li>
+<li><p>Lon: longitude in WGS84 of the epicenter</p></li>
+<li><p>Lat: latitude in WGS84 of the epicenter</p></li>
+<li><p>QPos: quality of the epicenter location</p></li>
+<li><p>I0: epicentral intensity</p></li>
+<li><p>QI0: quality of the epicentral intensity value</p></li>
+<li><p>Ic: intensity of completeness</p></li>
+<li><p>Dc: distance of completeness</p></li>
+<li><p>Mag: magnitude of the earthquake</p></li>
+<li><p>StdM: uncertainty associated with the magnitude</p></li>
+<li><p>Depth: hypocentral depth of the earthquake</p></li>
+<li><p>Hmin: lower bound of uncertainty associated to depth</p></li>
+<li><p>Hmax: upper bound of uncertainty associated to depth</p></li>
+</ul>
+</div></blockquote>
+</dd>
+<dt>obsdata_name<span class="classifier">str</span></dt><dd><p>name of the obs data file. The IDPs of the calibration earthquakes are stored in this file.
+This .txt file contains 5 columns, separated by the “;” string:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>EVID: ID of the earthquake</p></li>
+<li><p>Lon: longitude in WGS84 of the IDP</p></li>
+<li><p>Lat: latitude in WGS84 of the IDP</p></li>
+<li><p>Iobs: value of intensity of the IDP</p></li>
+<li><p>QIobs: quality associated to Iobs</p></li>
+</ul>
+</div></blockquote>
+</dd>
+<dt>outputfolder<span class="classifier">str</span></dt><dd><p>Folder name where the outputs will be saved. See function write_betagammaresults()</p>
+</dd>
+<dt>liste_beta_ini<span class="classifier">list of float</span></dt><dd><p>list with different initial beta values</p>
+</dd>
+<dt>liste_gamma_ini<span class="classifier">list of float</span></dt><dd><p>list with different initial gamma values</p>
+</dd>
+<dt>ponderation<span class="classifier">str</span></dt><dd><p>Name of the ponderation applied to the calibration earthquakes intensity data used
+in the inversion process of the beta and gamma coefficients</p>
+</dd>
+<dt>binning_type<span class="classifier">str</span></dt><dd><p>Name of the method applied to the calibration earthquakes intensity date to compute 
+isoseismal radii. The isoseismal radii are the intensity data used in the 
+inversion process</p>
+</dd>
+<dt>regiondata_name<span class="classifier">str</span></dt><dd><p>Name of the .txt file which contains the contour of the different regions
+defined by the user. Contour is described by a polygon. The coordinates of
+the polygon points are in WGS84 longitude and latitude.
+The three columns are separeted by “;”:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>ID_region: ID of the considered region</p></li>
+<li><p>Lon: Longitude of the polygon points</p></li>
+<li><p>Lat: Latitude of the polygon points</p></li>
+</ul>
+</div></blockquote>
+</dd>
+<dt>NminIter<span class="classifier">int</span></dt><dd><p>Minimal number of iteration allowed</p>
+</dd>
+<dt>NmaxIter<span class="classifier">int</span></dt><dd><p>Maximal number of iteration allowed</p>
+</dd>
+</dl>
+<p>None.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="attKov_onedataset.write_betagammaresults">
+<span class="sig-prename descclassname"><span class="pre">attKov_onedataset.</span></span><span class="sig-name descname"><span class="pre">write_betagammaresults</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputfolder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suivi_beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_ini</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suivi_gamma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_ini</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_betagamma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NminIter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NmaxIter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nbre_evt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nbreI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evtdata_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obsdata_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obsBin_plus_end</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#attKov_onedataset.write_betagammaresults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that writes the output of the attenuation coefficients beta and gamma calibration
+The outputs will be written in three files. The first file contains:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>the final beta value of the inversion process (median value of the gaussian),</p></li>
+<li><p>its associated standard deviation based on the uncertainties of the intensity data,</p></li>
+<li><p>the initial value of the coefficient beta before inversion,</p></li>
+<li><p>the final gamma value of the inversion process (median value of the gaussian),</p></li>
+<li><p>its associated standard deviation based on the uncertainties of the intensity data,</p></li>
+<li><p>the initial value of the coefficient gamma before inversion,</p></li>
+<li><p>the number of iteration needed to converge,</p></li>
+<li><p>the maximal number of iteration allowed,</p></li>
+<li><p>the minimal number of iteration allowed,</p></li>
+<li><p>the number of calibration earthquake used,</p></li>
+<li><p>the number of intensity data used,</p></li>
+<li><p>the Evt file used for the calibration process,</p></li>
+<li><p>the Obs file used for the calibration process,</p></li>
+<li><p>the name of the python file where this function is called</p></li>
+</ul>
+</div></blockquote>
+<p>The beginning of the first file name is betagammaFinal. The second file contains
+the values of the beta coefficient of each iteration. The two columns of the file
+are respectively the number of the iteration and the corresponding value of beta.
+The beginning of the second file name is betaWay.
+The third file contains the intensities data used in the inversion process, along
+with the depth and epicentral intensity after inversion for each earthquake.
+The columns of this .csv file are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>EVID: earthquake ID</p></li>
+<li><p>I: value of the intensity of the isoseismal radii</p></li>
+<li><p>StdI: Uncertainty associated to I</p></li>
+<li><p>Io: epicentral intensity after the inversion process</p></li>
+<li><p>Io_std: uncertainty associated to the inital value of Io</p></li>
+<li><p>Io_ini: initial value of epicentral intensity</p></li>
+<li><p>Depi: value of the epicentral distance of the isoseismal radii</p></li>
+<li><p>Ndata: number of data used to compute the isoseismal radii</p></li>
+<li><p>Mag: magnitude of the earthquake</p></li>
+<li><p>StdM: uncertainty associated to the magnitude</p></li>
+<li><p>Depth: hypocentral depth after the inversion process</p></li>
+<li><p>Hmin: minimal bound for the depth inversion</p></li>
+<li><p>Hmax: maximal bound for the depth inversion</p></li>
+<li><p>RegID: ID of the geographical region of the considered earthquake</p></li>
+<li><p>eqStd: the equivalent standard deviation used in the inversion process</p></li>
+</ul>
+<p>to compute weight for each isoseismal radii. (see the weights function)
+- Hmin_ini : identical to Hmin
+- Hmax_ini : identical to Hmax</p>
+</div></blockquote>
+<p>The beginning of the third file name is obsbinEnd.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – core name given to the outputs. For example, for the first output
+file, the output name would be ‘<a href="#id9"><span class="problematic" id="id10">betaFinal_</span></a>’+ name +’_betaini.txt’</p></li>
+<li><p><strong>outputfolder</strong> (<em>str</em>) – folder where the outputs will be saved</p></li>
+<li><p><strong>beta</strong> (<em>float</em>) – the value of the beta coefficient after inversion</p></li>
+<li><p><strong>suivi_beta</strong> (<em>numpy.darray</em>) – array with the values of the beta coefficient of each iteration in the inversion process</p></li>
+<li><p><strong>beta_ini</strong> (<em>float</em>) – initial value of the beta coefficient</p></li>
+<li><p><strong>gamma</strong> (<em>float</em>) – the value of the gamma coefficient after inversion</p></li>
+<li><p><strong>suivi_gamma</strong> (<em>numpy.darray</em>) – array with the values of the gamma coefficient of each iteration in the inversion process</p></li>
+<li><p><strong>gamma_ini</strong> (<em>float</em>) – initial value of the gamma coefficient</p></li>
+<li><p><strong>cov_betagamma</strong> (<em>2-D array</em>) – covariance matrix of the beta and gamma coefficients after the inversion process</p></li>
+<li><p><strong>NminIter</strong> (<em>int</em>) – minimal number of iteration allowed</p></li>
+<li><p><strong>NmaxIter</strong> (<em>int</em>) – maximal number of iteration allowed</p></li>
+<li><p><strong>nbre_evt</strong> (<em>int</em>) – number of earthquakes used in the inversion process</p></li>
+<li><p><strong>nbreI</strong> (<em>int</em>) – number of intensity data used in the inversion process</p></li>
+<li><p><strong>evtdata_name</strong> (<em>str</em>) – name of the Evt file used in the calibration process</p></li>
+<li><p><strong>obsdata_name</strong> (<em>str</em>) – name of the Obs file used in the calibration process</p></li>
+<li><p><strong>obsBin_plus_end</strong> (<em>pandas.dataframe</em>) – dataframe containing the intensity data used in the calibration process. 
+The columns of the dataframe are the same as the obsbinEnd output file.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="attKov_onedataset.write_betaresults">
+<span class="sig-prename descclassname"><span class="pre">attKov_onedataset.</span></span><span class="sig-name descname"><span class="pre">write_betaresults</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputfolder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suivi_beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_ini</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NminIter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NmaxIter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nbre_evt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nbreI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evtdata_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obsdata_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obsBin_plus_end</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#attKov_onedataset.write_betaresults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that writes the output of the attenuation coefficient beta calibration
+The outputs will be written in three files. The first file contains:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>the final beta value of the inversion process (median value of the gaussian),</p></li>
+<li><p>its associated standard deviation based on the uncertainties of the intensity data,</p></li>
+<li><p>the initial value of the coefficient beta before inversion,</p></li>
+<li><p>the number of iteration needed to converge,</p></li>
+<li><p>the maximal number of iteration allowed,</p></li>
+<li><p>the minimal number of iteration allowed,</p></li>
+<li><p>the number of calibration earthquake used,</p></li>
+<li><p>the number of intensity data used,</p></li>
+<li><p>the Evt file used for the calibration process,</p></li>
+<li><p>the Obs file used for the calibration process,</p></li>
+<li><p>the name of the python file where this function is called</p></li>
+</ul>
+</div></blockquote>
+<p>The beginning of the first file name is betaFinal. The second file contains
+the values of the beta coefficient of each iteration. The two columns of the file
+are respectively the number of the iteration and the corresponding value of beta.
+The beginning of the second file name is betaWay.
+The third file contains the intensities data used in the inversion process, along
+with the depth and epicentral intensity after inversion for each earthquake.
+The columns of this .csv file are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>EVID : earthquake ID</p></li>
+<li><p>I: value of the intensity of the isoseismal radii</p></li>
+<li><p>StdI: Uncertainty associated to I</p></li>
+<li><p>Io: epicentral intensity after the inversion process</p></li>
+<li><p>Io_std : uncertainty associated to the inital value of Io</p></li>
+<li><p>Io_ini: initial value of epicentral intensity</p></li>
+<li><p>Depi : value of the epicentral distance of the isoseismal radii</p></li>
+<li><p>Ndata: number of data used to compute the isoseismal radii</p></li>
+<li><p>Mag: magnitude of the earthquake</p></li>
+<li><p>StdM : uncertainty associated to the magnitude</p></li>
+<li><p>Depth: hypocentral depth after the inversion process</p></li>
+<li><p>Hmin : minimal bound for the depth inversion</p></li>
+<li><p>Hmax : maximal bound for the depth inversion</p></li>
+<li><p>RegID: ID of the geographical region of the considered earthquake</p></li>
+<li><p>eqStd: the equivalent standard deviation used in the inversion process</p></li>
+</ul>
+<p>to compute weight for each isoseismal radii. (see the weights function)
+- Hmin_ini : identical to Hmin
+- Hmax_ini : identical to Hmax</p>
+</div></blockquote>
+<p>The beginning of the third file name is obsbinEnd.
+:param name: core name given to the outputs. For example, for the first output</p>
+<blockquote>
+<div><p>file, the output name would be ‘<a href="#id11"><span class="problematic" id="id12">betaFinal_</span></a>’’+ name +’_betaini.txt’</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>outputfolder</strong> (<em>str</em>) – folder where the outputs will be saved</p></li>
+<li><p><strong>beta</strong> (<em>float</em>) – the value of the beta coefficient after inversion</p></li>
+<li><p><strong>suivi_beta</strong> (<em>numpy.darray</em>) – array with the values of the beta coefficient of each iteration in the inversion process</p></li>
+<li><p><strong>beta_ini</strong> (<em>float</em>) – initial value of the beta coefficient</p></li>
+<li><p><strong>cov_beta</strong> – covariance matrix of the beta coefficient after the inversion process</p></li>
+<li><p><strong>NminIter</strong> – minimal number of iteration allowed</p></li>
+<li><p><strong>NmaxIter</strong> – maximal number of iteration allowed</p></li>
+<li><p><strong>nbre_evt</strong> – number of earthquakes used in the inversion process</p></li>
+<li><p><strong>nbreI</strong> – number of intensity data used in the inversion process</p></li>
+<li><p><strong>evtdata_name</strong> – name of the Evt file used in the calibration process</p></li>
+<li><p><strong>obsdata_name</strong> – name of the Obs file used in the calibration process</p></li>
+<li><p><strong>obsBin_plus_end</strong> – dataframe containing the intensity data used in the calibration process. 
+The columns of the dataframe are the same as the obsbinEnd output file.</p></li>
+</ul>
+</dd>
+</dl>
+<p>:type cov_beta:2-D array
+:type NminIter: int
+:type NmaxIter: int
+:type nbre_evt: int
+:type nbreI: int
+:type evtdata_name: str
+:type obsdata_name: str
+:type obsBin_plus_end: pandas.dataframe</p>
+</dd></dl>
+
+<span class="target" id="module-combinaison_calib"></span><p>Created on Thu Jul  1 11:28:50 2021</p>
+<p>&#64;author: PROVOST-LUD</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="combinaison_calib.calib_C1C2">
+<span class="sig-prename descclassname"><span class="pre">combinaison_calib.</span></span><span class="sig-name descname"><span class="pre">calib_C1C2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">liste_evt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ObsBin_plus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NmaxIter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_I0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#combinaison_calib.calib_C1C2" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Function that calibrate the C1 and the C2 coefficient in the following equation:</dt><dd><p>I = C1 + C2.Mag + beta.log10(hypo) + gamma.hypo</p>
+</dd>
+</dl>
+<p>where I is the intensity at a given hypocentral distance hypo,
+Mag is the magnitude of the earthquake, beta, gamma, C1 and C2 are coefficients.
+Regionalization of C1 is possible, with a maximal limit of 4 regions.</p>
+<dl>
+<dt>liste_evt<span class="classifier">list</span></dt><dd><p>list the earthquake whose macroseismic data and metadat will be used to calibrate the C1 and C2 coefficients.</p>
+</dd>
+<dt>ObsBin_plus<span class="classifier">pandas.DataFrame</span></dt><dd><p>DataFrame with all isoseismal radii (intensity bin) used in the inversion. The dataframe
+should contain the isoseismal radii of each earthquake listed in liste_evt. The mandatory columns are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>EVID: ID of the earthquake</p></li>
+<li><p>RegID: region ID of the location of the earthquake</p></li>
+<li><p>Depth: initial depth of the earthquake</p></li>
+<li><p>I: intensity value of the isoseismal radii</p></li>
+<li><p>StdI: uncertainty associated to I</p></li>
+<li><p>Depi: epicentral distance of the isoseismal radii</p></li>
+<li><p>beta: the attenuation coefficient beta, corresponding to the region of the location of the earthquake</p></li>
+<li><p>gamma: the attenuation coefficient gamma, corresponding to the region of the location of the earthquake</p></li>
+<li><p>Mag: magnitude of the earthquake</p></li>
+<li><dl class="simple">
+<dt>eqStdM: the equivalent standard deviation used to weight the data used in the inversion.</dt><dd><p>The weights are equal to 1/obsgp.eqStdM.values**2</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</dd>
+<dt>NmaxIter<span class="classifier">int, optional</span></dt><dd><p>Maximal number of iteration allowed. The default is 50.</p>
+</dd>
+<dt>add_I0<span class="classifier">boolean, optional</span></dt><dd><p>option that add the epicentral intensity to the intensity data used in inversion.
+The default is True.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>ObsBin_plus<span class="classifier">pandas.DataFrame</span></dt><dd><p>Same as ObsBin_plus input</p>
+</dd>
+<dt>resC1regC2<span class="classifier">array</span></dt><dd><p>array with two elements. First element is the popt output of scipy.optimize.curve_fit,
+i.e. the optimal values for the parameters so that the sum of the squared residuals
+of f(xdata, <a href="#id1"><span class="problematic" id="id2">*</span></a>popt) - ydata is minimized. Second element is pcov output of scipy.optimize.curve_fit,
+i.e. the estimated covariance of popt. The diagonals provide the variance of the parameter estimate.
+To compute one standard deviation errors on the parameters use perr = np.sqrt(np.diag(pcov))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="combinaison_calib.calib_C1C2H">
+<span class="sig-prename descclassname"><span class="pre">combinaison_calib.</span></span><span class="sig-name descname"><span class="pre">calib_C1C2H</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">liste_evt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ObsBin_plus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NmaxIter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_I0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#combinaison_calib.calib_C1C2H" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Function that calibrate the C1 and the C2 coefficient in the following equation:</dt><dd><p>I = C1 + C2.Mag + beta.log10(hypo) + gamma.hypo</p>
+</dd>
+</dl>
+<p>where I is the intensity at a given hypocentral distance hypo,
+Mag is the magnitude of the earthquake, beta, gamma, C1 and C2 are coefficients.    
+Depth of the calibration earthquakes is also inverted, within its uncertainties. The 
+depth parameter is in the hypo term:</p>
+<blockquote>
+<div><p>hypo = sqrt(depi**2 + depth**2)</p>
+</div></blockquote>
+<p>Regionalization of C1 is possible, with a maximal limit of 4 regions.</p>
+<dl>
+<dt>liste_evt<span class="classifier">list</span></dt><dd><p>list the earthquake whose macroseismic data and metadat will be used to calibrate the C1 and C2 coefficients.</p>
+</dd>
+<dt>ObsBin_plus<span class="classifier">pandas.DataFrame</span></dt><dd><p>DataFrame with all isoseismal radii (intensity bin) used in the inversion. The dataframe
+should contain the isoseismal radii of each earthquake listed in liste_evt. The mandatory columns are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>EVID: ID of the earthquake</p></li>
+<li><p>RegID: region ID of the location of the earthquake</p></li>
+<li><p>Depth: initial depth of the earthquake</p></li>
+<li><p>Hmin: shallow limit of depth for the inversion</p></li>
+<li><p>Hmax: deep limit of depth for the inversion</p></li>
+<li><p>I: intensity value of the isoseismal radii</p></li>
+<li><p>StdI: uncertainty associated to I</p></li>
+<li><p>Depi: epicentral distance of the isoseismal radii</p></li>
+<li><p>beta: the attenuation coefficient beta, corresponding to the region of the location of the earthquake</p></li>
+<li><p>gamma: the attenuation coefficient gamma, corresponding to the region of the location of the earthquake</p></li>
+<li><p>Mag: magnitude of the earthquake</p></li>
+<li><dl class="simple">
+<dt>eqStdM: the equivalent standard deviation used to weight the data used in the inversion.</dt><dd><p>The weights are equal to 1/obsgp.eqStdM.values**2</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</dd>
+<dt>NmaxIter<span class="classifier">int, optional</span></dt><dd><p>Maximal number of iteration allowed. The default is 50.</p>
+</dd>
+<dt>add_I0<span class="classifier">boolean, optional</span></dt><dd><p>option that add the epicentral intensity to the intensity data used in ivnersion.
+The default is True.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>ObsBin_plus<span class="classifier">pandas.DataFrame</span></dt><dd><p>Same as ObsBin_plus input, but with the Depth column updated.</p>
+</dd>
+<dt>resC1regC2<span class="classifier">array</span></dt><dd><p>array with two elements. First element is the popt output of scipy.optimize.curve_fit,
+i.e. the optimal values for the parameters so that the sum of the squared residuals
+of f(xdata, <a href="#id3"><span class="problematic" id="id4">*</span></a>popt) - ydata is minimized. Second element is pcov output of scipy.optimize.curve_fit,
+i.e. the estimated covariance of popt. The diagonals provide the variance of the parameter estimate.
+To compute one standard deviation errors on the parameters use perr = np.sqrt(np.diag(pcov))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="combinaison_calib.calib_C1C2betaH">
+<span class="sig-prename descclassname"><span class="pre">combinaison_calib.</span></span><span class="sig-name descname"><span class="pre">calib_C1C2betaH</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">liste_evt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ObsBin_plus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NmaxIter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_I0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#combinaison_calib.calib_C1C2betaH" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Function that calibrate the C1, the C2and the beta coefficients in the following equation:</dt><dd><p>I = C1 + C2.Mag + beta.log10(hypo)</p>
+</dd>
+</dl>
+<p>where I is the intensity at a given hypocentral distance hypo,
+Mag is the magnitude of the earthquake, beta, gamma, C1 and C2 are coefficients.
+Depth of the calibration earthquakes is also inverted, within its uncertainties. The 
+depth parameter is in the hypo term:</p>
+<blockquote>
+<div><p>hypo = sqrt(depi**2 + depth**2)</p>
+</div></blockquote>
+<dl>
+<dt>liste_evt<span class="classifier">list</span></dt><dd><p>list the earthquake whose macroseismic data and metadat will be used to calibrate the C1, C2 and beta coefficients.</p>
+</dd>
+<dt>ObsBin_plus<span class="classifier">pandas.DataFrame</span></dt><dd><p>DataFrame with all isoseismal radii (intensity bin) used in the inversion. The dataframe
+should contain the isoseismal radii of each earthquake listed in liste_evt. The mandatory columns are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>EVID: ID of the earthquake</p></li>
+<li><p>RegID: region ID of the location of the earthquake</p></li>
+<li><p>Depth: initial depth of the earthquake</p></li>
+<li><p>I: intensity value of the isoseismal radii</p></li>
+<li><p>StdI: uncertainty associated to I</p></li>
+<li><p>Depi: epicentral distance of the isoseismal radii</p></li>
+<li><p>beta: the attenuation coefficient beta, corresponding to the region of the location of the earthquake</p></li>
+<li><p>gamma: the attenuation coefficient gamma, corresponding to the region of the location of the earthquake</p></li>
+<li><p>Mag: magnitude of the earthquake</p></li>
+<li><dl class="simple">
+<dt>eqStdM: the equivalent standard deviation used to weight the data used in the inversion.</dt><dd><p>The weights are equal to 1/obsgp.eqStdM.values**2</p>
+</dd>
+</dl>
+</li>
+<li><p>Hmin: lower bound of uncertainty associated to depth</p></li>
+<li><p>Hmax: upper bound of uncertainty associated to depth</p></li>
+</ul>
+</div></blockquote>
+</dd>
+<dt>C1<span class="classifier">float</span></dt><dd><p>Initial value of the C1 coefficient.</p>
+</dd>
+<dt>C2<span class="classifier">float</span></dt><dd><p>Initial value of the C2 coefficient.</p>
+</dd>
+<dt>beta<span class="classifier">float</span></dt><dd><p>Initial value of the beta coefficient.</p>
+</dd>
+<dt>NmaxIter<span class="classifier">int, optional</span></dt><dd><p>Maximal number of iteration allowed. The default is 50.</p>
+</dd>
+<dt>add_I0<span class="classifier">boolean, optional</span></dt><dd><p>option that add the epicentral intensity to the intensity data used in inversion.
+The default is True.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>ObsBin_plus<span class="classifier">pandas.DataFrame</span></dt><dd><p>Same as the input, but with the depth column updated.</p>
+</dd>
+<dt>C1C2BetaH<span class="classifier">array</span></dt><dd><p>array with two array elements. First element is the popt output of scipy.optimize.curve_fit,
+i.e. the optimal values for the parameters so that the sum of the squared residuals
+of f(xdata, <a href="#id5"><span class="problematic" id="id6">*</span></a>popt) - ydata is minimized. The three first elments in this array are the C1, the C2 and the beta
+coefficient. The other elements are the inverted depths, in the same order as liste_evt.
+Second element is pcov output of scipy.optimize.curve_fit,
+i.e. the estimated covariance of popt. The diagonals provide the variance of the parameter estimate.
+To compute one standard deviation errors on the parameters use perr = np.sqrt(np.diag(pcov))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="combinaison_calib.calib_C1C2betagammaH">
+<span class="sig-prename descclassname"><span class="pre">combinaison_calib.</span></span><span class="sig-name descname"><span class="pre">calib_C1C2betagammaH</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">liste_evt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ObsBin_plus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NmaxIter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_I0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#combinaison_calib.calib_C1C2betagammaH" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Function that calibrate the C1, the C2, the beta and the gamma coefficients in the following equation:</dt><dd><p>I = C1 + C2.Mag + beta.log10(hypo) + gamma.hypo</p>
+</dd>
+</dl>
+<p>where I is the intensity at a given hypocentral distance hypo,
+Mag is the magnitude of the earthquake, beta, gamma, C1 and C2 are coefficients.
+Depth of the calibration earthquakes is also inverted, within its uncertainties. The 
+depth parameter is in the hypo term:</p>
+<blockquote>
+<div><p>hypo = sqrt(depi**2 + depth**2)</p>
+</div></blockquote>
+<dl>
+<dt>liste_evt<span class="classifier">list</span></dt><dd><p>list the earthquake whose macroseismic data and metadat will be used to calibrate the C1, C2 and beta coefficients.</p>
+</dd>
+<dt>ObsBin_plus<span class="classifier">pandas.DataFrame</span></dt><dd><p>DataFrame with all isoseismal radii (intensity bin) used in the inversion. The dataframe
+should contain the isoseismal radii of each earthquake listed in liste_evt. The mandatory columns are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>EVID: ID of the earthquake</p></li>
+<li><p>RegID: region ID of the location of the earthquake</p></li>
+<li><p>Depth: initial depth of the earthquake</p></li>
+<li><p>I: intensity value of the isoseismal radii</p></li>
+<li><p>StdI: uncertainty associated to I</p></li>
+<li><p>Depi: epicentral distance of the isoseismal radii</p></li>
+<li><p>beta: the attenuation coefficient beta, corresponding to the region of the location of the earthquake</p></li>
+<li><p>gamma: the attenuation coefficient gamma, corresponding to the region of the location of the earthquake</p></li>
+<li><p>Mag: magnitude of the earthquake</p></li>
+<li><dl class="simple">
+<dt>eqStdM: the equivalent standard deviation used to weight the data used in the inversion.</dt><dd><p>The weights are equal to 1/obsgp.eqStdM.values**2</p>
+</dd>
+</dl>
+</li>
+<li><p>Hmin: lower bound of uncertainty associated to depth</p></li>
+<li><p>Hmax: upper bound of uncertainty associated to depth</p></li>
+</ul>
+</div></blockquote>
+</dd>
+<dt>C1<span class="classifier">float</span></dt><dd><p>Initial value of the C1 coefficient.</p>
+</dd>
+<dt>C2<span class="classifier">float</span></dt><dd><p>Initial value of the C2 coefficient.</p>
+</dd>
+<dt>beta<span class="classifier">float</span></dt><dd><p>Initial value of the beta coefficient.</p>
+</dd>
+<dt>gamma<span class="classifier">float</span></dt><dd><p>Initial value of the gamma coefficient.</p>
+</dd>
+<dt>NmaxIter<span class="classifier">int optional</span></dt><dd><p>Maximal number of iteration allowed. The default is 50.</p>
+</dd>
+<dt>add_I0<span class="classifier">boolean, optional</span></dt><dd><p>option that add the epicentral intensity to the intensity data used in inversion. The default is True.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>ObsBin_plus<span class="classifier">pandas.DataFrame</span></dt><dd><p>Same as the input, but with the depth column updated.</p>
+</dd>
+<dt>C1C2BetaH<span class="classifier">array</span></dt><dd><p>array with two array elements. First element is the popt output of scipy.optimize.curve_fit,
+i.e. the optimal values for the parameters so that the sum of the squared residuals
+of f(xdata, <a href="#id7"><span class="problematic" id="id8">*</span></a>popt) - ydata is minimized. The four first elments in this array are the C1, the C2, the beta
+and the gamma coefficients. The other elements are the inverted depths, in the same order as liste_evt.
+Second element is pcov output of scipy.optimize.curve_fit,
+i.e. the estimated covariance of popt. The diagonals provide the variance of the parameter estimate.
+To compute one standard deviation errors on the parameters use perr = np.sqrt(np.diag(pcov))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="combinaison_calib.calib_attBetaGamma_Kov">
+<span class="sig-prename descclassname"><span class="pre">combinaison_calib.</span></span><span class="sig-name descname"><span class="pre">calib_attBetaGamma_Kov</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">liste_evt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ObsBin_plus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_ini</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_ini</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NminIter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NmaxIter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_I0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#combinaison_calib.calib_attBetaGamma_Kov" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that inverse iteratively and sequentially depth, epicentral intensity
+and the attenuation coefficients beta and gamma for a given earthquake list and 
+binned intensity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>liste_evt</strong> (<em>list</em>) – Contains the ID of the earthquakes used for the inversion</p></li>
+<li><p><strong>ObsBin_plus</strong> (<em>pandas.DataFrame</em>) – <p>dataframe with the binned intensity data for all calibration earthquakes.
+This dataframe should at least have have the following
+columns :</p>
+<blockquote>
+<div><ul>
+<li><p>I: the binned intensity value,</p></li>
+<li><p>StdI: the binned intensity standard deviation,</p></li>
+<li><p>Depi: the associated epicentral distance,</p></li>
+<li><p>Depth: the initial depth before inversion,</p></li>
+<li><p>Hmin: the lower depth limit for inversion,</p></li>
+<li><p>Hmax: the upper depth limit for inversion,</p></li>
+<li><p>Io: the initial epicentral intensity before inversion,</p></li>
+<li><p>Io_ini: the initial epicentral intensity before inversion,</p></li>
+<li><p>Io_std: the epicentral intensity standard deviation,</p></li>
+<li><dl class="simple">
+<dt>eqStd: the inverse of the root square of the weights</dt><dd><p>used in the geometric attenuation coefficient,</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>beta_ini</strong> (<em>float</em>) – initial value of the geometric attenuation coefficient beta</p></li>
+<li><p><strong>gamma_ini</strong> (<em>float</em>) – initial value of the intrinsic attenuation coefficient gamma</p></li>
+<li><p><strong>NminIter</strong> (<em>int</em>) – minimum number of iteration</p></li>
+<li><p><strong>NmaxIter</strong> (<em>int</em>) – maximal number of iteration</p></li>
+<li><p><strong>dossier_suivi</strong> (<em>str</em>) – folder in which the figures with the WRMS will be stored.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the ObsBin_plus dataframe with depth and epicentral intensity after inversion
+the output eometric attenuation coefficient beta, the covariance
+of the geometric attenuation coefficient, a list with the beta values
+for each iteration.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="combinaison_calib.calib_attBetaGamma_Kov_unit">
+<span class="sig-prename descclassname"><span class="pre">combinaison_calib.</span></span><span class="sig-name descname"><span class="pre">calib_attBetaGamma_Kov_unit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">liste_evt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ObsBin_plus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#combinaison_calib.calib_attBetaGamma_Kov_unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that inverse sequentially depth, epicentral intensity and the
+attenuation coefficients beta and gamma for a given earthquake list and 
+binned intensity and one iteration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>liste_evt</strong> (<em>list</em>) – Contains the ID of the earthquakes used for the inversion</p></li>
+<li><p><strong>ObsBin_plus</strong> (<em>pandas.DataFrame</em>) – <p>dataframe with the binned intensity data for all calibration earthquakes.
+This dataframe should at least have have the following
+columns :</p>
+<blockquote>
+<div><ul>
+<li><p>I: the binned intensity value,</p></li>
+<li><p>StdI: the binned intensity standard deviation,</p></li>
+<li><p>Depi: the associated epicentral distance,</p></li>
+<li><p>Depth: the initial depth before inversion,</p></li>
+<li><p>Hmin: the lower depth limit for inversion,</p></li>
+<li><p>Hmax: the upper depth limit for inversion,</p></li>
+<li><p>Io: the initial epicentral intensity before inversion,</p></li>
+<li><p>Io_ini: the initial epicentral intensity before inversion,</p></li>
+<li><p>Io_std: the epicentral intensity standard deviation,</p></li>
+<li><dl class="simple">
+<dt>eqStd: the inverse of the root square of the weights</dt><dd><p>used in the geometric attenuation coefficient,</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>beta</strong> (<em>float</em>) – initial value of the geometric attenuation coefficient beta</p></li>
+<li><p><strong>gamma</strong> (<em>float</em>) – initial value of the intrinsic attenuation coefficient gamma</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the ObsBin_plus dataframe with depth and epicentral intensity after inversion
+and the inverted attenuation coefficients beta and gamma</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="combinaison_calib.calib_attBeta_Kov">
+<span class="sig-prename descclassname"><span class="pre">combinaison_calib.</span></span><span class="sig-name descname"><span class="pre">calib_attBeta_Kov</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">liste_evt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ObsBin_plus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_ini</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NminIter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NmaxIter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_I0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suivi_inversion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dossier_suivi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#combinaison_calib.calib_attBeta_Kov" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that inverse iteratively and sequentially depth, epicentral intensity
+and the geometric attenuation coefficient beta for a given earthquake list and 
+binned intensity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>liste_evt</strong> (<em>list</em>) – Contains the ID of the earthquakes used for the inversion</p></li>
+<li><p><strong>ObsBin_plus</strong> (<em>pandas.DataFrame</em>) – <p>dataframe with the binned intensity data for all calibration earthquakes.
+This dataframe should at least have have the following
+columns :</p>
+<blockquote>
+<div><ul>
+<li><p>I: the binned intensity value,</p></li>
+<li><p>StdI: the binned intensity standard deviation,</p></li>
+<li><p>Depi: the associated epicentral distance,</p></li>
+<li><p>Depth: the initial depth before inversion,</p></li>
+<li><p>Hmin: the lower depth limit for inversion,</p></li>
+<li><p>Hmax: the upper depth limit for inversion,</p></li>
+<li><p>Io: the initial epicentral intensity before inversion,</p></li>
+<li><p>Io_ini: the initial epicentral intensity before inversion,</p></li>
+<li><p>Io_std: the epicentral intensity standard deviation,</p></li>
+<li><dl class="simple">
+<dt>eqStd: the inverse of the root square of the weights</dt><dd><p>used in the geometric attenuation coefficient,</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>beta_ini</strong> (<em>float</em>) – initial value of the geometric attenuation coefficient beta</p></li>
+<li><p><strong>NminIter</strong> (<em>int</em>) – minimum number of iteration</p></li>
+<li><p><strong>NmaxIter</strong> (<em>int</em>) – maximal number of iteration</p></li>
+<li><p><strong>suivi_inversion</strong> (<em>bool</em>) – option to visualize the WRMS of depth, epicentral
+intensity and geometric attenuation coefficient beta
+at different iterations. Time consuming option.</p></li>
+<li><p><strong>dossier_suivi</strong> (<em>str</em>) – folder in which the figures with the WRMS will be stored.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the ObsBin_plus dataframe with depth and epicentral intensity after inversion
+the output eometric attenuation coefficient beta, the covariance
+of the geometric attenuation coefficient, a list with the beta values
+for each iteration.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="combinaison_calib.calib_attBeta_Kov_unit">
+<span class="sig-prename descclassname"><span class="pre">combinaison_calib.</span></span><span class="sig-name descname"><span class="pre">calib_attBeta_Kov_unit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">liste_evt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ObsBin_plus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#combinaison_calib.calib_attBeta_Kov_unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that inverse sequentially depth, epicentral intensity and the
+geometric attenuation coefficient beta for a given earthquake list and 
+binned intensity and one iteration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>liste_evt</strong> (<em>list</em>) – Contains the ID of the earthquakes used for the inversion</p></li>
+<li><p><strong>ObsBin_plus</strong> (<em>pandas.DataFrame</em>) – <p>dataframe with the binned intensity data for all calibration earthquakes.
+This dataframe should at least have have the following
+columns :</p>
+<blockquote>
+<div><ul>
+<li><p>I: the binned intensity value,</p></li>
+<li><p>StdI: the binned intensity standard deviation,</p></li>
+<li><p>Depi: the associated epicentral distance,</p></li>
+<li><p>Depth: the initial depth before inversion,</p></li>
+<li><p>Hmin: the lower depth limit for inversion,</p></li>
+<li><p>Hmax: the upper depth limit for inversion,</p></li>
+<li><p>Io: the initial epicentral intensity before inversion,</p></li>
+<li><p>Io_ini: the initial epicentral intensity before inversion,</p></li>
+<li><p>Io_std: the epicentral intensity standard deviation,</p></li>
+<li><dl class="simple">
+<dt>eqStd: the inverse of the root square of the weights</dt><dd><p>used in the geometric attenuation coefficient,</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>beta</strong> (<em>float</em>) – initial value of the geometric attenuation coefficient beta</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the ObsBin_plus dataframe with depth and epicentral intensity after inversion
+and the inverted geometric attenuation coefficient beta</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="combinaison_calib.check_ifHlim_ok">
+<span class="sig-prename descclassname"><span class="pre">combinaison_calib.</span></span><span class="sig-name descname"><span class="pre">check_ifHlim_ok</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obsbin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#combinaison_calib.check_ifHlim_ok" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that check if the depth bounds are compatible with the epicentral intensity
+and its uncertainty. If not the function returns new depth bounds compatible
+with the epicentral intensity and its uncertainty. the following equation is used:</p>
+<blockquote>
+<div><p>I = C1 + C2.Mag + beta.log10(hypo)</p>
+</div></blockquote>
+<p>where I is the intensity at a given hypocentral distance hypo,
+Mag is the magnitude of the earthquake, beta, C1 and C2 are coefficients provided by the user.</p>
+<dl class="simple">
+<dt>obsbin<span class="classifier">pandas.Dataframe</span></dt><dd><dl class="simple">
+<dt>DataFrame with all isoseismal radii (intensity bin) of one earthquake. The mandatory columns are:</dt><dd><ul class="simple">
+<li><p>Io_ini: initial epicentral intensity of the earthquake</p></li>
+<li><p>Io_std: uncertainty associated to the epicentral intensity value</p></li>
+<li><p>Mag: magnitude of the earthquake</p></li>
+<li><p>Hmin_ini: initial minimal depth bounds</p></li>
+<li><p>Hmax_ini: initial maximal depth bounds</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>beta<span class="classifier">float</span></dt><dd><p>beta coefficient in the equation used to check the depth bounds.</p>
+</dd>
+<dt>C1<span class="classifier">float</span></dt><dd><p>C1 coefficient in the equation used to check the depth bounds.</p>
+</dd>
+<dt>C2<span class="classifier">float</span></dt><dd><p>C2 coefficient in the equation used to check the depth bounds.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Hmin<span class="classifier">float</span></dt><dd><p>if needed, new minimal depth bounds compatible
+with the epicentral intensity and its uncertainty. 
+Else, the output value is equal to the initial minimal depth bounds.</p>
+</dd>
+<dt>Hmax<span class="classifier">float</span></dt><dd><p>if needed, new maximal depth bounds compatible
+with the epicentral intensity and its uncertainty. 
+Else, the output value is equal to the initial maximal depth bounds.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="combinaison_calib.critere_arret_HI0">
+<span class="sig-prename descclassname"><span class="pre">combinaison_calib.</span></span><span class="sig-name descname"><span class="pre">critere_arret_HI0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">suivi_depth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suivi_I0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_I0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#combinaison_calib.critere_arret_HI0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the conditions are met to stop the inversion process in the initialize_HI0() function.</p>
+<dl class="simple">
+<dt>suivi_depth<span class="classifier">dict</span></dt><dd><p>Dictionary that contains by earthquake ID (key of the dictionary) by chronological
+order the depth for each iteration of the inversion scheme of the initialize_HI0() function.</p>
+</dd>
+<dt>suivi_I0<span class="classifier">dict</span></dt><dd><p>Dictionary that contains by earthquake ID (key of the dictionary) by chronological
+order the epicentral intensity for each iteration of the inversion scheme of the initialize_HI0() function.</p>
+</dd>
+<dt>stop_depth<span class="classifier">float, optional</span></dt><dd><p>Criterion to achieve to end the inversion process of the initialize_HI0() function. The default is 0.05.
+To compute the value compared to this criterion, first the mean of the difference of the three last 
+depths in the iteration is calculated for each earthquake. The means of all calibration earthquakes are then added.</p>
+</dd>
+<dt>stop_I0<span class="classifier">float, optional</span></dt><dd><p>Criterion to achieve to end the inversion process of the initialize_HI0() function. The default is 0.01.
+To compute the value compared to this criterion, first the mean of the difference of the three last 
+epicentral intensities in the iteration is calculated for each earthquake. The means of all calibration earthquakes are then added.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>condition<span class="classifier">boolean</span></dt><dd><p>Equal to True if the values compared to both stop_I0 and stop_depth are smaller to
+stop_I0 and stop_depth.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="combinaison_calib.critere_stop">
+<span class="sig-prename descclassname"><span class="pre">combinaison_calib.</span></span><span class="sig-name descname"><span class="pre">critere_stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">suivi_beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suivi_depth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suivi_I0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_I0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#combinaison_calib.critere_stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that check if the stop criteria of the iterative inversion are reached.
+The inversion stop if the three last inverted parameters is stable: the mean
+difference of the three last values should be under a given value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>suivi_beta</strong> (<em>list</em>) – Contains the inverted geometric attenuation coefficient beta from the
+first iteration to the current iteration</p></li>
+<li><p><strong>suivi_depth</strong> (<em>dict</em>) – Contains for each earthquake the inverted depth values from the
+first iteration to the current iteration</p></li>
+<li><p><strong>suivi_I0</strong> (<em>dict</em>) – Contains for each earthquake the inverted epicentral intensity
+values from the first iteration to the current iteration</p></li>
+<li><p><strong>stop_beta</strong> (<em>float</em>) – stop value for the geometric attenuation coefficient beta</p></li>
+<li><p><strong>stop_depth</strong> (<em>float</em>) – stop value for the depth. The mean difference of the three
+last values is meaned over the earthquakes</p></li>
+<li><p><strong>stop_I0</strong> (<em>float</em>) – stop value for the epicentral intensity. The mean difference
+of the three last values is meaned over the earthquakes</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="combinaison_calib.critere_stop2">
+<span class="sig-prename descclassname"><span class="pre">combinaison_calib.</span></span><span class="sig-name descname"><span class="pre">critere_stop2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">suivi_beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suivi_gamma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suivi_depth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suivi_I0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_I0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#combinaison_calib.critere_stop2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that check if the stop criteria of the iterative inversion are reached.
+The inversion stop if the three last inverted parameters is stable: the mean
+difference of the three last values should be under a given value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>suivi_beta</strong> (<em>list</em>) – Contains the inverted geometric attenuation coefficient beta from the
+first iteration to the current iteration</p></li>
+<li><p><strong>suivi_depth</strong> (<em>dict</em>) – Contains for each earthquake the inverted depth values from the
+first iteration to the current iteration</p></li>
+<li><p><strong>suivi_I0</strong> (<em>dict</em>) – Contains for each earthquake the inverted epicentral intensity
+values from the first iteration to the current iteration</p></li>
+<li><p><strong>NminIter</strong> (<em>int</em>) – minimal number of iterations before stop</p></li>
+<li><p><strong>stop_beta</strong> (<em>float</em>) – stop value for the geometric attenuation coefficient beta</p></li>
+<li><p><strong>stop_depth</strong> (<em>float</em>) – stop value for the depth. The mean difference of the three
+last values is meaned over the earthquakes</p></li>
+<li><p><strong>stop_I0</strong> (<em>float</em>) – stop value for the epicentral intensity. The mean difference
+of the three last values is meaned over the earthquakes</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="combinaison_calib.define_ls_color_bydepth">
+<span class="sig-prename descclassname"><span class="pre">combinaison_calib.</span></span><span class="sig-name descname"><span class="pre">define_ls_color_bydepth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">depth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'viridis_r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#combinaison_calib.define_ls_color_bydepth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that associates a color to a number.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>depth</strong> (<em>int</em>) – the number for which a color is needed.</p></li>
+<li><p><strong>cmap</strong> (<em>str</em>) – colormap choosed to attribute the colors (see matplotlib colormaps)</p></li>
+<li><p><strong>vmin</strong> (<em>float</em>) – minimum value to define the color map</p></li>
+<li><p><strong>vmax</strong> (<em>float</em>) – maximal value to define the color map</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a line style, the color associated to the input number, the chosen
+colormap object, the norm object associated to the colormap and
+defined by vmin and vmax.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="combinaison_calib.define_ls_color_byevt">
+<span class="sig-prename descclassname"><span class="pre">combinaison_calib.</span></span><span class="sig-name descname"><span class="pre">define_ls_color_byevt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tab20b'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">len_cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#combinaison_calib.define_ls_color_byevt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that attribute a different color and line style to a number.
+The number should be lower than 99.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>count</strong> (<em>int</em>) – the number for which a color and a line style is needed.</p></li>
+<li><p><strong>cmap</strong> (<em>str</em>) – colormap choosed to attribute the colors (see matplotlib colormaps)</p></li>
+<li><p><strong>len_cmap</strong> (<em>int</em>) – number of color considered</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a line style and a color</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="combinaison_calib.initialize_C1C2">
+<span class="sig-prename descclassname"><span class="pre">combinaison_calib.</span></span><span class="sig-name descname"><span class="pre">initialize_C1C2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ObsBin_plus</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#combinaison_calib.initialize_C1C2" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Give initial values for C1 and C2 coefficient for the followign equation:</dt><dd><p>I = C1 + C2.Mag + beta.log10(hypo) + gamma.hypo</p>
+</dd>
+</dl>
+<p>where I is the intensity at a given hypocentral distance hypo,
+Mag is the magnitude of the earthquake and beta and gamma are attenuation coefficients, supposed known.</p>
+<dl>
+<dt>ObsBin_plus<span class="classifier">pandas.DataFrame</span></dt><dd><p>DataFrame with all isoseismal radii (intensity bin) used in the inversion.
+The mandatory columns are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>EVID: ID of the earthquake</p></li>
+<li><p>Depth: initial depth of the earthquake</p></li>
+<li><p>I: intensity value of the isoseismal radii</p></li>
+<li><p>Depi: epcientral distance of the isoseismal radii</p></li>
+<li><p>beta: the attenuation coefficient beta</p></li>
+<li><p>gamma: the attenuation coefficient gamma</p></li>
+<li><dl class="simple">
+<dt>eqStdM: the equivalent standard deviation used to weight the data used in the inversion.</dt><dd><p>The weights are equal to 1/obsgp.eqStdM.values**2</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+<dl class="simple">
+<dt>C1<span class="classifier">float</span></dt><dd><p>C1 coefficient value</p>
+</dd>
+<dt>C2<span class="classifier">float</span></dt><dd><p>C2 coefficient value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="combinaison_calib.initialize_HI0">
+<span class="sig-prename descclassname"><span class="pre">combinaison_calib.</span></span><span class="sig-name descname"><span class="pre">initialize_HI0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ObsBin_plus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">liste_evt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NmaxIter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#combinaison_calib.initialize_HI0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute a depth and an epicentral intensity compatible with a beta and a gamma
+value using the Koveslighety equation:</p>
+<blockquote>
+<div><p>I = I0 + beta.log10(hypo/depth) + gamma.(hypo-depth)</p>
+</div></blockquote>
+<p>with I0 the epicentral intensity and hypo the hyocentral distance
+Depth and epicentral intensity are estimated 
+within bounds representing their uncertainties. Depth and epicentral intensity are estimated
+for all earthquakes listed in liste_evt.
+For more information, see Provost (in writing), CalIPE</p>
+<dl>
+<dt>ObsBin_plus<span class="classifier">pandas.DataFrame</span></dt><dd><p>DataFrame with all isoseismal radii (intensity bin) used in the inversion. The dataframe
+should contain the isoseismal radii of each earthquake listed in liste_evt. The mandatory columns are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>EVID: ID of the earthquake</p></li>
+<li><p>Depth: initial depth of the earthquake</p></li>
+<li><p>Hmin: minimal value of the depth uncertainty bounds</p></li>
+<li><p>Hmax: maximal value of the depth uncertainty bounds</p></li>
+<li><p>I: intensity value of the isoseismal radii</p></li>
+<li><p>StdI: uncertainty associated to I</p></li>
+<li><p>Depi: epcientral distance of the isoseismal radii</p></li>
+<li><p>I0: initial epicentral intensity of the earthquake</p></li>
+<li><p>Io_ini: same as I0</p></li>
+<li><p>Io_std: uncertainty associated to the epicentral intensity value</p></li>
+</ul>
+</div></blockquote>
+</dd>
+<dt>liste_evt<span class="classifier">list</span></dt><dd><p>list the earthquake whose depths and epicentral intensities will be inverted</p>
+</dd>
+<dt>beta<span class="classifier">float</span></dt><dd><p>beta coefficient in the Koveslighety equation.</p>
+</dd>
+<dt>gamma<span class="classifier">float</span></dt><dd><p>gamma coefficient in the Koveslighety equation.</p>
+</dd>
+<dt>NmaxIter<span class="classifier">int, optional</span></dt><dd><p>Maximal number of iteration allowed. The default is 50.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>ObsBin_plus<span class="classifier">pandas.DataFrame</span></dt><dd><p>One column is added to the input ObsBin_plus, called StdIo_inv. This
+column contains the output standard deviation of the inversion of epicentral intensity.
+Columns I0 and Depth are updated with the output values ot the invversion process.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="combinaison_calib.update_depth">
+<span class="sig-prename descclassname"><span class="pre">combinaison_calib.</span></span><span class="sig-name descname"><span class="pre">update_depth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ObsBin_plus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">liste_evt</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#combinaison_calib.update_depth" title="Permalink to this definition">¶</a></dt>
+<dd><p>function that updates the depth in the ObsBin_plus dataframe</p>
+<dl>
+<dt>ObsBin_plus<span class="classifier">pandas.DataFrame</span></dt><dd><p>DataFrame with all isoseismal radii (intensity bin) used in the inversion. The dataframe
+should contain the isoseismal radii of each earthquake listed in liste_evt. 
+The mandatories columns for this function are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>EVID: ID of the earthquake</p></li>
+<li><p>Depth: depth of the earthquake</p></li>
+</ul>
+</div></blockquote>
+<p>TThe ObsBin_plus dataframe should at least contains information about the isoseismal radii, i.e.
+I (intensity value of the isoseismal radii) and Depi (epicentral distance of the isoseismal radii) but
+those columns are not necessary in this function.</p>
+</dd>
+<dt>depths<span class="classifier">list</span></dt><dd><p>list of depths of the earthquakes listed in liste_evt. Order in depths and liste_evt must be the same.</p>
+</dd>
+<dt>liste_evt<span class="classifier">list</span></dt><dd><p>list of earthquakes listed. Order in depths and liste_evt must be the same.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>ObsBin_plus<span class="classifier">pandas.DataFrame</span></dt><dd><p>Same as ObsBin_plus input but with the column Depth updated with the depths input.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-create_subsets"></span><p>Created on Tue Jul 27 14:56:53 2021</p>
+<p>&#64;author: PROVOST-LUD</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="create_subsets.check_duplicate">
+<span class="sig-prename descclassname"><span class="pre">create_subsets.</span></span><span class="sig-name descname"><span class="pre">check_duplicate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_liste</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criteres</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#create_subsets.check_duplicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check in a list of calibration datasets if two calibration datasets are identical.
+Duplicate calibration datasets are deleted.</p>
+<dl class="simple">
+<dt>global_liste<span class="classifier">list</span></dt><dd><p>list of the different list of calibration earthquakes, identified by their ID.</p>
+</dd>
+<dt>criteres<span class="classifier">pandas.DataFrame</span></dt><dd><p>dataframe that traces the criteria used to create each of the subsets listed in global_list.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>no_duplicate_list<span class="classifier">list</span></dt><dd><p>list of the different list of calibration earthquakes with no duplicated calibration datasets.</p>
+</dd>
+<dt>no_duplicat_criteres<span class="classifier">TYPE</span></dt><dd><p>dataframe that traces the criteria used to create each of the subsets listed in no_duplicate_list.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="create_subsets.create_basicdb_criteria">
+<span class="sig-prename descclassname"><span class="pre">create_subsets.</span></span><span class="sig-name descname"><span class="pre">create_basicdb_criteria</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">evtdata_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obsdata_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binning_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ROBS'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputfolder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regiondata_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ponderation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Ponderation</span> <span class="pre">evt-uniforme'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#create_subsets.create_basicdb_criteria" title="Permalink to this definition">¶</a></dt>
+<dd><p>Complete the evt file with information about the number of intensity class (Nclass)
+after binning (to create isoseismal radii) by earthquake and the total number of 
+intensity data points (IDP) used to compute theisoseismal radii (Ndata) by earthquake.</p>
+<dl>
+<dt>evtdata_name<span class="classifier">str</span></dt><dd><p>name of the evt data file. The list of the calibration earthquakes and associated 
+metadata are stored in this file. This .txt file contains 16 columns, separated by the “;” string:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>EVID: ID of the earthquake</p></li>
+<li><p>Year: year of occurence of the earthquake</p></li>
+<li><p>Month: month of occurence of the earthquake</p></li>
+<li><p>Day: day of occurence of the earthquake</p></li>
+<li><p>Lon: longitude in WGS84 of the epicenter</p></li>
+<li><p>Lat: latitude in WGS84 of the epicenter</p></li>
+<li><p>QPos: quality of the epicenter location</p></li>
+<li><p>I0: epicentral intensity</p></li>
+<li><p>QI0: quality of the epicentral intensity value</p></li>
+<li><p>Ic: intensity of completeness</p></li>
+<li><p>Dc: distance of completeness</p></li>
+<li><p>Mag: magnitude of the earthquake</p></li>
+<li><p>StdM: uncertainty associated with the magnitude</p></li>
+<li><p>Depth: hypocentral depth of the earthquake</p></li>
+<li><p>Hmin: lower bound of uncertainty associated to depth</p></li>
+<li><p>Hmax: upper bound of uncertainty associated to depth</p></li>
+</ul>
+</div></blockquote>
+</dd>
+<dt>obsdata_name<span class="classifier">str</span></dt><dd><p>name of the obs data file. The IDPs of the calibration earthquakes are stored in this file.
+This .txt file contains 5 columns, separated by the “;” string:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>EVID: ID of the earthquake</p></li>
+<li><p>Lon: longitude in WGS84 of the IDP</p></li>
+<li><p>Lat: latitude in WGS84 of the IDP</p></li>
+<li><p>Iobs: value of intensity of the IDP</p></li>
+<li><p>QIobs: quality associated to Iobs</p></li>
+</ul>
+</div></blockquote>
+</dd>
+<dt>binning_type<span class="classifier">str, optional</span></dt><dd><p>Name of the method applied to the calibration earthquakes intensity date to compute 
+isoseismal radii. The isoseismal radii are the intensity data used in the 
+inversion process Availaible values are : ‘ROBS’, ‘RAVG’, ‘RP50’ and ‘RP84’. 
+The default is ‘ROBS’.</p>
+</dd>
+<dt>outputfolder<span class="classifier">str, optional</span></dt><dd><p>path to the outputfolder where the output dataframe will be saved in a excel file.
+The default is ‘’ (file saved in the folder where the function is executed)</p>
+</dd>
+<dt>regiondata_name<span class="classifier">str, optional</span></dt><dd><p>Name of the .txt file which contains the contour of the different regions
+defined by the user. Contour is described by a polygon. The coordinates of
+the polygon points are in WGS84 longitude and latitude.
+The three columns are separeted by “;”:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>ID_region: ID of the considered region</p></li>
+<li><p>Lon: Longitude of the polygon points</p></li>
+<li><p>Lat: Latitude of the polygon points.</p></li>
+</ul>
+</div></blockquote>
+<p>The default is ‘’.</p>
+</dd>
+<dt>ponderation<span class="classifier">TYPE, optional</span></dt><dd><p>Name of the ponderation applied to the calibration earthquakes intensity data used
+in the inversion process of the beta coefficient. The default is ‘Ponderation evt-uniforme’.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>criteria<span class="classifier">pandas.dataframe</span></dt><dd><p>dataframe with the same columns as the evt file with two supplementary columns
+NClass (number of isoseismal radii) per earthquake and Ndata (number of IDP used to</p>
+</dd>
+</dl>
+<p>compute the isoseismal radii) per earthquake.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="create_subsets.create_bootstrap_notrandom">
+<span class="sig-prename descclassname"><span class="pre">create_subsets.</span></span><span class="sig-name descname"><span class="pre">create_bootstrap_notrandom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">liste_base</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#create_subsets.create_bootstrap_notrandom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create subsets useable for a bootstrap study for a basic calibration dataset.
+The subsets are created by deleting one earthquake from the basic calibration dataset.
+Each earthquake of the basic calibration dataset will be deleted to create the subsets:</p>
+<blockquote>
+<div><p>for example, if the basic calibration dataset contains 10 earthquakes,
+the function will create 10 subsets, with in each subset one earthquake deleted from
+the calibration list.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>liste_base<span class="classifier">list</span></dt><dd><p>list of calibration earthquake, identified by their ID.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>bootstrap_list<span class="classifier">list</span></dt><dd><p>list of the different bootstrap susbets</p>
+</dd>
+<dt>bootstrap_criteres<span class="classifier">pandas.DataFrame</span></dt><dd><p>dataframe containing the deleted earthquake ID for each subset.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="create_subsets.create_liste_subset">
+<span class="sig-prename descclassname"><span class="pre">create_subsets.</span></span><span class="sig-name descname"><span class="pre">create_liste_subset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">criteria</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year_inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year_sup</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">QH</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NClass</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nobs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Dc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#create_subsets.create_liste_subset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create subsets from a calibration dataset (called hereafter basic calibration database)
+and the following criteria:</p>
+<blockquote>
+<div><p>year of occurence of the earthquake
+Quality of the depth estimate
+Number of intensity class of the isoseismal radii of the earthquake
+Number of data used to compute the isoseismal radii of the earthquake
+Distance of completeness of the earthquake’s macroseismic field</p>
+</div></blockquote>
+<dl class="simple">
+<dt>criteria<span class="classifier">pandas.DataFrame</span></dt><dd><dl class="simple">
+<dt>dataframe with metadata about the earthquakes of the basic calibration. The metadata required are:</dt><dd><ul class="simple">
+<li><p>EVID: ID of the earthquake</p></li>
+<li><p>Year: year of occurence of the earthquake</p></li>
+<li><p>Dc: distance of completeness of the earthquake’s macroseismic field</p></li>
+<li><p>NClass: number of intensity class of the isoseismal radii of the earthquake</p></li>
+<li><p>Ndata: number of data used to compute the isoseismal radii of the earthquake</p></li>
+<li><p>QH: quality of the depth estimate</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>year_inf<span class="classifier">list of int</span></dt><dd><p>list of the minimal year of occurence allowed.</p>
+</dd>
+<dt>year_sup<span class="classifier">list int</span></dt><dd><p>list of the maximal year of occurence allowed.</p>
+</dd>
+<dt>QH<span class="classifier">list</span></dt><dd><p>List of list of the quality of the depth estimate in the metadata wished.
+Example : QH = [[‘A’, ‘B’], [‘A’, ‘B’, ‘C’]]
+The quality of the depth estimate in the metadata is based on expert opinion. 
+A is the best quality factor and E the worst. E quality means that we have no
+idea about the depth of the earthquake. In the example, the subsets created will contain
+earthquakes with ‘A’ and ‘B’ or ‘A’, ‘B’ and ‘C’ depth quality.</p>
+</dd>
+<dt>NClass<span class="classifier">list of int</span></dt><dd><p>list of the minimal number of intensity class allowed.</p>
+</dd>
+<dt>Nobs<span class="classifier">list of int</span></dt><dd><p>list of the minimal number of data used to compute isoseismal radii allowed.</p>
+</dd>
+<dt>Dc<span class="classifier">list of float</span></dt><dd><p>list of the minimal distance of completeness of the earthquake’s macroseismic field
+allowed.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>global_liste<span class="classifier">list</span></dt><dd><p>list of the different list of calibration earthquakes.</p>
+</dd>
+<dt>criteres<span class="classifier">pandas.DataFrame</span></dt><dd><p>dataframe that traces the criteria used to create each of the subsets.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="create_subsets.create_subsets">
+<span class="sig-prename descclassname"><span class="pre">create_subsets.</span></span><span class="sig-name descname"><span class="pre">create_subsets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_liste</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criteres</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evtdata_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_criteria</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['Year_inf',</span> <span class="pre">'Year_sup',</span> <span class="pre">'NClass',</span> <span class="pre">'QH',</span> <span class="pre">'Ndata',</span> <span class="pre">'Dc']</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#create_subsets.create_subsets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create calibration Evt files from a list of calibration susbsets.</p>
+<dl class="simple">
+<dt>global_liste<span class="classifier">list</span></dt><dd><p>list of list of earthquakes identified by their ID of calibration subsets.</p>
+</dd>
+<dt>criteres<span class="classifier">pandas.DataFrame</span></dt><dd><p>dataframe with the criteria used to define the subsets. Each line corresponds to
+one subset. The order is the same as the list of subsets of global_liste.</p>
+</dd>
+<dt>evtdata_name<span class="classifier">str</span></dt><dd><p>Name of the Evt file of the basic calibration dataset. The subsets are created from
+the basic dataset.</p>
+</dd>
+<dt>folder<span class="classifier">str, optional</span></dt><dd><p>Name of the folder where the subset files will be saved. The default is ‘’.</p>
+</dd>
+<dt>basename<span class="classifier">str, optional</span></dt><dd><p>basename of the basic calibration dataset. Used to name the folder where the
+subset files will be saved. The default is ‘’. In this case, the evtdata_name will
+be used.</p>
+</dd>
+<dt>column_criteria<span class="classifier">list, optional</span></dt><dd><p>List of the columns of the criteria used to define the subsets from the
+basic calibration database. The default is [‘Year_inf’, ‘Year_sup’, ‘NClass’, ‘QH’, ‘Ndata’, ‘Dc’].</p>
+</dd>
+</dl>
+<p>None.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="create_subsets.filter_by_nevt">
+<span class="sig-prename descclassname"><span class="pre">create_subsets.</span></span><span class="sig-name descname"><span class="pre">filter_by_nevt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_liste</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criteres</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#create_subsets.filter_by_nevt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter a list of calibration sets and keep only the calibration sets with 
+a minimal number of earthquakes.</p>
+<dl class="simple">
+<dt>global_liste<span class="classifier">list</span></dt><dd><p>list of the different list of calibration earthquakes, identified by their ID.</p>
+</dd>
+<dt>criteres<span class="classifier">pandas.DataFrame</span></dt><dd><p>dataframe that traces the criteria used to create each of the subsets listed in global_list.</p>
+</dd>
+<dt>nmin<span class="classifier">int, optional</span></dt><dd><p>minimal number of earthquake allowed in the calibration datasubsets. The default is 10.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>filt_nevt_liste<span class="classifier">list</span></dt><dd><p>global_liste filtered from the datasets with a number of earthquakes smaller than nmin.</p>
+</dd>
+<dt>filt_criteres<span class="classifier">TYPE</span></dt><dd><p>criteres filtered from the datasets with a number of earthquakes smaller than nmin.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="create_subsets.same_values_2array">
+<span class="sig-prename descclassname"><span class="pre">create_subsets.</span></span><span class="sig-name descname"><span class="pre">same_values_2array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#create_subsets.same_values_2array" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if two arrays of the same length contains the same values</p>
+<dl class="simple">
+<dt>array1<span class="classifier">array</span></dt><dd><p>first array to check.</p>
+</dd>
+<dt>array2<span class="classifier">array</span></dt><dd><p>second array to check.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>bool</dt><dd><p>is the two arrays contains the same values, return True. Else return False</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">CalIPE_doc</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Install.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="input_files.html">Welcome to CalIPE_doc’s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="input_files.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output_files.html">Welcome to CalIPE_doc’s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output_files.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Welcome to CalIPE_doc’s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Welcome to CalIPE_doc’s documentation!</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-attKov_onedataset">Calibration functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="examples.html" title="previous chapter">Welcome to CalIPE_doc’s documentation!</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Ludmila Provost.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/inventory.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

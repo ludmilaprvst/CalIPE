@@ -1,0 +1,184 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Welcome to CalIPE’s documentation! &#8212; CalIPE_doc 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="Install.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="welcome-to-calipe-s-documentation">
+<h1>Welcome to CalIPE’s documentation!<a class="headerlink" href="#welcome-to-calipe-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>The CalIPE package is a python open-source package with tools to calibrate intensity prediction equation
+and to explore some epistemic uncertainties inherent to intensity prediction equation calibration.</p>
+<dl class="simple">
+<dt>The mathematical formulation available in CalIPE are:</dt><dd><ul class="simple">
+<li><p>I = C1 + C2.M + beta.log10(Hypo) + gamma.Hypo</p></li>
+<li><p>I = C1 + C2.M + beta.log10(Hypo)</p></li>
+<li><p>I = I0 + beta.log10(Hypo/H) + gamma.(Hypo/H)</p></li>
+<li><p>I = I0 + beta.log10(Hypo/H)</p></li>
+</ul>
+</dd>
+</dl>
+<p>Where I is the intensity at hypocentral distance Hypo, M the magnitude of the earthquake, H the hypocentral
+depth of the earthquake, I0 the epicentral intensity, C1 and C2 magnitude coefficients, beta and gamma the
+geometric and intresic attenuation coefficients respectively.</p>
+<p>All inversion processes were with the optimize.curve_fit() function in SciPy, that uses non-linear least squares
+to fit a function to data.</p>
+<p>Calibration of the two first mathematical formulation can be done in one step or in two steps (first step,
+calibration of attenuation, and second step, calibration of the magnitude coefficients).</p>
+<dl class="simple">
+<dt>The following epistemic uncertainty can be explored:</dt><dd><ul class="simple">
+<li><p>choice of the calibration dataset,</p></li>
+<li><p>choice of the weighting scheme,</p></li>
+<li><p>choice of the coefficient initial values.</p></li>
+</ul>
+</dd>
+</dl>
+<p>The package provides also tools to analyze the calibration outputs.</p>
+<p>This package is presented in Provost (in prep., 2023).</p>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Install.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Install.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Install.html#install">Install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Install.html#use-calipe">Use CalIPE</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="input_files.html">Input data files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="input_files.html#evt-file">Evt file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input_files.html#obs-file">Obs file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input_files.html#region-file">Region file</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="input_files.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#launch-a-calibration">Launch a calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#creating-subsets">Creating subsets</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output_files.html">Welcome to CalIPE_doc’s documentation!</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="output_files.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inventory.html">Welcome to CalIPE_doc’s documentation!</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="inventory.html#module-attKov_onedataset">Calibration functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="inventory.html#indices-and-tables">Indices and tables</a></li>
+</ul>
+</div>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">CalIPE_doc</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="input_files.html">Input data files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="input_files.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output_files.html">Welcome to CalIPE_doc’s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output_files.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inventory.html">Welcome to CalIPE_doc’s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inventory.html#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="Install.html" title="next chapter">Installation</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Ludmila Provost.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

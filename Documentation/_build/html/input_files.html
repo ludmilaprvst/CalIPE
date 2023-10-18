@@ -1,0 +1,227 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Input data files &#8212; CalIPE_doc 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Tutorial" href="examples.html" />
+    <link rel="prev" title="Installation" href="Install.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="input-data-files">
+<h1>Input data files<a class="headerlink" href="#input-data-files" title="Permalink to this headline">¶</a></h1>
+<p>In the CalIPE package, three type of data files are possible.
+The two of them, the Evt file and the Obs file, are mandatory and contains the intensity database and the metadata associated.
+The third one, the Region file, describes the geographical limit of different regions.</p>
+<section id="evt-file">
+<h2>Evt file<a class="headerlink" href="#evt-file" title="Permalink to this headline">¶</a></h2>
+<section id="description-of-the-file">
+<h3>Description of the file<a class="headerlink" href="#description-of-the-file" title="Permalink to this headline">¶</a></h3>
+<p>The Evt file contains the metadata of the calibration earthquakes. The Evt file is a .csv or a .txt
+file, with columns separeted by ;. Each line contains the metadata associatedd to one earthquake.
+The columns are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>EVID: ID of the earthquake,</p></li>
+<li><p>Year: year of occurrrence of the earthquake,</p></li>
+<li><p>Month: month of occurence of the earthquake,</p></li>
+<li><p>Day: day of occurence of the earthquake,</p></li>
+<li><p>Lon: longitude in WGS84 of the earthquake epicenter location,</p></li>
+<li><p>Lat: latitude in WGS84 of the earthquake epicenter location,</p></li>
+<li><p>QPos: quality of the epicenter location. A is the best quality and E the worst.</p></li>
+<li><p>I0: epicentral intensity of the earthquake,</p></li>
+<li><p>QI0: quality of the epicentral intensity value, ranked between A (very good) and E (very uncertain)</p></li>
+<li><p>Ic: intensity of completeness of the earthquake macroseismic field. Intensity classes smaller than
+Ic are not considered as complete,</p></li>
+<li><p>Dc: distance of completeness of the earthquake macroseismic field. For distances smaller than Dc,
+no abrupt changes in data density with distance is observed,</p></li>
+<li><p>Mag: magnitude of the earthquake. This magnitude should be the most homogeneous possible among
+the calibration dataset,</p></li>
+<li><p>StdM: uncertainty associated to the magnitude,</p></li>
+<li><p>Depth: hypocentral depth of the earthquake,</p></li>
+<li><p>Hmin: shallow limit of depth uncertainty,</p></li>
+<li><p>Hmax: deep limit of depth uncertainty,</p></li>
+</ul>
+</div></blockquote>
+<p>An example of the Evt file is available in the CalIPE_examples repository (address), in the Data folder.
+When creating your own Evt file, please respect the columns names.</p>
+</section>
+<section id="comments-about-the-needed-metadata">
+<h3>Comments about the needed metadata<a class="headerlink" href="#comments-about-the-needed-metadata" title="Permalink to this headline">¶</a></h3>
+<p>The QPos parameter is not used in the calibration process. However, a column with this name is needed to prepare
+the intensity data for the calibration process.
+The magnitude and its associated uncertainty are not needed for the calibration of the Koveslighety
+mathematical formulation:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>I = I0 + beta.log10(Hypo/H) + gamma.(Hypo/H)</p></li>
+<li><p>I = I0 + beta.log10(Hypo/H)</p></li>
+</ul>
+</div></blockquote>
+<p>If you calibrate this mathematical formulation, you don’t need to fill this column with the magnitude value,
+especially if you don’t know the magnitude. In this case, you can put -99 or any other values in this column.</p>
+<p>However, to be sure that the CalIPE tool will run, please fill all the columns described in the Evt file
+description.</p>
+</section>
+</section>
+<section id="obs-file">
+<h2>Obs file<a class="headerlink" href="#obs-file" title="Permalink to this headline">¶</a></h2>
+<section id="id1">
+<h3>Description of the file<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>The Obs file contains the macroseismic field of the calibration earthquakes.The Obs file is a .csv or a .txt
+file, with columns separeted by ;. Each line describe the intenisty value at one locality for one earthquake.
+The columns are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>EVID: ID of the earthquake,</p></li>
+<li><p>Lon: longitude in WGS84 of the locality,</p></li>
+<li><p>Lat: latitude in WGS84 of the locality,</p></li>
+<li><p>Iobs: value of the intensity at the locality</p></li>
+<li><p>QIobs: quality of the value of intensity at the locality. Quality A stands for very certain,</p></li>
+</ul>
+<p>quality B for fairly certain and C for uncertain.</p>
+</div></blockquote>
+<p>An example of the Obs file is available in the CalIPE_examples repository (address), in the Data folder.
+When creating your own Obs file, please respect the columns names.</p>
+<p>The Obs file should at least contain the macroseismic field of the calibration earthquake and can contain
+other macroseismic field. The earthquake ID should be the same in the Evt file and the Obs file.</p>
+</section>
+</section>
+<section id="region-file">
+<h2>Region file<a class="headerlink" href="#region-file" title="Permalink to this headline">¶</a></h2>
+<p>The file is mandatory if a regional weighting scheme or a regional coefficient C1 estimation in the two-step strategy.
+This file describe the limits of the chosen region. Each region is identified by an ID. The Region file is a .txt
+file, with columns separeted by ;.
+The columns are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>ID_region: ID of the region,</p></li>
+<li><p>Lon: longitude coordinate in WGS84 of one the point decribing the region polygon,</p></li>
+<li><p>Lat: latitude coordinate in WGS84 of one the point decribing the region polygon,</p></li>
+</ul>
+</div></blockquote>
+<p>An example of the Region file is available in the CalIPE_examples repository (address), in the Data/Regions folder.
+.. toctree:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">:</span><span class="n">maxdepth</span><span class="p">:</span> <span class="mi">2</span>
+<span class="p">:</span><span class="n">caption</span><span class="p">:</span> <span class="n">Contents</span><span class="p">:</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">CalIPE_doc</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Input data files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#evt-file">Evt file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#obs-file">Obs file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#region-file">Region file</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output_files.html">Welcome to CalIPE_doc’s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output_files.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inventory.html">Welcome to CalIPE_doc’s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inventory.html#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="Install.html" title="previous chapter">Installation</a></li>
+      <li>Next: <a href="examples.html" title="next chapter">Tutorial</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Ludmila Provost.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/input_files.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

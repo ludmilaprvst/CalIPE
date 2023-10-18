@@ -538,8 +538,6 @@ class WLS():
                             - 'X': the X parameter used in C1/C2 inversion,
                             - 'eqStd': the associated inverse square root of the weights used in the inversion
                             of Beta and Gamma
-                            - 'eqStdM': the associated square root of the weights used in the inversion
-                            of C1/C2, C1/C2/Beta, C1/C2/Beta/Gamma
         :param Beta: the geometric attenuation coefficient
         :param Gamma: the intresic attenuation coefficient
         :param C1: first magnitude coefficient
@@ -701,7 +699,7 @@ class WLS():
                 variance of the parameter estimate. 
                 To compute one standard deviation errors on the parameters use
                 perr = np.sqrt(np.diag(pcov)). pcov values are not accurate with
-                the eqStdM as sigma. A function has to be developped to compute
+                the eqStd as sigma. A function has to be developped to compute
                 accurate pcov
         """
         #print(self.Obsbin_plus.columns)
@@ -730,7 +728,7 @@ class WLS():
         Ibin = self.Obsbin_plus['I'].values.astype(float)
         #print(Ibin.dtype)
         
-        sigma = self.Obsbin_plus['eqStdM'].values.astype(float)
+        sigma = self.Obsbin_plus['eqStd'].values.astype(float)
         # if sigma.dtype is not np.dtype(np.float64):
         #     raise TypeError("sigma.dtype is not float")
 
@@ -797,7 +795,7 @@ class WLS():
                 variance of the parameter estimate. 
                 To compute one standard deviation errors on the parameters use
                 perr = np.sqrt(np.diag(pcov)). pcov values are not accurate with
-                the eqStdM as sigma. A function has to be developped to compute
+                the eqStd as sigma. A function has to be developped to compute
                 accurate pcov
         """
         #print(self.Obsbin_plus.columns)
@@ -824,7 +822,7 @@ class WLS():
         Ibin = self.Obsbin_plus['I'].values.astype(float)
         print(Ibin.dtype)
         if sigma == 'none':
-            sigma = self.Obsbin_plus['eqStdM'].values.astype(float)
+            sigma = self.Obsbin_plus['eqStd'].values.astype(float)
         # if sigma.dtype is not np.dtype(np.float64):
         #     raise TypeError("sigma.dtype is not float")
         p0 = np.append(np.array([self.C1, self.C2, self.beta]),
@@ -924,7 +922,7 @@ class WLS():
                 variance of the parameter estimate. 
                 To compute one standard deviation errors on the parameters use
                 perr = np.sqrt(np.diag(pcov)). pcov values are not accurate with
-                the eqStdM as sigma. A function has to be developped to compute
+                the eqStd as sigma. A function has to be developped to compute
                 accurate pcov
         """
         #print(self.Obsbin_plus.columns)
@@ -951,7 +949,7 @@ class WLS():
         Ibin = self.Obsbin_plus['I'].values.astype(float)
         print(Ibin.dtype)
         if sigma == 'none':
-            sigma = self.Obsbin_plus['eqStdM'].values.astype(float)
+            sigma = self.Obsbin_plus['eqStd'].values.astype(float)
         # if sigma.dtype is not np.dtype(np.float64):
         #     raise TypeError("sigma.dtype is not float")
         p0 = np.append(np.array([self.C1, self.C2, self.beta, self.gamma]),
@@ -1030,7 +1028,7 @@ class WLS():
                              xtol=1e-3)
         return C1C2BetaH[1]
     
-    def compute_2Dsigma(self, eta, col='eqStdM'):
+    def compute_2Dsigma(self, eta, col='eqStd'):
         """
         Compute a 2D sigma. The diagonal if equal to the column col input. The other
         elements of the matrix are filled with the eat input.
@@ -1042,7 +1040,7 @@ class WLS():
             between the parameters equal to eta.
         col : str, optional
             Name of the column where are stored the standard deviation used for the
-            diagonal of the 2D sigma matrix. The default is 'eqStdM'.
+            diagonal of the 2D sigma matrix. The default is 'eqStd'.
         Returns
         -------
         sigma : 2D array
