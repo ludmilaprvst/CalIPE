@@ -11,7 +11,7 @@ import numpy as np
 import time
 import random
 
-def test_Kov_do_wlsic_I0_gammaeq0():
+def test_Kov_do_wlsic_I0():
     obs_data = pd.read_csv('../Testpy_dataset/pytest_dataset03_obs.txt')
     evt_data = pd.read_csv('../Testpy_dataset/pytest_dataset03_evt.txt')
     coeff_data = pd.read_csv('../Testpy_dataset/pytest_dataset03_coeff.txt')
@@ -24,28 +24,7 @@ def test_Kov_do_wlsic_I0_gammaeq0():
         I0 = obsbin.Io.values[0]
         resI0 = WLSIC.WLSIC_Kov_oneEvt(obsbin, depth, Beta, 0, I0).do_wlsic_I0(I0-1, I0+1)
         assert np.round(resI0[0][0], 3) == np.round(I0, 3)
-        
-
-
-def test_Kov_do_wlsic_depth_gammaeq0():
-    obs_data = pd.read_csv('../Testpy_dataset/pytest_dataset03_obs.txt')
-    evt_data = pd.read_csv('../Testpy_dataset/pytest_dataset03_evt.txt')
-    coeff_data = pd.read_csv('../Testpy_dataset/pytest_dataset03_coeff.txt')
     
-    liste_evt = evt_data.EVID.values
-    Beta = coeff_data['Beta'].values[0]
-    for evid in liste_evt:
-        obsbin = obs_data[obs_data.EVID==evid]
-        depth = evt_data[evt_data.EVID==evid].H.values[0]
-        depth_ini = 10
-        obsbin.loc[:, 'Hypo'] = np.sqrt(obsbin['Depi'].values**2 + depth_ini**2)
-        Hmin = 1
-        Hmax = 20
-        I0 = obsbin.Io.values[0]
-        resH = WLSIC.WLSIC_Kov_oneEvt(obsbin, depth_ini, Beta, 0, I0).do_wlsic_depth(Hmin, Hmax)
-        assert np.round(resH[0][0], 3) == np.round(depth, 3)
-        
-def test_Kov_do_wlsic_I0_gamma():
     obs_data = pd.read_csv('../Testpy_dataset/pytest_dataset04_obs.txt')
     evt_data = pd.read_csv('../Testpy_dataset/pytest_dataset04_evt.txt')
     coeff_data = pd.read_csv('../Testpy_dataset/pytest_dataset04_coeff.txt')
@@ -59,7 +38,7 @@ def test_Kov_do_wlsic_I0_gamma():
         I0_ini = I0-0.5
         resI0 = WLSIC.WLSIC_Kov_oneEvt(obsbin, depth, Beta, Gamma, I0_ini).do_wlsic_I0(I0-1, I0+1)
         assert resI0[0][0] == pytest.approx(I0, 0.001)
-        
+    
     obs_data = pd.read_csv('../Testpy_dataset/pytest_dataset01_obs.txt')
     evt_data = pd.read_csv('../Testpy_dataset/pytest_dataset01_evt.txt')
     coeff_data = pd.read_csv('../Testpy_dataset/pytest_dataset01_coeff.txt')
@@ -88,7 +67,26 @@ def test_Kov_do_wlsic_I0_gamma():
         resI0 = WLSIC.WLSIC_Kov_oneEvt(obsbin, depth, Beta, Gamma, I0_ini).do_wlsic_I0(I0-1, I0+1)
         assert resI0[0][0] == pytest.approx(I0, 0.001)
         
-def test_Kov_do_wlsic_depth_gamma():
+
+
+def test_Kov_do_wlsic_depth():
+    obs_data = pd.read_csv('../Testpy_dataset/pytest_dataset03_obs.txt')
+    evt_data = pd.read_csv('../Testpy_dataset/pytest_dataset03_evt.txt')
+    coeff_data = pd.read_csv('../Testpy_dataset/pytest_dataset03_coeff.txt')
+    
+    liste_evt = evt_data.EVID.values
+    Beta = coeff_data['Beta'].values[0]
+    for evid in liste_evt:
+        obsbin = obs_data[obs_data.EVID==evid]
+        depth = evt_data[evt_data.EVID==evid].H.values[0]
+        depth_ini = 10
+        obsbin.loc[:, 'Hypo'] = np.sqrt(obsbin['Depi'].values**2 + depth_ini**2)
+        Hmin = 1
+        Hmax = 20
+        I0 = obsbin.Io.values[0]
+        resH = WLSIC.WLSIC_Kov_oneEvt(obsbin, depth_ini, Beta, 0, I0).do_wlsic_depth(Hmin, Hmax)
+        assert np.round(resH[0][0], 3) == np.round(depth, 3)
+        
     obs_data = pd.read_csv('../Testpy_dataset/pytest_dataset04_obs.txt')
     evt_data = pd.read_csv('../Testpy_dataset/pytest_dataset04_evt.txt')
     coeff_data = pd.read_csv('../Testpy_dataset/pytest_dataset04_coeff.txt')
@@ -106,6 +104,7 @@ def test_Kov_do_wlsic_depth_gamma():
         Hmax = 20
         resH = WLSIC.WLSIC_Kov_oneEvt(obsbin, depth_ini, Beta, Gamma, I0).do_wlsic_depth(Hmin, Hmax)
         assert np.round(resH[0][0], 1) == np.round(depth, 1)
+        
 
 def test_Kov_do_wls_beta():        
     obs_data = pd.read_csv('../Testpy_dataset/pytest_dataset03_obs.txt')
@@ -147,6 +146,7 @@ def test_Kov_do_wls_beta_gamma():
         assert resBetaGamma[0][0] == pytest.approx(Beta, 0.01)
         assert np.round(resBetaGamma[0][1], 5) == np.round(Gamma, 5)
          
+
 def test_do_wlsic_depth():
     liste_test_id = [ '01', '02', '03', '04']
     for test_id in liste_test_id:
@@ -168,8 +168,7 @@ def test_do_wlsic_depth():
             Hmax = 20
             resH = WLSIC.WLSIC_oneEvt(obsbin, depth_ini, mag, Beta, Gamma, C1, C2).do_wlsic_depth(Hmin, Hmax)
             assert resH[0][0] == pytest.approx(depth, 0.01)
-           
-               
+                          
 
    
 def test_do_linregressC1regC2():

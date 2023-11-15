@@ -234,7 +234,8 @@ def filter_by_nevt(global_liste, criteres, nmin=10):
             filt_nevt_liste.append(liste)
             crit_to_append = pd.DataFrame(columns=criteres.columns)
             crit_to_append.loc[0, :] = criteres.loc[ind, :].values
-            filt_criteres = filt_criteres.append(crit_to_append)
+            #filt_criteres = filt_criteres.append(crit_to_append)
+            filt_criteres = pd.concat([filt_criteres, crit_to_append])
     filt_criteres.reset_index(inplace=True)
     filt_criteres = filt_criteres[criteres.columns]
     return filt_nevt_liste, filt_criteres
@@ -271,7 +272,7 @@ def check_duplicate(global_liste, criteres):
             no_duplicate_list.append(liste)
             crit_to_append = pd.DataFrame(columns=criteres.columns)
             crit_to_append.loc[0, :] = criteres.loc[ind, :].values
-            no_duplicat_criteres = no_duplicat_criteres.append(crit_to_append)
+            no_duplicat_criteres = pd.concat([no_duplicat_criteres, crit_to_append])
         else:
             pass    
     no_duplicat_criteres.reset_index(inplace=True)

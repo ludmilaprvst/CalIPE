@@ -9,13 +9,81 @@ sys.path.append('../postprocessing_fc')
 from combinaison_calib import calib_attBeta_Kov_unit, calib_attBeta_Kov
 from combinaison_calib import calib_attBetaGamma_Kov_unit, calib_attBetaGamma_Kov
 from combinaison_calib import initialize_HI0, initialize_C1C2
-from prepa_data import update_XCaCb
+from combinaison_calib import calib_C1C2H, calib_C1C2
+
 from ponderations import evt_weights
 import pytest
 import pandas as pd
 import numpy as np
 
-   
+
+def test_calib_C1C2H():
+    obs_data = pd.read_csv('../Testpy_dataset/pytest_dataset03_obs.txt')
+    evt_data = pd.read_csv('../Testpy_dataset/pytest_dataset03_evt.txt')
+    coeff_data = pd.read_csv('../Testpy_dataset/pytest_dataset03_coeff.txt')
+    liste_evt = evt_data.EVID.values
+    Beta = coeff_data['Beta'].values[0]
+    C1 = coeff_data['C1'].values[0]
+    C2 = coeff_data['C2'].values[0]
+    obs_data.loc[:, 'Io_std'] = 0.5
+    obs_data.loc[:, 'eqStdM'] = 0.5
+    obs_data.loc[:, 'Io_ini'] = obs_data.Io.values
+    obs_data.loc[:, 'RegID'] = 1
+    for evid in liste_evt:
+        depth = evt_data[evt_data.EVID==evid].H.values[0]
+        mag = evt_data[evt_data.EVID==evid].Mag.values[0]
+        obs_data.loc[obs_data.EVID==evid, 'Depth'] = 10
+        obs_data.loc[obs_data.EVID==evid, 'Hmin'] = 1
+        obs_data.loc[obs_data.EVID==evid, 'Hmax'] = 25
+        obs_data.loc[obs_data.EVID==evid, 'Mag'] = mag
+    obs_data.loc[:, 'beta'] = Beta
+    obs_data.loc[:, 'gamma'] = 0
+    obs_data.loc[:, 'Hmin_ini'] = 1
+    obs_data.loc[:, 'Hmax_ini'] = 25
+    ObsBin_plus, resC1regC2 = calib_C1C2H(liste_evt, obs_data, NmaxIter=50)
+    print('C1', 'C2')
+    print(resC1regC2[0][0], resC1regC2[0][1])
+    assert resC1regC2[0][0] == pytest.approx(C1, 0.001)
+    assert resC1regC2[0][1] == pytest.approx(C2, 0.001)
+    for evid in liste_evt:
+        depth = evt_data[evt_data.EVID==evid].H.values[0]
+        print(obs_data.columns)
+        print(depth, obs_data[obs_data.EVID==evid]['Depth'].values[0])
+        assert obs_data[obs_data.EVID==evid]['Depth'].values[0] == pytest.approx(depth, 0.001)
+    ObsBin_plus, resC1regC2 = calib_C1C2H(liste_evt, obs_data, NmaxIter=49)
+    print('C1', 'C2')
+    print(resC1regC2[0][0], resC1regC2[0][1])
+    assert resC1regC2[0][0] == pytest.approx(C1, 0.001)
+    assert resC1regC2[0][1] == pytest.approx(C2, 0.001)
+
+def test_calib_C1C2():
+    obs_data = pd.read_csv('../Testpy_dataset/pytest_dataset03_obs.txt')
+    evt_data = pd.read_csv('../Testpy_dataset/pytest_dataset03_evt.txt')
+    coeff_data = pd.read_csv('../Testpy_dataset/pytest_dataset03_coeff.txt')
+    liste_evt = evt_data.EVID.values
+    Beta = coeff_data['Beta'].values[0]
+    C1 = coeff_data['C1'].values[0]
+    C2 = coeff_data['C2'].values[0]
+    obs_data.loc[:, 'Io_std'] = 0.5
+    obs_data.loc[:, 'eqStdM'] = 0.5
+    obs_data.loc[:, 'Io_ini'] = obs_data.Io.values
+    obs_data.loc[:, 'RegID'] = 1
+    for evid in liste_evt:
+        depth = evt_data[evt_data.EVID==evid].H.values[0]
+        mag = evt_data[evt_data.EVID==evid].Mag.values[0]
+        obs_data.loc[obs_data.EVID==evid, 'Depth'] = depth
+        obs_data.loc[obs_data.EVID==evid, 'Hmin'] = 1
+        obs_data.loc[obs_data.EVID==evid, 'Hmax'] = 25
+        obs_data.loc[obs_data.EVID==evid, 'Mag'] = mag
+    obs_data.loc[:, 'beta'] = Beta
+    obs_data.loc[:, 'gamma'] = 0
+    ObsBin_plus, resC1regC2 = calib_C1C2(liste_evt, obs_data, NmaxIter=50)
+    print('C1', 'C2')
+    print(resC1regC2[0][0], resC1regC2[0][1])
+    assert resC1regC2[0][0] == pytest.approx(C1, 0.001)
+    assert resC1regC2[0][1] == pytest.approx(C2, 0.001)
+ 
+ 
 def test_initialize_C1C2():
     obs_data = pd.read_csv('../Testpy_dataset/pytest_dataset03_obs.txt')
     evt_data = pd.read_csv('../Testpy_dataset/pytest_dataset03_evt.txt')
@@ -32,8 +100,11 @@ def test_initialize_C1C2():
         depth = evt_data[evt_data.EVID==evid].H.values[0]
         mag = evt_data[evt_data.EVID==evid].Mag.values[0]
         obs_data.loc[obs_data.EVID==evid, 'Depth'] = depth
+ 
         obs_data.loc[obs_data.EVID==evid, 'Mag'] = mag
-    obs_data = update_XCaCb(obs_data, Beta, 0)
+    obs_data.loc[:, 'beta'] = Beta
+    obs_data.loc[:, 'gamma'] = 0
+
     C1_inv, C2_inv = initialize_C1C2(obs_data)
     assert C1_inv == pytest.approx(C1, 0.001)
     assert C2_inv == pytest.approx(C2, 0.001)

@@ -8,18 +8,21 @@ Created on Thu Jul  1 11:28:50 2021
 import pandas as pd
 import numpy as np
 import WLSIC
-import WLSIC_2
 #import statsmodels.formula.api as sm
 import statsmodels.api as sm
-#import statsmodels.regression.linear_model as linm
-#import sys
-# sys.path.append('../postprocessing_fc')
-#from wrms import plot_wrms_withHI0lines, plot_wrms_beta, plot_wrms_beta_1evt
-#from wrms import getHline_in_HI0wrms_space, getI0line_in_HI0wrms_space
-#from wrms import calcul_wrms_C1C2betagamma
-from prepa_data import add_I0as_datapoint
+try:
+    from mpl_toolkits.basemap import pyproj
+except KeyError:
+    import os
+    import conda
+    conda_file_dir = conda.__file__
+    conda_dir = conda_file_dir.split('lib')[0]
+    proj_lib = os.path.join(os.path.join(conda_dir, 'Library\share'), 'proj')
+    os.environ["PROJ_LIB"] = proj_lib
+
+# prepa_data import add_I0as_datapoint get_eqStd4I0
 import copy
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from matplotlib import cm
 import matplotlib as mpl
 
@@ -570,7 +573,7 @@ def initialize_HI0(ObsBin_plus, liste_evt, beta, gamma, NmaxIter=50):
     ObsBin_plus : pandas.DataFrame
         One column is added to the input ObsBin_plus, called StdIo_inv. This
         column contains the output standard deviation of the inversion of epicentral intensity.
-        Columns I0 and Depth are updated with the output values ot the invversion process. 
+        Columns I0 and Depth are updated with the output values ot the inversion process. 
 
     """
     # a tester
@@ -605,6 +608,8 @@ def initialize_HI0(ObsBin_plus, liste_evt, beta, gamma, NmaxIter=50):
             mini_iteration += 1
             ObsBin_plus.loc[ObsBin_plus.EVID == evid, 'Io'] = I0_inv
             ObsBin_plus.loc[ObsBin_plus.EVID == evid, 'StdIo_inv'] = StdI0_inv
+            #eqStdI0 = get_eqStd4I0(StdI0_inv)
+
             suivi_depth[evid] = np.append(suivi_depth[evid], new_depth)
             suivi_I0[evid] = np.append(suivi_I0[evid], I0)
             if mini_iteration > 3:
@@ -615,7 +620,7 @@ def initialize_HI0(ObsBin_plus, liste_evt, beta, gamma, NmaxIter=50):
 
 def initialize_C1C2(ObsBin_plus):
     """
-    Give initial values for C1 and C2 coefficient for the followign equation:
+    Give initial values for C1 and C2 coefficient for the following equation:
         I = C1 + C2.Mag + beta.log10(hypo) + gamma.hypo
     where I is the intensity at a given hypocentral distance hypo,
     Mag is the magnitude of the earthquake and beta and gamma are attenuation coefficients, supposed known.
@@ -632,8 +637,8 @@ def initialize_C1C2(ObsBin_plus):
             - Depi: epcientral distance of the isoseismal radii
             - beta: the attenuation coefficient beta
             - gamma: the attenuation coefficient gamma
-            - eqStdM: the equivalent standard deviation used to weight the data used in the inversion.
-                     The weights are equal to 1/obsgp.eqStdM.values**2
+            - eqStd: the equivalent standard deviation used to weight the data used in the inversion.
+                     The weights are equal to 1/ObsBin_plus.eqStd.values**2
 
     Returns
     -------
@@ -650,9 +655,9 @@ def initialize_C1C2(ObsBin_plus):
         lambda row: row['I'] - row['beta']*np.log10(row['Hypo'] - row['gamma']*row['Hypo']), axis=1)
     ObsBin_plus = ObsBin_plus.astype({'Mag': float})
     obsgp = ObsBin_plus[['EVID', 'X', 'intercept',
-                         'eqStdM', 'Mag']].groupby('EVID').mean()
+                         'eqStd', 'Mag']].groupby('EVID').mean()
     resultCaCb = sm.WLS(obsgp.Mag, obsgp[['intercept', 'X']],
-                        weights=1/obsgp.eqStdM.values**2).fit()
+                        weights=1/obsgp.eqStd.values**2).fit()
     # print(resultCaCb)
     Ca = resultCaCb.params[1]
     Cb = resultCaCb.params[0]
@@ -762,8 +767,8 @@ def calib_C1C2H(liste_evt, ObsBin_plus,
             - beta: the attenuation coefficient beta, corresponding to the region of the location of the earthquake
             - gamma: the attenuation coefficient gamma, corresponding to the region of the location of the earthquake
             - Mag: magnitude of the earthquake
-            - eqStdM: the equivalent standard deviation used to weight the data used in the inversion.
-                     The weights are equal to 1/obsgp.eqStdM.values**2
+            - eqStd: the equivalent standard deviation used to weight the data used in the inversion.
+                     The weights are equal to 1/ObsBin_plus.eqStd.values**2
             
     
     NmaxIter : int, optional
@@ -784,6 +789,7 @@ def calib_C1C2H(liste_evt, ObsBin_plus,
         To compute one standard deviation errors on the parameters use perr = np.sqrt(np.diag(pcov))
 
     """
+
     liste_region = np.unique(ObsBin_plus.RegID.values.astype(float))
     for regID in liste_region:
         beta = ObsBin_plus[ObsBin_plus.RegID == regID].beta.values[0]
@@ -827,11 +833,11 @@ def calib_C1C2H(liste_evt, ObsBin_plus,
             ObsBin_plus.loc[ObsBin_plus.EVID == evid, 'Depth'] = new_depth
 
             suivi_depth[evid] = np.append(suivi_depth[evid], new_depth)
-        poids = ((1/(ObsBin_plus.StdI.values**2)) *
-                 (1/(ObsBin_plus.eqStdM.values**2))).astype(float)
+        # poids = ((1/(ObsBin_plus.StdI.values**2)) *
+        #          (1/(ObsBin_plus.eqStdM.values**2))).astype(float)
         resC1regC2 = WLSIC.WLS(ObsBin_plus, C1, C2, beta, gamma).do_linregressC1regC2(ftol=2e-3,
                                                                                       max_nfev=100,
-                                                                                      sigma=np.sqrt(1/poids))
+                                                                                      sigma=ObsBin_plus.eqStd.values.astype(float))
         mini_iteration += 1
     return ObsBin_plus, resC1regC2
 
@@ -861,8 +867,7 @@ def calib_C1C2(liste_evt, ObsBin_plus,
             - beta: the attenuation coefficient beta, corresponding to the region of the location of the earthquake
             - gamma: the attenuation coefficient gamma, corresponding to the region of the location of the earthquake
             - Mag: magnitude of the earthquake
-            - eqStdM: the equivalent standard deviation used to weight the data used in the inversion.
-                     The weights are equal to 1/obsgp.eqStdM.values**2
+
     NmaxIter : int, optional
        Maximal number of iteration allowed. The default is 50.
     add_I0 : boolean, optional
@@ -895,12 +900,12 @@ def calib_C1C2(liste_evt, ObsBin_plus,
     #     ObsBin_plus = add_I0as_datapoint(ObsBin_plus, liste_evt)
     #     ObsBin_plus.sort_values(by=['EVID', 'I'], inplace=True)
 
-    poids = ((1/(ObsBin_plus.StdI.values**2)) *
-             (1/(ObsBin_plus.eqStdM.values**2))).astype(float)
+    # poids = ((1/(ObsBin_plus.StdI.values**2)) *
+    #          (1/(ObsBin_plus.eqStdM.values**2))).astype(float)
 
     resC1regC2 = WLSIC.WLS(ObsBin_plus, C1, C2, beta, gamma).do_linregressC1regC2(ftol=2e-3,
                                                                                   max_nfev=100,
-                                                                                  sigma=np.sqrt(1/poids))
+                                                                                  sigma=ObsBin_plus.eqStd.values.astype(float))
     return ObsBin_plus, resC1regC2
 
 
@@ -938,7 +943,7 @@ def update_depth(ObsBin_plus, depths, liste_evt):
 
 
 def calib_C1C2betaH(liste_evt, ObsBin_plus, C1, C2, beta,
-                    NmaxIter=50, add_I0=True):
+                    NmaxIter=50):
     """
     Function that calibrate the C1, the C2and the beta coefficients in the following equation:
         I = C1 + C2.Mag + beta.log10(hypo) 
@@ -964,8 +969,8 @@ def calib_C1C2betaH(liste_evt, ObsBin_plus, C1, C2, beta,
             - beta: the attenuation coefficient beta, corresponding to the region of the location of the earthquake
             - gamma: the attenuation coefficient gamma, corresponding to the region of the location of the earthquake
             - Mag: magnitude of the earthquake
-            - eqStdM: the equivalent standard deviation used to weight the data used in the inversion.
-                     The weights are equal to 1/obsgp.eqStdM.values**2
+            - eqStd: the equivalent standard deviation used to weight the data used in the inversion.
+                     The weights are equal to 1/ObsBin_plus.eqStd.values**2
             - Hmin: lower bound of uncertainty associated to depth
             - Hmax: upper bound of uncertainty associated to depth
     C1 : float
@@ -998,9 +1003,6 @@ def calib_C1C2betaH(liste_evt, ObsBin_plus, C1, C2, beta,
     ObsBin_plus.loc[:, 'Hmin_ini'] = ObsBin_plus.loc[:, 'Hmin']
     ObsBin_plus.loc[:, 'Hmax_ini'] = ObsBin_plus.loc[:, 'Hmax']
 
-    if add_I0:
-        ObsBin_plus = add_I0as_datapoint(ObsBin_plus, liste_evt)
-        ObsBin_plus.sort_values(by=['EVID', 'I'], inplace=True)
     eta_values_tested = [0]
 
     for eta in eta_values_tested:
@@ -1038,8 +1040,8 @@ def calib_C1C2betagammaH(liste_evt, ObsBin_plus, C1, C2, beta, gamma,
             - beta: the attenuation coefficient beta, corresponding to the region of the location of the earthquake
             - gamma: the attenuation coefficient gamma, corresponding to the region of the location of the earthquake
             - Mag: magnitude of the earthquake
-            - eqStdM: the equivalent standard deviation used to weight the data used in the inversion.
-                     The weights are equal to 1/obsgp.eqStdM.values**2
+            - eqStd: the equivalent standard deviation used to weight the data used in the inversion.
+                     The weights are equal to 1/ObsBin_plus.eqStd.values**2
             - Hmin: lower bound of uncertainty associated to depth
             - Hmax: upper bound of uncertainty associated to depth
     C1 : float

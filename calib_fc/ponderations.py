@@ -47,6 +47,7 @@ def evt_weights(obsbin_plus, option_ponderation):
     #     obsbin_plus = Kovatt_ponderation_evt_reg(obsbin_plus)
     # elif option_ponderation == 'Ponderation evt-depth':
     #     obsbin_plus = Kovatt_ponderation_evt_depth(obsbin_plus)
+    print(obsbin_plus.columns)
     if option_ponderation == 'IStdI':
         obsbin_plus = weight_IStdI(obsbin_plus)
     elif option_ponderation == 'IStdI_evtUni':
@@ -192,7 +193,12 @@ def weight_evtStdM(obsbin_plus):
     event.
 
     """
+    print(obsbin_plus.columns)
+    #obsbin_plus['StdM'] = obsbin_plus['StdM'].astype(float)
+    #obsbin_plus_tmp = obsbin_plus[['EVID', 'StdM']]
+    print(obsbin_plus.StdM.dtypes)
     gp_evid_obsbinplus = obsbin_plus.groupby('EVID').mean()
+    print(gp_evid_obsbinplus.columns)
     poids = 1/(gp_evid_obsbinplus.StdM.values**2)
     max_poids = 1/(0.1**2)*np.ones(len(poids))
     poids = np.min([poids, max_poids], axis=0)
@@ -356,6 +362,7 @@ def normaliser_par_MClass(obsbin_plus, bin_width=0.5):
         obsbin_plus.loc[ind, 'poids_grp'] = obsbin_plus.loc[ind, 'Poids_int_norm']*obsbin_plus.loc[ind, 'Poids_evt_norm']
         obsbin_plus.loc[ind, 'poids_grp'] = obsbin_plus.loc[ind, 'poids_grp']/obsbin_plus.loc[ind, 'poids_grp'].sum()
     obsbin_plus.loc[:, 'Poids'] = obsbin_plus.loc[:, 'poids_grp']
+    obsbin_plus.drop(['range1'], axis=1, inplace=True)
     return obsbin_plus, len(mag_bins_df)
 
 
