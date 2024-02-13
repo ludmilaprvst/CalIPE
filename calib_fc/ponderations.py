@@ -291,7 +291,7 @@ def weight_evtStdH(obsbin_plus):
     contains the weight based on the hypocentral depth uncertainty to each event.
 
     """
-    gp_evid_obsbinplus = obsbin_plus.groupby('EVID').mean()
+    gp_evid_obsbinplus = obsbin_plus[['EVID', 'Hmax', 'Hmin']].groupby('EVID').mean()
     StdH = (gp_evid_obsbinplus.Hmax-gp_evid_obsbinplus.Hmin)/2
     poids = 1/(StdH**2)
     gp_evid_obsbinplus.loc[:, 'poids'] = poids
