@@ -37,6 +37,7 @@ The columns are:
 	- Depth: hypocentral depth of the earthquake,
 	- Hmin: shallow limit of depth uncertainty,
 	- Hmax: deep limit of depth uncertainty,
+	- QH: Quality of the instrumental depth estimate (including the depth limits), ranked between A (very good) and E (unknown)
 
 An example of the Evt file is available in the CalIPE_examples repository (address), in the Data folder.
 When creating your own Evt file, please respect the columns names.
@@ -93,15 +94,10 @@ The columns are:
 An example of the Region file is available in the CalIPE_examples repository (address), in the Data/Regions folder.
 
 
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
 
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

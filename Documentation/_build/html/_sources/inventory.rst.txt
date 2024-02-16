@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to CalIPE_doc's documentation!
-======================================
+Inventory and documentation of CalIPE functions
+===============================================
 
 .. toctree::
    :maxdepth: 2
@@ -20,6 +20,39 @@ Calibration functions
    :members:
 
 .. automodule:: create_subsets
+   :members:
+
+.. automodule:: EvtIntensityObject
+   :members:
+
+.. automodule:: library_bin
+   :members:
+
+.. automodule:: ponderations
+   :members:
+
+.. automodule:: prepa_data
+   :members:
+
+Post-processing functions
+-------------------------
+
+.. automodule:: postprocessing_IPEs
+   :members:
+
+.. automodule:: postprocessing_Kovbeta
+   :members:
+
+.. automodule:: results_att_hist
+   :members:
+
+.. automodule:: results_bootstrap_hist
+   :members:
+
+.. automodule:: write_outputs
+   :members:
+
+.. automodule:: wrms
    :members:
 
 Indices and tables

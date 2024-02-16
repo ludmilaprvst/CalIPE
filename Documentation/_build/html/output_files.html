@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Welcome to CalIPE_doc’s documentation! &#8212; CalIPE_doc 0.1 documentation</title>
+    <title>Output data files &#8212; CalIPE_doc 0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
@@ -15,8 +15,8 @@
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Welcome to CalIPE_doc’s documentation!" href="examples.html" />
-    <link rel="prev" title="Welcome to CalIPE_doc’s documentation!" href="input_files.html" />
+    <link rel="next" title="Inventory and documentation of CalIPE functions" href="inventory.html" />
+    <link rel="prev" title="Tutorial" href="examples.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -33,18 +33,128 @@
 
           <div class="body" role="main">
             
-  <section id="welcome-to-calipe-doc-s-documentation">
-<h1>Welcome to CalIPE_doc’s documentation!<a class="headerlink" href="#welcome-to-calipe-doc-s-documentation" title="Permalink to this headline">¶</a></h1>
+  <section id="output-data-files">
+<h1>Output data files<a class="headerlink" href="#output-data-files" title="Permalink to this headline">¶</a></h1>
+<p>After a calibration, the output results will be saved into files. The format of the output file
+depends on the choice of the mathematical formulation chosen by the user. The different output
+files will be described inthe following.
+Some post-processing functions have also output files, also described here.</p>
+<section id="output-files-of-the-mathematical-formulation-i-i0-beta-log10-hypo-h">
+<h2>Output files of the mathematical formulation I = I0 + beta.log10(Hypo/H)<a class="headerlink" href="#output-files-of-the-mathematical-formulation-i-i0-beta-log10-hypo-h" title="Permalink to this headline">¶</a></h2>
+<p>Three different output files are produced for the calibration of this mathematical formulation,
+done with the Kovbeta_onedataset() function.
+The first file, called betaFinal file, is the summary of the calibration. Its name is :
+betaFinal_(name of the input Evt file)_w(name of the chosen weighting scheme)_betaini(absolute value of initial value of beta used x 10).txt
+It contains the output value of the beta coefficient, its associated standard deviation, the value of the initial value of beta, the number
+of iteration used to converge to the output solution, the maximal and the minimal number of iteration allowed, the number of calibration
+earthquake used, the number of intensity data used, the path and name of the Evt and Obs input files used and the path and name of the python
+script used to launch the calibration.
+Here an example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Beta</span><span class="p">:</span><span class="o">-</span><span class="mf">3.29813743678502</span>
+<span class="n">Beta</span> <span class="n">Std</span><span class="p">:</span><span class="mf">0.08168377779199379</span>
+<span class="n">Beta</span> <span class="n">ini</span><span class="p">:</span><span class="o">-</span><span class="mf">3.0</span>
+<span class="n">Nbre</span> <span class="n">iteration</span><span class="p">:</span><span class="mi">17</span>
+<span class="n">Nbre</span> <span class="n">iteration</span> <span class="nb">max</span><span class="p">:</span><span class="mi">100</span>
+<span class="n">Nbre</span> <span class="n">iteration</span> <span class="nb">min</span><span class="p">:</span><span class="mi">3</span>
+<span class="n">Nbre</span> <span class="n">evt</span><span class="p">:</span><span class="mi">31</span>
+<span class="n">Nbre</span> <span class="n">data</span><span class="p">:</span><span class="mi">164</span>
+<span class="n">Fichier</span> <span class="n">Evt</span><span class="p">:</span><span class="n">Data</span><span class="o">/</span><span class="n">FRinstru01</span><span class="o">.</span><span class="n">txt</span>
+<span class="n">Fichier</span> <span class="n">Obs</span><span class="p">:</span><span class="n">Data</span><span class="o">/</span><span class="n">Obs_FRextended</span><span class="o">.</span><span class="n">txt</span>
+<span class="n">Nom</span> <span class="n">fichier</span> <span class="n">execute</span><span class="p">:</span> <span class="n">CalIPE_launchers_example</span>\<span class="n">calibration_AttKov_launch_FRinstru</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>The second file, called betaWay file, is a file with the value of coefficient beta after each iteration. Its name is:
+betaWay_(name of the input Evt file)_w(name of the chosen weighting scheme)_betaini(absolute value of initial value of beta used x 10).txt
+This file has two columns, separated by ;. First column is the number of iteration, 0 representing the initial value used. The second columns
+corresponds to the value of coefficient beta after the concerned iteration. Here the first six lines of the betaWay file associated to the previous
+betaFinal file presented in example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">;</span><span class="n">Beta</span> <span class="n">values</span> <span class="n">during</span> <span class="n">inversion</span>
+<span class="mi">0</span><span class="p">;</span><span class="o">-</span><span class="mf">3.0</span>
+<span class="mi">1</span><span class="p">;</span><span class="o">-</span><span class="mf">3.0659111272544592</span>
+<span class="mi">2</span><span class="p">;</span><span class="o">-</span><span class="mf">3.1168399538635403</span>
+<span class="mi">3</span><span class="p">;</span><span class="o">-</span><span class="mf">3.1570590615729452</span>
+<span class="mi">4</span><span class="p">;</span><span class="o">-</span><span class="mf">3.1886428826593454</span>
+<span class="mi">5</span><span class="p">;</span><span class="o">-</span><span class="mf">3.213723752423889</span>
+</pre></div>
+</div>
+<p>The thrird file, called obsbinEnd file, contains the data used in the inversion after the inversion process, with the final values of depth and epicentral intensity for
+each calibration earthquake, which are inverted successively with the beta coefficient. The name of the file is:
+obsbinEnd_(name of the input Evt file)_w(name of the chosen weighting scheme)_betaini(absolute value of initial value of beta used x 10).csv</p>
+<dl class="simple">
+<dt>It is a .csv file and the data are stored in a table, with the following columns:</dt><dd><ul class="simple">
+<li><p>EVID: ID of the earthquake,</p></li>
+<li><p>I: value of the intensity bin,</p></li>
+<li><p>StdI: uncertainty associated to I,</p></li>
+<li><p>Io: value of the inverted epicentral intensity</p></li>
+<li><p>Io_std: uncertainty associated to the initial value of epicentral intensity,</p></li>
+<li><p>Io_ini: value of the initial value of epicentral intensity,</p></li>
+<li><p>Depi: epicentral distance associated to I,</p></li>
+<li><p>Ndata: number of data used to compute the intensity bin,</p></li>
+<li><p>Mag: magnitude of the earthquake,</p></li>
+<li><p>StdM: uncertainty assocaited to the magnitude,</p></li>
+<li><p>Depth: hypocentral depth of the earthquake,</p></li>
+<li><p>Hmin: minimal (shallow) limit used to invert depth,</p></li>
+<li><p>Hmax: maximal (deep) limit used to invert depth,</p></li>
+<li><p>Hmin_ini: initial value of Hmin. In this calibration case, Hmin=Hmin_ini,</p></li>
+<li><p>Hmax_ini: initial value of Hmin. In this calibration case, Hmax=Hmax_ini,</p></li>
+<li><p>StdIo_inv: uncertainty associated to the inverted value of epicentral intensity,</p></li>
+<li><p>RegID: ID of the region where the earthquake is located (defined by the region input file),</p></li>
+<li><p>Poids: weight given to the intensity bin in the inversion,</p></li>
+<li><p>eqStd: equivalent standard deviation of Poids, input of the scipy.optimize curve_fit() function</p></li>
+</ul>
+</dd>
+</dl>
+<p>Additional columns can appear, depending on the chosen weighting scheme and the number of weight layer used (see the weighting
+functions documentation):</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Poids int: weight associated to the I, based on StdI,</p></li>
+<li><p>Poids_int_norm: normalized by earthquake poids_int,</p></li>
+<li><p>Poids_evt: weight of each earthquake,</p></li>
+<li><p>Poids_evt_norm: normalized Poids_evt,</p></li>
+<li><p>poids_gp : weight of the group to which the earthquake belong,</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="output-files-of-the-mathematical-formulation-i-i0-beta-log10-hypo-h-gamma-hypo-h">
+<h2>Output files of the mathematical formulation I = I0 + beta.log10(Hypo/H) + gamma.(Hypo/H)<a class="headerlink" href="#output-files-of-the-mathematical-formulation-i-i0-beta-log10-hypo-h-gamma-hypo-h" title="Permalink to this headline">¶</a></h2>
+<p>Three different output files are produced for the calibration of this mathematical formulation,
+done with the Kovbetagamma_onedataset() function.</p>
+<p>The first file is the summary of the calibration. Its name is :
+betagammaFinal_(name of the input Evt file)_w(name of the chosen weighting scheme)_betaini(absolute value of initial value of beta used x 10).txt
+It contains the output value of the beta coefficient, its associated standard deviation, the value of the initial value of beta,
+the output value of the gamma coefficient, its associated standard deviation, the value of the initial value of gamma, the number
+of iteration used to converge to the output solution, the maximal and the minimal number of iteration allowed, the number of calibration
+earthquake used, the number of intensity data used, the path and name of the Evt and Obs input files used and the path and name of the python
+script used to launch the calibration.
+Here an example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Beta</span><span class="p">:</span><span class="o">-</span><span class="mf">3.2958604621345904</span>
+<span class="n">Beta</span> <span class="n">Std</span><span class="p">:</span><span class="mf">0.16938930506645936</span>
+<span class="n">Beta</span> <span class="n">ini</span><span class="p">:</span><span class="o">-</span><span class="mf">3.0</span>
+<span class="n">Gamma</span><span class="p">:</span><span class="o">-</span><span class="mf">9.07844740022615e-07</span>
+<span class="n">Gamma</span> <span class="n">Std</span><span class="p">:</span><span class="mf">0.0029515662825366803</span>
+<span class="n">Gamma</span> <span class="n">ini</span><span class="p">:</span><span class="o">-</span><span class="mf">0.001</span>
+<span class="n">Nbre</span> <span class="n">iteration</span><span class="p">:</span><span class="mi">19</span>
+<span class="n">Nbre</span> <span class="n">iteration</span> <span class="nb">max</span><span class="p">:</span><span class="mi">100</span>
+<span class="n">Nbre</span> <span class="n">iteration</span> <span class="nb">min</span><span class="p">:</span><span class="mi">3</span>
+<span class="n">Nbre</span> <span class="n">evt</span><span class="p">:</span><span class="mi">31</span>
+<span class="n">Nbre</span> <span class="n">data</span><span class="p">:</span><span class="mi">164</span>
+<span class="n">Fichier</span> <span class="n">Evt</span><span class="p">:</span><span class="n">Data</span><span class="o">/</span><span class="n">FRinstru01</span><span class="o">.</span><span class="n">txt</span>
+<span class="n">Fichier</span> <span class="n">Obs</span><span class="p">:</span><span class="n">Data</span><span class="o">/</span><span class="n">Obs_FRextended</span><span class="o">.</span><span class="n">txt</span>
+<span class="n">Nom</span> <span class="n">fichier</span> <span class="n">execute</span><span class="p">:</span><span class="n">CalIPE_launchers_example</span>\<span class="n">calibration_AttKov_launch_FRinstru</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>The second file is a file with the value of coefficient beta after each iteration. It is the same betaWay file described before.
+The third file contains the data used in the inversion after the inversion process, with the final values of depth and epicentral intensity for
+each calibration earthquake, which are inverted successively with the beta coefficient. It is the same obsbinEnd file described before.</p>
+</section>
+<section id="output-files-of-the-mathematical-formulation-i-c1-c2-beta-log10-hypo-and-i-c1-c2-beta-log10-hypo-gamma-hypo">
+<h2>Output files of the mathematical formulation I = C1 + C2 + beta.log10(Hypo)  and I = C1 + C2 + beta.log10(Hypo) + gamma.Hypo<a class="headerlink" href="#output-files-of-the-mathematical-formulation-i-c1-c2-beta-log10-hypo-and-i-c1-c2-beta-log10-hypo-gamma-hypo" title="Permalink to this headline">¶</a></h2>
+<p>The functions calib_C1C2(), calib_C1C2H, calib_C1C2betaH and calib_C1C2betagammaH() don’t produce output files. However, their outputs
+can be easly stored in output files as suggested in the launcher examples provided in the github repository xxxx.</p>
 <div class="toctree-wrapper compound">
 </div>
 </section>
-<section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
-<ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
-</ul>
 </section>
 
 
@@ -67,16 +177,17 @@
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="Install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Install.html#indices-and-tables">Indices and tables</a></li>
-<li class="toctree-l1"><a class="reference internal" href="input_files.html">Welcome to CalIPE_doc’s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="input_files.html">Input data files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="input_files.html#indices-and-tables">Indices and tables</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Welcome to CalIPE_doc’s documentation!</a><ul class="simple">
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Output data files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#output-files-of-the-mathematical-formulation-i-i0-beta-log10-hypo-h">Output files of the mathematical formulation I = I0 + beta.log10(Hypo/H)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#output-files-of-the-mathematical-formulation-i-i0-beta-log10-hypo-h-gamma-hypo-h">Output files of the mathematical formulation I = I0 + beta.log10(Hypo/H) + gamma.(Hypo/H)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#output-files-of-the-mathematical-formulation-i-c1-c2-beta-log10-hypo-and-i-c1-c2-beta-log10-hypo-gamma-hypo">Output files of the mathematical formulation I = C1 + C2 + beta.log10(Hypo)  and I = C1 + C2 + beta.log10(Hypo) + gamma.Hypo</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">Welcome to CalIPE_doc’s documentation!</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html#indices-and-tables">Indices and tables</a></li>
-<li class="toctree-l1"><a class="reference internal" href="inventory.html">Welcome to CalIPE_doc’s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inventory.html">Inventory and documentation of CalIPE functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inventory.html#indices-and-tables">Indices and tables</a></li>
 </ul>
 
@@ -84,8 +195,8 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="input_files.html" title="previous chapter">Welcome to CalIPE_doc’s documentation!</a></li>
-      <li>Next: <a href="examples.html" title="next chapter">Welcome to CalIPE_doc’s documentation!</a></li>
+      <li>Previous: <a href="examples.html" title="previous chapter">Tutorial</a></li>
+      <li>Next: <a href="inventory.html" title="next chapter">Inventory and documentation of CalIPE functions</a></li>
   </ul></li>
 </ul>
 </div>

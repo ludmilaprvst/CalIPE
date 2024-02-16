@@ -15,7 +15,7 @@
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Welcome to CalIPE_doc’s documentation!" href="output_files.html" />
+    <link rel="next" title="Output data files" href="output_files.html" />
     <link rel="prev" title="Input data files" href="input_files.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -35,7 +35,7 @@
             
   <section id="tutorial">
 <h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
-<p>blabla</p>
+<p>This chapter presents some examples of the use of CalIPE. More examples, with the example data used in Provost (in prep, 2023), are available in the github repository xxxx.</p>
 <section id="launch-a-calibration">
 <h2>Launch a calibration<a class="headerlink" href="#launch-a-calibration" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
@@ -75,10 +75,10 @@ Then enter the name of the chosen weighting scheme:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">binning_type</span> <span class="o">=</span> <span class="s1">&#39;ROBS&#39;</span>
 </pre></div>
 </div>
-<dl class="simple">
-<dt>Choose the beta initial values::</dt><dd><p>list_beta_ini = [-2.5, -3.0, -3.5]</p>
-</dd>
-</dl>
+<p>Choose the beta initial values:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">list_beta_ini</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.5</span><span class="p">]</span>
+</pre></div>
+</div>
 <p>You are ready to launch the calibration:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Kovbeta_onedataset</span><span class="p">(</span><span class="n">evt_name</span><span class="p">,</span> <span class="n">obs_name</span><span class="p">,</span>
                    <span class="n">outputfolder</span><span class="o">=</span><span class="n">outputfolder</span><span class="p">,</span>
@@ -115,7 +115,7 @@ First, you have to add the path to your CalIPE repository to the Python paths:</
                                    <span class="n">binning_type</span><span class="o">=</span><span class="s1">&#39;ROBS&#39;</span><span class="p">,</span>
                                    <span class="n">outputfolder</span><span class="o">=</span><span class="s1">&#39;../../Data&#39;</span><span class="p">,</span>
                                    <span class="n">regiondata_name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
-                                   <span class="n">ponderation</span><span class="o">=</span><span class="s1">&#39;Ponderation evt-uniforme&#39;</span><span class="p">,</span>
+                                   <span class="n">ponderation</span><span class="o">=</span><span class="s1">&#39;IStdI_evtUni&#39;</span><span class="p">,</span>
                                    <span class="p">)</span>
 </pre></div>
 </div>
@@ -151,17 +151,61 @@ in this example 10 earthquakes:</p>
 </div>
 <p>The new Evt files, which correspond to each subset, are saved in the subset_folder defined previously.
 The name of the subsets Evt files are Datasubsetxx.csv, where xx is the number of the subset.</p>
+</section>
+<section id="post-processing-a-calibration-run">
+<h2>Post-processing a calibration run<a class="headerlink" href="#post-processing-a-calibration-run" title="Permalink to this headline">¶</a></h2>
+<p>After a calibration, some tests can be performed. One of them is the intensity residual analysis.
+CalIPE provides tools to perform intensity residual analysis on the calibration outputs. In this example,
+the intensity residual analysis will be done on the outputs of the calibration of the following
+mathematical formulation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">I</span> <span class="o">=</span> <span class="n">I0</span> <span class="o">+</span> <span class="n">beta</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">Hypo</span><span class="o">/</span><span class="n">H</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>First, you have to add the path to your CalIPE repository to the Python paths:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;path_to_your_CalIPE_package/calib_fc&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then you can import the CalIPE function adapted to the chosen mathematical formulation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">CalIPE.postprocessing_fc.postprocessing_Kovbeta</span> <span class="kn">import</span> <span class="n">plot_dIMag</span><span class="p">,</span> <span class="n">plot_dII0</span>
+</pre></div>
+</div>
+<p>Do not forget to import the matplotlib library to plot the analysis:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+</pre></div>
+</div>
+<p>Enter the name of the output folder where the outputs files are stored:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">path_subsets</span> <span class="o">=</span>  <span class="s1">&#39;Outputs/FRinstru01/Beta&#39;</span>
+</pre></div>
+</div>
+<p>And the base name of the targeted inversion result (see repo xxx for a concrete example):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">runname_basedb</span> <span class="o">=</span> <span class="s1">&#39;basename&#39;</span>
+</pre></div>
+</div>
+<p>Initialize the plots:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">figbdb_resMI0</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="n">ax_resM</span> <span class="o">=</span> <span class="n">figbdb_resMI0</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">223</span><span class="p">)</span>
+<span class="n">ax_resI0</span><span class="o">=</span> <span class="n">figbdb_resMI0</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">224</span><span class="p">)</span>
+<span class="n">ax_resM</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">which</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">)</span>
+<span class="n">ax_resM</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">ax_resI0</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">which</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">)</span>
+<span class="n">ax_resI0</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">ax_resI0</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.25</span><span class="p">,</span> <span class="s1">&#39;(c)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+<span class="n">ax_resM</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">2.8</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.25</span><span class="p">,</span> <span class="s1">&#39;(d)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+<span class="n">ax_resM</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="n">ax_resM</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mf">5.5</span><span class="p">])</span>
+<span class="n">ax_resI0</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="n">ax_resI0</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>And call the plot residual functions of the CalIPE library:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plot_dIMag</span><span class="p">(</span><span class="n">runname_basedb</span><span class="p">,</span> <span class="n">path_subsets</span><span class="p">,</span> <span class="n">ax_resM</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#1f77b4&#39;</span><span class="p">)</span>
+<span class="n">plot_dII0</span><span class="p">(</span><span class="n">runname_basedb</span><span class="p">,</span> <span class="n">path_subsets</span><span class="p">,</span> <span class="n">ax_resI0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#1f77b4&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <div class="toctree-wrapper compound">
 </div>
 </section>
-</section>
-<section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
-<ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
-</ul>
 </section>
 
 
@@ -185,16 +229,14 @@ The name of the subsets Evt files are Datasubsetxx.csv, where xx is the number o
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="Install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="input_files.html">Input data files</a></li>
-<li class="toctree-l1"><a class="reference internal" href="input_files.html#indices-and-tables">Indices and tables</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#launch-a-calibration">Launch a calibration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#creating-subsets">Creating subsets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#post-processing-a-calibration-run">Post-processing a calibration run</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
-<li class="toctree-l1"><a class="reference internal" href="output_files.html">Welcome to CalIPE_doc’s documentation!</a></li>
-<li class="toctree-l1"><a class="reference internal" href="output_files.html#indices-and-tables">Indices and tables</a></li>
-<li class="toctree-l1"><a class="reference internal" href="inventory.html">Welcome to CalIPE_doc’s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output_files.html">Output data files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inventory.html">Inventory and documentation of CalIPE functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inventory.html#indices-and-tables">Indices and tables</a></li>
 </ul>
 
@@ -203,7 +245,7 @@ The name of the subsets Evt files are Datasubsetxx.csv, where xx is the number o
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="input_files.html" title="previous chapter">Input data files</a></li>
-      <li>Next: <a href="output_files.html" title="next chapter">Welcome to CalIPE_doc’s documentation!</a></li>
+      <li>Next: <a href="output_files.html" title="next chapter">Output data files</a></li>
   </ul></li>
 </ul>
 </div>

@@ -6,7 +6,7 @@
 Tutorial
 ========
 
-blabla
+This chapter presents some examples of the use of CalIPE. More examples, with the example data used in Provost (in prep, 2023), are available in the github repository xxxx. 
 
 Launch a calibration
 --------------------
@@ -47,6 +47,7 @@ Choose the intensity binning method::
 	binning_type = 'ROBS'
 
 Choose the beta initial values::
+
 	list_beta_ini = [-2.5, -3.0, -3.5]
 
 You are ready to launch the calibration::
@@ -90,7 +91,7 @@ Create a table with the metadata used to create the subsets. Excel file can be c
 	                                   binning_type='ROBS',
 	                                   outputfolder='../../Data',
 	                                   regiondata_name='',
-	                                   ponderation='Ponderation evt-uniforme',
+	                                   ponderation='IStdI_evtUni',
 	                                   )
 
 The table will be saved in the subset_folder. This folder should be created before lauching the create_basicdb_criteria function.
@@ -128,17 +129,63 @@ Once the list of the subsets is ready, the corresponding Evt files should be wri
 The new Evt files, which correspond to each subset, are saved in the subset_folder defined previously.
 The name of the subsets Evt files are Datasubsetxx.csv, where xx is the number of the subset.
 
+Post-processing a calibration run
+---------------------------------
+
+After a calibration, some tests can be performed. One of them is the intensity residual analysis.
+CalIPE provides tools to perform intensity residual analysis on the calibration outputs. In this example,
+the intensity residual analysis will be done on the outputs of the calibration of the following
+mathematical formulation::
+
+	- I = I0 + beta.log10(Hypo/H)
+
+First, you have to add the path to your CalIPE repository to the Python paths:: 
+
+	import sys
+	sys.path.append('path_to_your_CalIPE_package/calib_fc')
+
+
+Then you can import the CalIPE function adapted to the chosen mathematical formulation::
+
+	from CalIPE.postprocessing_fc.postprocessing_Kovbeta import plot_dIMag, plot_dII0
+
+
+Do not forget to import the matplotlib library to plot the analysis::
+
+	import matplotlib.pyplot as plt
+
+Enter the name of the output folder where the outputs files are stored::
+
+	path_subsets =  'Outputs/FRinstru01/Beta'
+
+And the base name of the targeted inversion result (see repo xxx for a concrete example)::
+
+	runname_basedb = 'basename'
+
+Initialize the plots::
+
+	figbdb_resMI0 = plt.figure(figsize=(10, 8))
+	ax_resM = figbdb_resMI0.add_subplot(223)
+	ax_resI0= figbdb_resMI0.add_subplot(224)
+	ax_resM.grid(which='both')
+	ax_resM.legend()
+	ax_resI0.grid(which='both')
+	ax_resI0.legend()
+	ax_resI0.text(2, -1.25, '(c)', fontsize=15)
+	ax_resM.text(2.8, -1.25, '(d)', fontsize=15)
+	ax_resM.set_ylim([-1, 1])
+	ax_resM.set_xlim([3, 5.5])
+	ax_resI0.set_ylim([-1, 1])
+	ax_resI0.set_xlim([3, 9])
+
+And call the plot residual functions of the CalIPE library::
+	
+	plot_dIMag(runname_basedb, path_subsets, ax_resM, color='#1f77b4')
+	plot_dII0(runname_basedb, path_subsets, ax_resI0, color='#1f77b4')
+
 
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
