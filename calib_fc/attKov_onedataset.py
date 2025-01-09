@@ -305,14 +305,15 @@ def Kovbeta_onedataset(evtdata_name, obsdata_name, outputfolder,
     databasename = basename[:-4]
     weightname = savename_weights(ponderation)
     repere =  '_'.join([databasename, binning_type, weightname, 'betaini'])
-    obsbin_plus = prepare_input4calibration(obsdata_name, evtdata_name,
+    obsbin_plus_ini = prepare_input4calibration(obsdata_name, evtdata_name,
                                             ponderation,
                                             regiondata_name, binning_type)
-    liste_evt = np.unique(obsbin_plus.EVID.values)
+    liste_evt = np.unique(obsbin_plus_ini.EVID.values)
     nbre_evt = len(liste_evt)
-    nbreI = len(obsbin_plus)
+    nbreI = len(obsbin_plus_ini)
     for beta_ini in liste_beta_ini:
         print(beta_ini)
+        obsbin_plus = obsbin_plus_ini.copy()
         obsBin_plus_end, beta, cov_beta, suivi_beta = calib_attBeta_Kov(liste_evt, obsbin_plus, beta_ini, 
                                                               NminIter=NminIter, NmaxIter=NmaxIter, suivi_inversion=False,
                                                               dossier_suivi='../Outputs/suivi_inv_par_evt_ALPSPYREST_lesplusbeaux')
